@@ -3,8 +3,20 @@
 import { useSidebar } from "@/components/dashboard/sidebar-context";
 import { SidebarContent } from "@/components/dashboard/SidebarContent";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { type ItemTypeWithCount } from "@/lib/db/items";
+import { type CollectionWithStats } from "@/lib/db/collections";
 
-export function MobileSidebar() {
+interface MobileSidebarProps {
+  itemTypes: ItemTypeWithCount[];
+  favoriteCollections: CollectionWithStats[];
+  recentCollections: CollectionWithStats[];
+}
+
+export function MobileSidebar({
+  itemTypes,
+  favoriteCollections,
+  recentCollections,
+}: MobileSidebarProps) {
   const { mobileOpen, setMobileOpen } = useSidebar();
 
   return (
@@ -13,7 +25,11 @@ export function MobileSidebar() {
         <div className="border-b border-sidebar-border px-4 py-4 font-semibold">
           <SheetTitle>Navigation</SheetTitle>
         </div>
-        <SidebarContent />
+        <SidebarContent
+          itemTypes={itemTypes}
+          favoriteCollections={favoriteCollections}
+          recentCollections={recentCollections}
+        />
       </SheetContent>
     </Sheet>
   );

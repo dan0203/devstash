@@ -6,8 +6,16 @@ import { useSidebar } from "@/components/dashboard/sidebar-context";
 import { SidebarContent } from "@/components/dashboard/SidebarContent";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { type ItemTypeWithCount } from "@/lib/db/items";
+import { type CollectionWithStats } from "@/lib/db/collections";
 
-export function Sidebar() {
+interface SidebarProps {
+  itemTypes: ItemTypeWithCount[];
+  favoriteCollections: CollectionWithStats[];
+  recentCollections: CollectionWithStats[];
+}
+
+export function Sidebar({ itemTypes, favoriteCollections, recentCollections }: SidebarProps) {
   const { collapsed, toggleCollapsed } = useSidebar();
 
   return (
@@ -34,7 +42,12 @@ export function Sidebar() {
         </Button>
       </div>
 
-      <SidebarContent collapsed={collapsed} />
+      <SidebarContent
+        collapsed={collapsed}
+        itemTypes={itemTypes}
+        favoriteCollections={favoriteCollections}
+        recentCollections={recentCollections}
+      />
     </aside>
   );
 }
