@@ -33,7 +33,7 @@ async function getDemoUserId(): Promise<string> {
   return user.id;
 }
 
-export async function getRecentCollections(limit = 6): Promise<CollectionWithStats[]> {
+async function getCollectionsWithStats(): Promise<CollectionWithStats[]> {
   const userId = await getDemoUserId();
 
   const collections = await prisma.collection.findMany({
@@ -77,9 +77,24 @@ export async function getRecentCollections(limit = 6): Promise<CollectionWithSta
     };
   });
 
-  return withStats
-    .sort((a, b) => (b.lastUpdated?.getTime() ?? 0) - (a.lastUpdated?.getTime() ?? 0))
-    .slice(0, limit);
+  return withStats.sort(
+    (a, b) => (b.lastUpdated?.getTime() ?? 0) - (a.lastUpdated?.getTime() ?? 0)
+  );
+}
+
+export async function getRecentCollections(limit = 6): Promise<CollectionWithStats[]> {
+  const withStats = await getCollectionsWithStats();
+  return withStats.slice(0, limit);
+}
+
+export async function getFavoriteCollections(): Promise<CollectionWithStats[]> {
+  const withStats = await getCollectionsWithStats();
+  return withStats.filter((collection) => collection.isFavorite);
+}
+
+export async function getSidebarRecentCollections(limit = 5): Promise<CollectionWithStats[]> {
+  const withStats = await getCollectionsWithStats();
+  return withStats.filter((collection) => !collection.isFavorite).slice(0, limit);
 }
 
 export async function getCollectionStats(): Promise<CollectionStats> {

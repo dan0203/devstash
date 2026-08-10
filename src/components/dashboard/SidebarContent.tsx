@@ -4,7 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { Settings, ChevronDown, ChevronRight, Star } from "lucide-react";
 
-import { itemTypes, collections, items, currentUser, type Collection } from "@/lib/mock-data";
+import { currentUser } from "@/lib/mock-data";
+import { type ItemTypeWithCount } from "@/lib/db/items";
+import { type CollectionWithStats } from "@/lib/db/collections";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -22,10 +24,20 @@ function initials(name: string) {
     .toUpperCase();
 }
 
-export function SidebarContent({ collapsed = false }: { collapsed?: boolean }) {
+interface SidebarContentProps {
+  collapsed?: boolean;
+  itemTypes: ItemTypeWithCount[];
+  favoriteCollections: CollectionWithStats[];
+  recentCollections: CollectionWithStats[];
+}
+
+export function SidebarContent({
+  collapsed = false,
+  itemTypes,
+  favoriteCollections,
+  recentCollections,
+}: SidebarContentProps) {
   const [collectionsOpen, setCollectionsOpen] = useState(true);
-  const favoriteCollections = collections.filter((c) => c.isFavorite);
-  const latestCollections = collections.filter((c) => !c.isFavorite).slice(0, 5);
   const showCollectionsList = collapsed || collectionsOpen;
 
   return (
@@ -39,7 +51,6 @@ export function SidebarContent({ collapsed = false }: { collapsed?: boolean }) {
         <div className="space-y-0.5">
           {itemTypes.map((type) => {
             const Icon = itemTypeIcons[type.icon];
-            const count = items.filter((item) => item.itemTypeId === type.id).length;
             return (
               <Link
                 key={type.id}
@@ -59,7 +70,7 @@ export function SidebarContent({ collapsed = false }: { collapsed?: boolean }) {
                         Pro
                       </Badge>
                     )}
-                    <span className="text-xs text-muted-foreground">{count}</span>
+                    <span className="text-xs text-muted-foreground">{type.count}</span>
                   </>
                 )}
               </Link>
@@ -96,10 +107,11 @@ export function SidebarContent({ collapsed = false }: { collapsed?: boolean }) {
             </div>
             {!collapsed && <SidebarLink href="/recent" label="Recent" />}
             <div className={cn("space-y-0.5", !collapsed && "pl-3")}>
-              {latestCollections.map((collection) => (
+              {recentCollections.map((collection) => (
                 <CollectionLink key={collection.id} collection={collection} collapsed={collapsed} />
               ))}
             </div>
+            {!collapsed && <SidebarLink href="/collections" label="View all collections" />}
           </div>
         )}
       </nav>
@@ -145,12 +157,10 @@ function CollectionLink({
   collapsed,
   favorite,
 }: {
-  collection: Collection;
+  collection: CollectionWithStats;
   collapsed?: boolean;
   favorite?: boolean;
 }) {
-  const count = items.filter((item) => item.collectionIds.includes(collection.id)).length;
-
   return (
     <Link
       href={`/collections/${collection.id}`}
@@ -171,7 +181,7 @@ function CollectionLink({
       {!collapsed && (
         <>
           <span className="flex-1 truncate">{collection.name}</span>
-          <span className="text-xs text-muted-foreground">{count}</span>
+          <span className="text-xs text-muted-foreground">{collection.itemCount}</span>
         </>
       )}
     </Link>
