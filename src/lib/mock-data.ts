@@ -44,7 +44,7 @@ export const currentUser: User = {
     id: 'user-1',
     name: 'Ada Lovelace',
     email: 'demo@devstash.io',
-    isPro: true,
+    isPro: false,
 };
 
 export const itemTypes: ItemType[] = [
