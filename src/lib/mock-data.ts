@@ -48,13 +48,13 @@ export const currentUser: User = {
 };
 
 export const itemTypes: ItemType[] = [
-    { id: 'type-snippet', name: 'Snippet', slug: 'snippets', icon: 'Code', color: '#3b82f6', isSystem: true },
-    { id: 'type-prompt', name: 'Prompt', slug: 'prompts', icon: 'Sparkles', color: '#8b5cf6', isSystem: true },
-    { id: 'type-command', name: 'Command', slug: 'commands', icon: 'Terminal', color: '#f97316', isSystem: true },
-    { id: 'type-note', name: 'Note', slug: 'notes', icon: 'StickyNote', color: '#fde047', isSystem: true },
-    { id: 'type-link', name: 'Link', slug: 'links', icon: 'Link', color: '#10b981', isSystem: true },
-    { id: 'type-file', name: 'File', slug: 'files', icon: 'File', color: '#6b7280', isSystem: true },
-    { id: 'type-image', name: 'Image', slug: 'images', icon: 'Image', color: '#ec4899', isSystem: true },
+    { id: 'type-snippet', name: 'Snippets', slug: 'snippets', icon: 'Code', color: '#3b82f6', isSystem: true },
+    { id: 'type-prompt', name: 'Prompts', slug: 'prompts', icon: 'Sparkles', color: '#8b5cf6', isSystem: true },
+    { id: 'type-command', name: 'Commands', slug: 'commands', icon: 'Terminal', color: '#f97316', isSystem: true },
+    { id: 'type-note', name: 'Notes', slug: 'notes', icon: 'StickyNote', color: '#fde047', isSystem: true },
+    { id: 'type-link', name: 'Links', slug: 'links', icon: 'Link', color: '#10b981', isSystem: true },
+    { id: 'type-file', name: 'Files', slug: 'files', icon: 'File', color: '#6b7280', isSystem: true },
+    { id: 'type-image', name: 'Images', slug: 'images', icon: 'Image', color: '#ec4899', isSystem: true },
 ];
 
 export const collections: Collection[] = [
