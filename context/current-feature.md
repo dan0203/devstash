@@ -1,19 +1,20 @@
-# Current Feature: Add Pro Badge to Sidebar
+# Current Feature
+
+<!-- Feature Name And Short Description -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
+
+Not Started
 
 ## Goals
 
-- Add a "PRO" badge to the Files and Images item types in the sidebar
-- Use the ShadCN UI Badge component
-- Badge should be clean and subtle in style
-- Badge text must be all uppercase ("PRO")
+<!-- Goals & Requirements -->
 
 ## Notes
 
-- `SidebarContent.tsx` already renders a ShadCN `Badge` (`variant="secondary"`) next to Files/Images when `!currentUser.isPro`, with text "Pro" — this feature is a refinement, not a from-scratch build. Likely just needs the label uppercased (e.g. `PRO` or `uppercase` styling) and a check that styling reads as clean/subtle.
+<!-- Any Extra Notes -->
 
 ## History
 
@@ -28,3 +29,4 @@ In Progress
 - **2026-08-10** — Dashboard UI Phase 2 (Sidebar & Navigation) completed on `feature/dashboard-phase-2`. Collapsible desktop sidebar (icon-rail toggle) plus an always-on mobile drawer; TYPES section links to `/items/[type]` with per-type item counts and a Pro badge on Files/Images (hidden when the user is Pro); COLLECTIONS section is collapsible with Favorites/Recent links, favorited collections (starred) shown separately from the rest, each with item counts and slight indentation. Fixed a flexbox `min-height: auto` bug so the sidebar always fills the viewport height with the user footer pinned to the bottom and only the nav scrolling.
 - **2026-08-10** — Dashboard UI Phase 1 (Layout & Setup) completed on `feature/dashboard-phase-1`. ShadCN UI initialized; `/dashboard` route added with a full-width top bar (logo, centered search, "New Collection"/"New item" buttons), dark mode by default, and placeholder Sidebar/Main sections. Switched app font to Libre Franklin and dark background to an anthracite gray.
 - **2026-08-10** — Initial Next.js 16 (App Router) project setup via `create-next-app`, with TypeScript and Tailwind CSS v4. Placeholder home page (`src/app/page.tsx`), no backend/database/tests configured yet.
+- **2026-08-10** — Add Pro Badge to Sidebar completed on `feature/add-pro-badge-sidebar`. Restyled the existing ShadCN `Badge` shown next to Files/Images in `SidebarContent.tsx` (rendered when `!currentUser.isPro`): switched from `variant="secondary"` to `variant="outline"` and added `uppercase tracking-wide text-muted-foreground` for a subtler, uppercase "PRO" look. No new components or logic — the conditional render and `proTypeSlugs` gating from the earlier Dashboard UI Phase 2 feature were already in place. Verified via SSR HTML with `currentUser.isPro` temporarily toggled to `false` that both Files and Images render the badge correctly; `npm run build` passes.
