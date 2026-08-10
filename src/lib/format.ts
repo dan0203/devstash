@@ -7,8 +7,8 @@ const UNITS: [string, number][] = [
   ["m", 1000 * 60],
 ];
 
-export function formatRelativeTime(dateString: string, now: Date = new Date()) {
-  const diffMs = now.getTime() - new Date(dateString).getTime();
+export function formatRelativeTime(date: Date | string, now: Date = new Date()) {
+  const diffMs = now.getTime() - new Date(date).getTime();
 
   if (diffMs < 60 * 1000) return "just now";
 

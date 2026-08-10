@@ -1,28 +1,26 @@
-import { items } from "@/lib/mock-data";
 import { getRecentCollections, getCollectionStats } from "@/lib/db/collections";
+import { getPinnedItems, getRecentItems, getItemStats } from "@/lib/db/items";
 import { StatsRow } from "@/components/dashboard/StatsRow";
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { ItemCard } from "@/components/dashboard/ItemCard";
 
 export default async function DashboardPage() {
-  const [recentCollections, collectionStats] = await Promise.all([
-    getRecentCollections(6),
-    getCollectionStats(),
-  ]);
-
-  const pinnedItems = items.filter((item) => item.isPinned);
-
-  const recentItems = [...items]
-    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-    .slice(0, 10);
+  const [recentCollections, collectionStats, pinnedItems, recentItems, itemStats] =
+    await Promise.all([
+      getRecentCollections(6),
+      getCollectionStats(),
+      getPinnedItems(),
+      getRecentItems(10),
+      getItemStats(),
+    ]);
 
   return (
     <main className="min-h-0 flex-1 overflow-y-auto p-6">
       <div className="mx-auto flex max-w-5xl flex-col gap-8">
         <StatsRow
-          totalItems={items.length}
+          totalItems={itemStats.total}
           totalCollections={collectionStats.total}
-          favoriteItems={items.filter((item) => item.isFavorite).length}
+          favoriteItems={itemStats.favorites}
           favoriteCollections={collectionStats.favorites}
         />
 
