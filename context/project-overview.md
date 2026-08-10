@@ -8,16 +8,16 @@
 
 Developers scatter their working knowledge across too many tools:
 
-| Scattered today | Should live in DevStash |
-|---|---|
-| Code snippets | VS Code, Notion |
-| AI prompts | Chat history |
-| Context files | Buried in projects |
-| Useful links | Browser bookmarks |
-| Docs | Random folders |
-| Commands | `.txt` files |
-| Project templates | GitHub Gists |
-| Terminal history | Shell history |
+| Scattered today   | Should live in DevStash |
+| ----------------- | ----------------------- |
+| Code snippets     | VS Code, Notion         |
+| AI prompts        | Chat history            |
+| Context files     | Buried in projects      |
+| Useful links      | Browser bookmarks       |
+| Docs              | Random folders          |
+| Commands          | `.txt` files            |
+| Project templates | GitHub Gists            |
+| Terminal history  | Shell history           |
 
 The result: constant context-switching, lost knowledge, and inconsistent workflows. **DevStash consolidates all of it into one fast, searchable, AI-enhanced hub.**
 
@@ -25,12 +25,12 @@ The result: constant context-switching, lost knowledge, and inconsistent workflo
 
 ## 2. Target Users
 
-| Persona | Core need |
-|---|---|
-| 🧑‍💻 **Everyday Developer** | Fast capture/retrieval of snippets, prompts, commands, links |
-| 🤖 **AI-first Developer** | Save & organize prompts, contexts, system messages, workflows |
-| 🎓 **Content Creator / Educator** | Store code blocks, explanations, course notes |
-| 🏗️ **Full-stack Builder** | Collect patterns, boilerplates, API examples |
+| Persona                           | Core need                                                     |
+| --------------------------------- | ------------------------------------------------------------- |
+| 🧑‍💻 **Everyday Developer**         | Fast capture/retrieval of snippets, prompts, commands, links  |
+| 🤖 **AI-first Developer**         | Save & organize prompts, contexts, system messages, workflows |
+| 🎓 **Content Creator / Educator** | Store code blocks, explanations, course notes                 |
+| 🏗️ **Full-stack Builder**         | Collect patterns, boilerplates, API examples                  |
 
 ---
 
@@ -42,15 +42,15 @@ Items are the atomic unit of DevStash. Every item has a **type**, which determin
 
 **System types** (built-in, cannot be edited or deleted by users):
 
-| Type | Content kind | Tier |
-|---|---|---|
-| `snippet` | text (code) | Free |
-| `prompt` | text | Free |
-| `note` | text | Free |
-| `command` | text | Free |
-| `link` | url | Free |
-| `file` | file upload | Pro |
-| `image` | file upload | Pro |
+| Type      | Content kind | Tier |
+| --------- | ------------ | ---- |
+| `snippet` | text (code)  | Free |
+| `prompt`  | text         | Free |
+| `note`    | text         | Free |
+| `command` | text         | Free |
+| `link`    | url          | Free |
+| `file`    | file upload  | Pro  |
+| `image`   | file upload  | Pro  |
 
 - Users can later define **custom types** (Pro, post-MVP).
 - Every type resolves to one of three content kinds: `text`, `url`, or `file`.
@@ -61,17 +61,18 @@ Items are the atomic unit of DevStash. Every item has a **type**, which determin
 
 - A user-defined grouping of items, of **any mixed type**.
 - Items can belong to **multiple collections** (many-to-many) — e.g. a React snippet can live in both "React Patterns" and "Interview Prep".
-- Examples: *React Patterns* (snippets, notes), *Context Files* (files), *Python Snippets* (snippets).
+- Examples: _React Patterns_ (snippets, notes), _Context Files_ (files), _Python Snippets_ (snippets).
 
 ### C. Search
 
 Unified search across:
+
 - Content
 - Tags
 - Titles
 - Types
 
-*(MVP: basic query search. Pro: expanded/advanced search — see Monetization.)*
+_(MVP: basic query search. Pro: expanded/advanced search — see Monetization.)_
 
 ### D. Authentication
 
@@ -285,6 +286,7 @@ model Tag {
 ```
 
 **Open questions to resolve before migration:**
+
 - Does `ItemType.color` need to fall back to a default when a custom type doesn't set one?
 - Should `Tag` be scoped per-user (`@@unique([userId, name])`) rather than global? As written, `name @unique` means tags are shared across all users — likely a bug to fix.
 - `Collection.defaultTypeId` needs a defined relation name if Prisma auto-naming collides with `Item.itemTypeId`.
@@ -304,36 +306,36 @@ flowchart TD
     A --> H["Tailwind CSS v4 + ShadCN UI"]
 ```
 
-| Layer | Choice | Notes |
-|---|---|---|
-| Framework | Next.js 16 / React 19 | SSR pages, dynamic components |
-| Backend | Next.js API routes | Items, file uploads, AI calls — one repo, less overhead |
-| Language | TypeScript | Type safety throughout |
-| Database | Neon (Postgres) | Cloud-hosted |
-| ORM | Prisma 7 (latest) | **Migrations only — never `db push` in dev or prod** |
-| Caching | Redis | Maybe / TBD |
-| File storage | Cloudflare R2 | For `file` / `image` uploads |
-| Auth | NextAuth v5 | Email/password + GitHub OAuth |
-| AI | OpenAI `gpt-5-nano` | Auto-tag, summarize, explain, optimize prompts |
-| Styling | Tailwind CSS v4 + ShadCN UI | — |
+| Layer        | Choice                      | Notes                                                   |
+| ------------ | --------------------------- | ------------------------------------------------------- |
+| Framework    | Next.js 16 / React 19       | SSR pages, dynamic components                           |
+| Backend      | Next.js API routes          | Items, file uploads, AI calls — one repo, less overhead |
+| Language     | TypeScript                  | Type safety throughout                                  |
+| Database     | Neon (Postgres)             | Cloud-hosted                                            |
+| ORM          | Prisma 7 (latest)           | **Migrations only — never `db push` in dev or prod**    |
+| Caching      | Redis                       | Maybe / TBD                                             |
+| File storage | Cloudflare R2               | For `file` / `image` uploads                            |
+| Auth         | NextAuth v5                 | Email/password + GitHub OAuth                           |
+| AI           | OpenAI `gpt-5-nano`         | Auto-tag, summarize, explain, optimize prompts          |
+| Styling      | Tailwind CSS v4 + ShadCN UI | —                                                       |
 
 ---
 
 ## 6. Monetization — Freemium
 
-| | **Free** | **Pro — $8/mo or $72/yr** |
-|---|---|---|
-| Items | 50 total | Unlimited |
-| Collections | 3 | Unlimited |
-| System types | All except file/image | All, incl. file/image |
-| Custom types | ❌ | ✅ (coming later) |
-| Search | Basic | Basic (advanced TBD) |
-| File / image uploads | ❌ | ✅ |
-| AI auto-tagging | ❌ | ✅ |
-| AI code explanation | ❌ | ✅ |
-| AI prompt optimizer | ❌ | ✅ |
-| Data export | ❌ | ✅ (JSON/ZIP) |
-| Support | Standard | Priority |
+|                      | **Free**              | **Pro — $8/mo or $72/yr** |
+| -------------------- | --------------------- | ------------------------- |
+| Items                | 50 total              | Unlimited                 |
+| Collections          | 3                     | Unlimited                 |
+| System types         | All except file/image | All, incl. file/image     |
+| Custom types         | ❌                    | ✅ (coming later)         |
+| Search               | Basic                 | Basic (advanced TBD)      |
+| File / image uploads | ❌                    | ✅                        |
+| AI auto-tagging      | ❌                    | ✅                        |
+| AI code explanation  | ❌                    | ✅                        |
+| AI prompt optimizer  | ❌                    | ✅                        |
+| Data export          | ❌                    | ✅ (JSON/ZIP)             |
+| Support              | Standard              | Priority                  |
 
 > **Dev-mode note:** Build the Pro/Free gating foundation now (`isPro`, Stripe fields), but leave all features unlocked for all users during development.
 
@@ -342,11 +344,19 @@ flowchart TD
 ## 7. UI / UX
 
 ### Design direction
+
 - Modern, minimal, developer-focused
 - Dark mode by default; light mode optional
 - Clean typography, generous whitespace, subtle borders/shadows
 - Reference points: **Notion, Linear, Raycast**
 - Syntax highlighting for code blocks
+
+### Screenshots
+
+Refer to the screenshots below as a base for the dashboard UI. It does not have to be exact. Use it as a reference :
+
+- @context/screenshots/dashboard-ui.png
+- @context/screenshots/dashboard-ui-drawer.png
 
 ### Layout
 
@@ -369,17 +379,18 @@ flowchart LR
 
 ### Type Colors & Icons
 
-| Type | Color | Hex | Icon (lucide) |
-|---|---|---|---|
-| Snippet | 🔵 Blue | `#3b82f6` | `Code` |
-| Prompt | 🟣 Purple | `#8b5cf6` | `Sparkles` |
-| Command | 🟠 Orange | `#f97316` | `Terminal` |
-| Note | 🟡 Yellow | `#fde047` | `StickyNote` |
-| File | ⚪ Gray | `#6b7280` | `File` |
-| Image | 🌸 Pink | `#ec4899` | `Image` |
-| Link | 🟢 Emerald | `#10b981` | `Link` |
+| Type    | Color      | Hex       | Icon (lucide) |
+| ------- | ---------- | --------- | ------------- |
+| Snippet | 🔵 Blue    | `#3b82f6` | `Code`        |
+| Prompt  | 🟣 Purple  | `#8b5cf6` | `Sparkles`    |
+| Command | 🟠 Orange  | `#f97316` | `Terminal`    |
+| Note    | 🟡 Yellow  | `#fde047` | `StickyNote`  |
+| File    | ⚪ Gray    | `#6b7280` | `File`        |
+| Image   | 🌸 Pink    | `#ec4899` | `Image`       |
+| Link    | 🟢 Emerald | `#10b981` | `Link`        |
 
 ### Micro-interactions
+
 - Smooth transitions
 - Hover states on cards
 - Toast notifications for actions
