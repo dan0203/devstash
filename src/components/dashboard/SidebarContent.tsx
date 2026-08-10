@@ -66,7 +66,10 @@ export function SidebarContent({
                   <>
                     <span className="flex-1 truncate">{type.name}</span>
                     {!currentUser.isPro && proTypeSlugs.has(type.slug) && (
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] tracking-wide text-muted-foreground uppercase"
+                      >
                         Pro
                       </Badge>
                     )}
