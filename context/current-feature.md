@@ -1,20 +1,29 @@
-# Current Feature
+# Current Feature: Fix N+1 / Redundant Dashboard Queries
 
 <!-- Feature Name And Short Description -->
+
+Eliminate redundant Prisma round-trips on the dashboard, surfaced by a `code-scanner` audit. No auth/session work — the demo-user-by-email lookup pattern stays, just deduplicated.
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-Not Started
+In Progress
 
 ## Goals
 
 <!-- Goals & Requirements -->
 
+- Deduplicate `getDemoUserId()`: currently a separate `findUniqueOrThrow` DB round-trip runs in every exported function in `src/lib/db/collections.ts` and `src/lib/db/items.ts` — on `/dashboard`, `layout.tsx` + `page.tsx` together trigger this lookup 5 times per request. Memoize per-request (e.g. `cache()` from `react`) or otherwise resolve it once.
+- Deduplicate the collections-with-items query: `getCollectionsWithStats()` (full `collection.findMany` with nested `items → item → itemType`) is independently re-run by `getRecentCollections`, `getFavoriteCollections`, and `getSidebarRecentCollections` — 3 full re-queries per dashboard request. Fetch once and derive the three views from the shared result.
+- No behavior change: sidebar/dashboard output (counts, ordering, favorites) must stay identical — this is a performance-only refactor.
+- No auth/session changes — `demo@devstash.io` lookup pattern is out of scope; authentication is not implemented yet.
+
 ## Notes
 
 <!-- Any Extra Notes -->
+
+Source: `code-scanner` subagent audit (2026-08-13), flagged as a Warning-severity, low-risk quick win.
 
 ## History
 

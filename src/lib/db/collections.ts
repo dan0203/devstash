@@ -1,7 +1,6 @@
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
-
-// TODO: replace with the authenticated user's id once NextAuth is wired up.
-const DEMO_USER_EMAIL = "demo@devstash.io";
+import { getDemoUserId } from "@/lib/db/user";
 
 export interface CollectionTypeSummary {
   icon: string;
@@ -25,15 +24,7 @@ export interface CollectionStats {
   favorites: number;
 }
 
-async function getDemoUserId(): Promise<string> {
-  const user = await prisma.user.findUniqueOrThrow({
-    where: { email: DEMO_USER_EMAIL },
-    select: { id: true },
-  });
-  return user.id;
-}
-
-async function getCollectionsWithStats(): Promise<CollectionWithStats[]> {
+const getCollectionsWithStats = cache(async (): Promise<CollectionWithStats[]> => {
   const userId = await getDemoUserId();
 
   const collections = await prisma.collection.findMany({
@@ -80,7 +71,7 @@ async function getCollectionsWithStats(): Promise<CollectionWithStats[]> {
   return withStats.sort(
     (a, b) => (b.lastUpdated?.getTime() ?? 0) - (a.lastUpdated?.getTime() ?? 0)
   );
-}
+});
 
 export async function getRecentCollections(limit = 6): Promise<CollectionWithStats[]> {
   const withStats = await getCollectionsWithStats();

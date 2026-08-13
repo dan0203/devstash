@@ -1,7 +1,5 @@
 import { prisma } from "@/lib/prisma";
-
-// TODO: replace with the authenticated user's id once NextAuth is wired up.
-const DEMO_USER_EMAIL = "demo@devstash.io";
+import { getDemoUserId } from "@/lib/db/user";
 
 export interface ItemWithType {
   id: string;
@@ -29,14 +27,6 @@ export interface ItemTypeWithCount {
   icon: string;
   color: string;
   count: number;
-}
-
-async function getDemoUserId(): Promise<string> {
-  const user = await prisma.user.findUniqueOrThrow({
-    where: { email: DEMO_USER_EMAIL },
-    select: { id: true },
-  });
-  return user.id;
 }
 
 function toItemWithType(item: {
