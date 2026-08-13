@@ -1,29 +1,18 @@
-# Current Feature: Fix N+1 / Redundant Dashboard Queries
+# Current Feature
 
 <!-- Feature Name And Short Description -->
-
-Eliminate redundant Prisma round-trips on the dashboard, surfaced by a `code-scanner` audit. No auth/session work — the demo-user-by-email lookup pattern stays, just deduplicated.
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-In Progress
-
 ## Goals
 
 <!-- Goals & Requirements -->
 
-- Deduplicate `getDemoUserId()`: currently a separate `findUniqueOrThrow` DB round-trip runs in every exported function in `src/lib/db/collections.ts` and `src/lib/db/items.ts` — on `/dashboard`, `layout.tsx` + `page.tsx` together trigger this lookup 5 times per request. Memoize per-request (e.g. `cache()` from `react`) or otherwise resolve it once.
-- Deduplicate the collections-with-items query: `getCollectionsWithStats()` (full `collection.findMany` with nested `items → item → itemType`) is independently re-run by `getRecentCollections`, `getFavoriteCollections`, and `getSidebarRecentCollections` — 3 full re-queries per dashboard request. Fetch once and derive the three views from the shared result.
-- No behavior change: sidebar/dashboard output (counts, ordering, favorites) must stay identical — this is a performance-only refactor.
-- No auth/session changes — `demo@devstash.io` lookup pattern is out of scope; authentication is not implemented yet.
-
 ## Notes
 
 <!-- Any Extra Notes -->
-
-Source: `code-scanner` subagent audit (2026-08-13), flagged as a Warning-severity, low-risk quick win.
 
 ## History
 
@@ -39,3 +28,4 @@ Source: `code-scanner` subagent audit (2026-08-13), flagged as a Warning-severit
 - **2026-08-10** — Dashboard Items completed on `feature/dashboard-items`. Added `src/lib/db/items.ts` with `getPinnedItems()`, `getRecentItems()`, and `getItemStats()`, following the same demo-user-by-email pattern as `collections.ts`. `dashboard/page.tsx` now fetches pinned/recent items and item stats (total, favorites) from Prisma instead of `lib/mock-data.ts`; `ItemCard` was updated to accept the new `ItemWithType` shape (icon/color read from the item's `itemType` relation, tags from the `Tag` relation) instead of looking up `itemTypes` by id from mock data. `lib/format.ts`'s `formatRelativeTime` now accepts `Date | string` since Prisma returns `Date` objects. Pinned-items section still renders nothing when there are no pinned items. `lib/mock-data.ts` is left in place since `SidebarContent.tsx` still depends on it for per-type counts (out of scope for this spec). Verified against the live dev server that real seeded items (e.g. "Docker full prune", "Lucide icon library") render with correct icons, colors, tags, and relative timestamps. `npm run build` and `npm run lint` both pass.
 - **2026-08-10** — Stats & Sidebar completed on `feature/stats-sidebar`. Sidebar (`SidebarContent.tsx`, `Sidebar.tsx`, `MobileSidebar.tsx`) now reads real database data instead of `lib/mock-data.ts`: item types come from a new `getItemTypesWithCounts()` in `src/lib/db/items.ts` (per-user item counts via `groupBy`, sorted by an explicit display order — Snippets, Prompts, Commands, Notes, Links, Files, Images — rather than DB insertion order), and collections come from two new functions in `src/lib/db/collections.ts` (`getFavoriteCollections()`, `getSidebarRecentCollections()`) built on a shared `getCollectionsWithStats()` helper refactored out of the existing `getRecentCollections()`. Added a "View all collections" link to `/collections` under the sidebar's recent-collections list. `dashboard/layout.tsx` fetches this data server-side and passes it down as props to the (client) sidebar components. The main-area stats row (`StatsRow`) was already fully DB-backed from prior features, so no changes were needed there. Verified via SSR HTML from the live dev server that the sidebar renders all 7 real item-type routes with correct counts/order and the 5 real seeded collections (real DB ids, not mock ones); `npm run build` and `npm run lint` both pass.
 - **2026-08-10** — Add Pro Badge to Sidebar completed on `feature/add-pro-badge-sidebar`. Restyled the existing ShadCN `Badge` shown next to Files/Images in `SidebarContent.tsx` (rendered when `!currentUser.isPro`): switched from `variant="secondary"` to `variant="outline"` and added `uppercase tracking-wide text-muted-foreground` for a subtler, uppercase "PRO" look. No new components or logic — the conditional render and `proTypeSlugs` gating from the earlier Dashboard UI Phase 2 feature were already in place. Verified via SSR HTML with `currentUser.isPro` temporarily toggled to `false` that both Files and Images render the badge correctly; `npm run build` passes.
+- **2026-08-13** — Fix N+1 / Redundant Dashboard Queries completed on `feature/fix-dashboard-n1-queries`. Surfaced by a `code-scanner` audit: `getDemoUserId()` was independently defined and DB-queried (`findUniqueOrThrow`) in every exported function of both `src/lib/db/collections.ts` and `src/lib/db/items.ts`, and `getCollectionsWithStats()` (full `collection.findMany` with nested `items → item → itemType`) was independently re-run by `getRecentCollections`, `getFavoriteCollections`, and `getSidebarRecentCollections` — together triggering 5 user lookups and 3 full collections queries per `/dashboard` request. Extracted `getDemoUserId()` into a new shared `src/lib/db/user.ts`, wrapped in React's `cache()` so it resolves once per request; wrapped `getCollectionsWithStats()` in `cache()` too so the three sidebar/dashboard views share one query instead of re-running it. Performance-only refactor — no behavior change (counts/ordering/favorites verified identical via SSR HTML) and no auth/session work (`demo@devstash.io` lookup pattern preserved as-is). `npm run build` and `npm run lint` both pass.
