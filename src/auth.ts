@@ -26,11 +26,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return true;
     },
     jwt({ token, user }) {
-      if (user) token.sub = user.id;
+      if (user) {
+        token.sub = user.id;
+        token.isPro = (user as { isPro?: boolean }).isPro ?? false;
+      }
       return token;
     },
     session({ session, token }) {
       if (token.sub) session.user.id = token.sub;
+      session.user.isPro = typeof token.isPro === "boolean" ? token.isPro : false;
       return session;
     },
   },

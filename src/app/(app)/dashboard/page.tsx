@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import { getRecentCollections, getCollectionStats } from "@/lib/db/collections";
 import { getPinnedItems, getRecentItems, getItemStats } from "@/lib/db/items";
 import { StatsRow } from "@/components/dashboard/StatsRow";
@@ -5,13 +6,17 @@ import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { ItemCard } from "@/components/dashboard/ItemCard";
 
 export default async function DashboardPage() {
+  const session = await auth();
+  // proxy.ts already redirects unauthenticated requests before they reach this page.
+  const userId = session!.user.id;
+
   const [recentCollections, collectionStats, pinnedItems, recentItems, itemStats] =
     await Promise.all([
-      getRecentCollections(6),
-      getCollectionStats(),
-      getPinnedItems(),
-      getRecentItems(10),
-      getItemStats(),
+      getRecentCollections(userId, 6),
+      getCollectionStats(userId),
+      getPinnedItems(userId),
+      getRecentItems(userId, 10),
+      getItemStats(userId),
     ]);
 
   return (

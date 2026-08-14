@@ -6,7 +6,6 @@ import type { Session } from "next-auth";
 import { signOut } from "next-auth/react";
 import { ChevronDown, ChevronRight, LogOut, Star } from "lucide-react";
 
-import { currentUser } from "@/lib/mock-data";
 import { type ItemTypeWithCount } from "@/lib/db/items";
 import { type CollectionWithStats } from "@/lib/db/collections";
 import { itemTypeIcons } from "@/lib/icon-map";
@@ -66,7 +65,7 @@ export function SidebarContent({
                 {!collapsed && (
                   <>
                     <span className="flex-1 truncate">{type.name}</span>
-                    {!currentUser.isPro && proTypeSlugs.has(type.slug) && (
+                    {!user.isPro && proTypeSlugs.has(type.slug) && (
                       <Badge
                         variant="outline"
                         className="text-[10px] tracking-wide text-muted-foreground uppercase"
