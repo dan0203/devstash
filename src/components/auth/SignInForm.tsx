@@ -1,28 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { signInWithCredentials, signInWithGithub, type SignInActionState } from "@/actions/auth";
+
+const initialActionState: SignInActionState = { code: null };
 
 export function SignInForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isUnverified, setIsUnverified] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGithubSubmitting, setIsGithubSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
+
+  const [credentialsState, credentialsAction, isCredentialsPending] = useActionState(
+    signInWithCredentials,
+    initialActionState
+  );
+  const [githubState, githubAction, isGithubPending] = useActionState(
+    signInWithGithub.bind(null, callbackUrl),
+    initialActionState
+  );
 
   useEffect(() => {
     const verified = searchParams.get("verified");
@@ -34,38 +39,15 @@ export function SignInForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function handleCredentialsSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setIsUnverified(false);
-    try {
-      setIsSubmitting(true);
-
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        if (result.code === "email_not_verified") {
-          setIsUnverified(true);
-          setError("Please verify your email before signing in");
-        } else if (result.code === "rate_limited") {
-          setError("Too many attempts. Please try again in a few minutes.");
-        } else {
-          setError("Invalid email or password");
-        }
-        return;
-      }
-
-      router.push(callbackUrl);
-    } catch {
-      setError("Something went wrong — check your connection and try again");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+  const isUnverified = credentialsState.code === "email_not_verified";
+  const errorMessage =
+    credentialsState.code === "email_not_verified"
+      ? "Please verify your email before signing in"
+      : credentialsState.code === "rate_limited"
+        ? "Too many attempts. Please try again in a few minutes."
+        : credentialsState.code
+          ? "Invalid email or password"
+          : null;
 
   async function handleResendVerification() {
     setIsResending(true);
@@ -90,23 +72,15 @@ export function SignInForm() {
     }
   }
 
-  async function handleGithubSignIn() {
-    setIsGithubSubmitting(true);
-    try {
-      await signIn("github", { redirectTo: callbackUrl });
-    } catch {
-      toast.error("Something went wrong — check your connection and try again");
-      setIsGithubSubmitting(false);
-    }
-  }
-
   return (
     <div className="flex flex-col gap-4">
-      <form onSubmit={handleCredentialsSubmit} className="flex flex-col gap-4">
+      <form action={credentialsAction} className="flex flex-col gap-4">
+        <input type="hidden" name="callbackUrl" value={callbackUrl} />
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
+            name="email"
             type="email"
             autoComplete="email"
             value={email}
@@ -123,15 +97,14 @@ export function SignInForm() {
           </div>
           <Input
             id="password"
+            name="password"
             type="password"
             autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
         {isUnverified && (
           <Button
             type="button"
@@ -144,8 +117,8 @@ export function SignInForm() {
           </Button>
         )}
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Signing in..." : "Sign in"}
+        <Button type="submit" className="w-full" disabled={isCredentialsPending}>
+          {isCredentialsPending ? "Signing in..." : "Sign in"}
         </Button>
       </form>
 
@@ -155,15 +128,16 @@ export function SignInForm() {
         <Separator className="flex-1" />
       </div>
 
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full"
-        onClick={handleGithubSignIn}
-        disabled={isGithubSubmitting}
-      >
-        {isGithubSubmitting ? "Redirecting..." : "Sign in with GitHub"}
-      </Button>
+      <form action={githubAction}>
+        <Button type="submit" variant="outline" className="w-full" disabled={isGithubPending}>
+          {isGithubPending ? "Redirecting..." : "Sign in with GitHub"}
+        </Button>
+      </form>
+      {githubState.code && (
+        <p className="text-sm text-destructive">
+          Something went wrong — check your connection and try again
+        </p>
+      )}
     </div>
   );
 }
