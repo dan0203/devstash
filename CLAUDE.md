@@ -4,7 +4,7 @@ A developer knowledge hub for snippets, commands, prompts, notes, files, images,
 
 ## Project state
 
-This is a Next.js 16 (App Router) project scaffolded with `create-next-app` and not yet built out — `src/app/page.tsx` is still the placeholder home page. There is no test suite, backend, or database configured yet.
+This is a Next.js 16 (App Router) project scaffolded with `create-next-app`. Vitest is configured for unit testing (server actions and utilities only — see Commands below and `context/ai-interaction.md`'s Unit Testing section).
 
 ## Context Files
 
@@ -21,8 +21,8 @@ Read the following to get the full context of the project :
 - `npm run build` — production build
 - `npm run start` — run the production build
 - `npm run lint` — ESLint (flat config via `eslint.config.mjs`, using `eslint-config-next`'s `core-web-vitals` + `typescript` rule sets)
-
-There is no test runner configured in `package.json`.
+- `npm test` — Vitest, run once (server actions and utilities only, see `context/ai-interaction.md`)
+- `npm run test:watch` — Vitest in watch mode
 
 ## Neon MCP
 
