@@ -55,6 +55,7 @@ Example v4 configuration:
 - Server Actions: `src/actions/[feature].ts`
 - Types: `src/types/[feature].ts`
 - Lib/Utils: `src/lib/[utility].ts`
+- Unit tests: co-located as `[name].test.ts` next to the server action or utility it covers (see `context/ai-interaction.md`'s Unit Testing section for scope)
 
 ## Naming
 
