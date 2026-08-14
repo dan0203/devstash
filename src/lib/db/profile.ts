@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatItemTypeName, ITEM_TYPE_DISPLAY_ORDER } from "@/lib/db/item-types";
 
 export interface ProfileTypeBreakdown {
   name: string;
@@ -12,16 +13,6 @@ export interface ProfileStats {
   totalCollections: number;
   typeBreakdown: ProfileTypeBreakdown[];
 }
-
-const ITEM_TYPE_DISPLAY_ORDER = [
-  "snippet",
-  "prompt",
-  "command",
-  "note",
-  "link",
-  "file",
-  "image",
-];
 
 export async function getProfileStats(userId: string): Promise<ProfileStats> {
   const [totalItems, totalCollections, itemTypes, counts] = await Promise.all([
@@ -44,7 +35,7 @@ export async function getProfileStats(userId: string): Promise<ProfileStats> {
     totalItems,
     totalCollections,
     typeBreakdown: itemTypes.map((itemType) => ({
-      name: itemType.name.charAt(0).toUpperCase() + itemType.name.slice(1) + "s",
+      name: formatItemTypeName(itemType.name),
       icon: itemType.icon,
       color: itemType.color,
       count: countByTypeId.get(itemType.id) ?? 0,

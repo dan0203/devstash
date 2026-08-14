@@ -28,13 +28,18 @@ export function ForgotPasswordForm() {
     }
 
     setIsSubmitting(true);
-    await fetch("/api/auth/forgot-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.data),
-    });
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    try {
+      await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      });
+      setIsSubmitted(true);
+    } catch {
+      setError("Something went wrong — check your connection and try again");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (isSubmitted) {

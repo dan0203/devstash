@@ -8,11 +8,12 @@ export interface UserProfile {
   createdAt: Date;
 }
 
-export async function getUserProfile(userId: string): Promise<UserProfile> {
-  const user = await prisma.user.findUniqueOrThrow({
+export async function getUserProfile(userId: string): Promise<UserProfile | null> {
+  const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { name: true, email: true, image: true, password: true, createdAt: true },
   });
+  if (!user) return null;
 
   return {
     name: user.name,

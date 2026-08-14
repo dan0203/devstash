@@ -46,22 +46,26 @@ export function ResetPasswordForm() {
 
     setIsSubmitting(true);
 
-    const res = await fetch("/api/auth/reset-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, ...parsed.data }),
-    });
-    const body = await res.json();
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, ...parsed.data }),
+      });
+      const body = await res.json();
 
-    setIsSubmitting(false);
+      if (!body.success) {
+        setError(body.error ?? "Something went wrong");
+        return;
+      }
 
-    if (!body.success) {
-      setError(body.error ?? "Something went wrong");
-      return;
+      toast.success("Password reset — you can now sign in");
+      router.push("/sign-in");
+    } catch {
+      setError("Something went wrong — check your connection and try again");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    toast.success("Password reset — you can now sign in");
-    router.push("/sign-in");
   }
 
   if (!token) {

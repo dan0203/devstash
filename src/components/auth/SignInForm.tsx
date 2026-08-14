@@ -38,43 +38,57 @@ export function SignInForm() {
     e.preventDefault();
     setError(null);
     setIsUnverified(false);
-    setIsSubmitting(true);
+    try {
+      setIsSubmitting(true);
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    setIsSubmitting(false);
-
-    if (result?.error) {
-      if (result.code === "email_not_verified") {
-        setIsUnverified(true);
-        setError("Please verify your email before signing in");
-      } else {
-        setError("Invalid email or password");
+      if (result?.error) {
+        if (result.code === "email_not_verified") {
+          setIsUnverified(true);
+          setError("Please verify your email before signing in");
+        } else {
+          setError("Invalid email or password");
+        }
+        return;
       }
-      return;
-    }
 
-    router.push(callbackUrl);
+      router.push(callbackUrl);
+    } catch {
+      setError("Something went wrong — check your connection and try again");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   async function handleResendVerification() {
     setIsResending(true);
-    await fetch("/api/auth/resend-verification", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    setIsResending(false);
-    toast.success("If that account exists, a new verification email is on its way");
+    try {
+      await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      toast.success("If that account exists, a new verification email is on its way");
+    } catch {
+      toast.error("Something went wrong — check your connection and try again");
+    } finally {
+      setIsResending(false);
+    }
   }
 
   async function handleGithubSignIn() {
     setIsGithubSubmitting(true);
-    await signIn("github", { redirectTo: callbackUrl });
+    try {
+      await signIn("github", { redirectTo: callbackUrl });
+    } catch {
+      toast.error("Something went wrong — check your connection and try again");
+      setIsGithubSubmitting(false);
+    }
   }
 
   return (

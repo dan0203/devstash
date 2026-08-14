@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 import { auth } from "@/auth";
 import { TopBar } from "@/components/dashboard/TopBar";
 import { Sidebar } from "@/components/dashboard/Sidebar";
@@ -8,8 +10,13 @@ import { getFavoriteCollections, getSidebarRecentCollections } from "@/lib/db/co
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const session = await auth();
-  // proxy.ts already redirects unauthenticated requests before they reach this layout.
-  const user = session!.user;
+  // proxy.ts's edge-only auth check can't see the DB-based invalidation in
+  // src/auth.ts's jwt callback (e.g. a stale token after a password change),
+  // so a "logged in" request here can still resolve to no session.
+  if (!session?.user) {
+    redirect("/sign-in");
+  }
+  const user = session.user;
 
   const [itemTypes, favoriteCollections, recentCollections] = await Promise.all([
     getItemTypesWithCounts(user.id),

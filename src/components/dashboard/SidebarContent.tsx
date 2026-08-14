@@ -179,6 +179,7 @@ function CollectionLink({
         <span
           className="size-2 shrink-0 rounded-full"
           style={{ backgroundColor: collection.color }}
+          aria-hidden="true"
         />
       )}
       {!collapsed && (

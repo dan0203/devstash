@@ -11,6 +11,7 @@ export function CollectionCard({ collection }: { collection: CollectionWithStats
         <span
           className="size-2.5 shrink-0 rounded-full"
           style={{ backgroundColor: collection.color }}
+          aria-hidden="true"
         />
         <p className="flex-1 truncate text-sm font-medium">{collection.name}</p>
         {collection.isFavorite && <Star className="size-3.5 shrink-0 fill-yellow-400 text-yellow-400" />}
