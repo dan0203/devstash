@@ -1,18 +1,25 @@
-# Current Feature
+# Current Feature: Sign-In Server Actions
 
-<!-- Feature Name And Short Description -->
+Convert `SignInForm`'s credentials and GitHub sign-in from client-side `next-auth/react` `signIn()` calls to NextAuth v5 Server Actions (`signIn` imported from `@/auth`), matching Auth.js's documented App Router pattern, while preserving all existing inline-error UX.
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Replace `next-auth/react`'s client-side `signIn("credentials", ...)` call in `SignInForm.tsx` with a Server Action that calls `signIn` from `@/auth`, using `useActionState` to manage the action lifecycle instead of manual `useState` submit handling
+- Catch `AuthError` (`instanceof AuthError`) in the action and return its `.type`/the underlying `code` instead of letting NextAuth redirect to an error page — must still distinguish `email_not_verified`, `rate_limited`, and generic invalid-credentials the same way the UI does today
+- Preserve every piece of existing UX: inline error message under the form, "Resend verification email" button appearing only on `email_not_verified`, per-button loading/pending states, `callbackUrl` respected on success
+- Convert the "Sign in with GitHub" button to a Server Action form (`signIn("github", { redirectTo: callbackUrl })` from `@/auth`) — this one has no inline error state to preserve, so it's the simpler of the two
+- No change to `src/auth.ts`'s `authorize()`, rate limiting, or any other auth route — this is a frontend integration-pattern change only
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Source: user request following a discussion about Auth.js's Next.js docs recommending Server Actions (`signIn`/`signOut` from the `auth` config) as the primary App Router pattern, with the `next-auth/react` client version documented as being "for Client Components or Pages Router"
+- `RateLimitedError`/`EmailNotVerifiedError` (`src/auth.ts`) both extend `CredentialsSignin` (which extends `AuthError`), so `error.type`/`.code` should still be readable after catching in the Server Action, same information currently read from `next-auth/react`'s `SignInResponse.code`
+- `handleResendVerification` (calls `POST /api/auth/resend-verification` directly, not through NextAuth) is unrelated to this change and should be left as-is
+- `src/auth.ts` already exports `signIn`/`signOut` (added in the original `feature/auth-setup`) but nothing currently imports them — this feature is what finally uses them
 
 ## History
 
