@@ -1,25 +1,18 @@
-# Current Feature: Auth Credentials - Email/Password Provider
+# Current Feature
 
-Add a Credentials provider for email/password authentication with registration, building on the existing GitHub OAuth setup from Auth Phase 1.
+<!-- Feature Name And Short Description -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add a `password` field to the `User` model via migration, if not already present (Phase 1's seed feature already added an optional `password` field — verify before migrating again)
-- Add a Credentials provider placeholder (`authorize: () => null`) to `src/auth.config.ts` (edge-compatible config)
-- Override the Credentials provider in `src/auth.ts` with real bcrypt-based validation logic
-- Create `POST /api/auth/register`: accepts `name`, `email`, `password`, `confirmPassword`; validates passwords match; checks for existing user; hashes password with bcryptjs; creates the user; returns a success/error response
-- Verify GitHub OAuth still works after adding the Credentials provider
+<!-- Goals & Requirements -->
 
 ## Notes
 
-- `bcryptjs` is already installed (used by the seed script for the demo user's password hash)
-- Split-config pattern from Phase 1: `auth.config.ts` stays edge-compatible (Credentials provider stub only), `auth.ts` holds the real `authorize` logic with Prisma + bcrypt
-- Testing plan: curl `POST /api/auth/register`, then sign in via `/api/auth/signin` with email/password, verify redirect to `/dashboard`, and re-verify GitHub OAuth still works
-- Reference: https://authjs.dev/getting-started/authentication/credentials
+<!-- Any Extra Notes -->
 
 ## History
 
@@ -37,3 +30,4 @@ In Progress
 - **2026-08-10** — Add Pro Badge to Sidebar completed on `feature/add-pro-badge-sidebar`. Restyled the existing ShadCN `Badge` shown next to Files/Images in `SidebarContent.tsx` (rendered when `!currentUser.isPro`): switched from `variant="secondary"` to `variant="outline"` and added `uppercase tracking-wide text-muted-foreground` for a subtler, uppercase "PRO" look. No new components or logic — the conditional render and `proTypeSlugs` gating from the earlier Dashboard UI Phase 2 feature were already in place. Verified via SSR HTML with `currentUser.isPro` temporarily toggled to `false` that both Files and Images render the badge correctly; `npm run build` passes.
 - **2026-08-13** — Fix N+1 / Redundant Dashboard Queries completed on `feature/fix-dashboard-n1-queries`. Surfaced by a `code-scanner` audit: `getDemoUserId()` was independently defined and DB-queried (`findUniqueOrThrow`) in every exported function of both `src/lib/db/collections.ts` and `src/lib/db/items.ts`, and `getCollectionsWithStats()` (full `collection.findMany` with nested `items → item → itemType`) was independently re-run by `getRecentCollections`, `getFavoriteCollections`, and `getSidebarRecentCollections` — together triggering 5 user lookups and 3 full collections queries per `/dashboard` request. Extracted `getDemoUserId()` into a new shared `src/lib/db/user.ts`, wrapped in React's `cache()` so it resolves once per request; wrapped `getCollectionsWithStats()` in `cache()` too so the three sidebar/dashboard views share one query instead of re-running it. Performance-only refactor — no behavior change (counts/ordering/favorites verified identical via SSR HTML) and no auth/session work (`demo@devstash.io` lookup pattern preserved as-is). `npm run build` and `npm run lint` both pass.
 - **2026-08-14** — Auth Setup (Phase 1) - NextAuth + GitHub Provider completed on `feature/auth-setup`. Installed `next-auth@5.0.0-beta.32` and `@auth/prisma-adapter`; split config into `src/auth.config.ts` (edge-compatible, GitHub provider only) and `src/auth.ts` (Prisma adapter, `session: { strategy: 'jwt' }`, `jwt`/`session` callbacks exposing `session.user.id`), following Auth.js's edge-compatibility guidance verified via Context7. Added `src/app/api/auth/[...nextauth]/route.ts` (destructures `GET`/`POST` from `handlers` — direct re-export doesn't work in v5 beta), `src/proxy.ts` (matcher-scoped to `/dashboard/:path*`, redirects unauthenticated users to `/api/auth/signin?callbackUrl=...`), and `src/types/next-auth.d.ts` (extends `Session.user` with `id`). Uses NextAuth's default sign-in page (no custom `pages.signIn`). Added `AUTH_SECRET` to `.env`/`.env.example` (`AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET` were already present in `.env`). Verified end-to-end via Playwright against the live dev server: `/dashboard` redirects to sign-in, and "Sign in with GitHub" correctly kicks off the OAuth flow to github.com with the right client ID and callback URL; didn't complete a real GitHub login (out of scope). Full sign-in/callback round-trip and credentials/email auth are not covered — GitHub OAuth only. `npm run build` passes.
+- **2026-08-14** — Auth Credentials (Phase 2) - Email/Password Provider completed on `feature/auth-credentials`. Added a Credentials provider alongside GitHub OAuth: `src/auth.config.ts` carries an edge-compatible placeholder (`authorize: () => null`), overridden in `src/auth.ts` with real bcrypt-based validation against `User.password` (field already existed from the earlier seed feature — no new migration needed). Added `POST /api/auth/register` (`src/app/api/auth/register/route.ts`), validating `name`/`email`/`password`/`confirmPassword` with `zod` (newly installed — coding-standards.md requires Zod for input validation), checking for an existing user, and hashing with `bcryptjs` (12 rounds, matching the seed script). Verified via curl (success, duplicate-email, and mismatched-password cases) and via Playwright against the live dev server: credentials sign-in from `/api/auth/signin` reaches `/dashboard`, and GitHub OAuth still correctly redirects to github.com with the right client ID/callback URL afterward. `npm run build` and `npm run lint` both pass.
