@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { signOut } from "next-auth/react";
 import { toast } from "sonner";
 
+import { deleteAccount } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,15 +33,11 @@ export function DeleteAccountDialog() {
     setIsDeleting(true);
 
     try {
-      const res = await fetch("/api/auth/delete-account", { method: "POST" });
-      const body = await res.json();
+      const result = await deleteAccount();
 
-      if (!body.success) {
-        toast.error(body.error ?? "Something went wrong");
-        return;
+      if (!result.success) {
+        toast.error(result.error ?? "Something went wrong");
       }
-
-      await signOut({ callbackUrl: "/" });
     } catch {
       toast.error("Something went wrong — check your connection and try again");
     } finally {

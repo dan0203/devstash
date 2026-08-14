@@ -1,18 +1,24 @@
-# Current Feature
+# Current Feature: Delete Account Server Action
 
-<!-- Feature Name And Short Description -->
+Convert `DeleteAccountDialog`'s account-deletion mutation from a client-side `fetch("/api/auth/delete-account")` call to a NextAuth v5 Server Action, following the same pattern established in `feature/signin-server-actions`. Unlike the auth endpoints that keep their `429`/`Retry-After` rate-limiting API routes, `delete-account` has no rate limiting and no special HTTP status/header needs, making it a clean Server Action candidate per `context/coding-standards.md`.
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Add a `deleteAccount` Server Action to `src/actions/auth.ts` (or a new `src/actions/account.ts`) that reads `session.user.id` server-side, deletes the user via Prisma, and signs the user out / redirects to `/`
+- Remove `src/app/api/auth/delete-account/route.ts` once nothing calls it
+- Update `DeleteAccountDialog.tsx` to call the Server Action instead of `fetch()`, preserving the existing UX: typed `DELETE` confirmation gating, disabled state while deleting, toast on failure
+- No change to the typed-confirmation client-side gating logic, `AlertDialog` structure, or any other profile-page component
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Source: user request following a discussion about which other API routes are good Server Action candidates now that `feature/signin-server-actions` established the pattern
+- `register`, `forgot-password`, `reset-password`, `resend-verification`, `change-password` deliberately stay as API routes — they rely on `429` + `Retry-After` from `src/lib/rate-limit.ts`, which Server Actions can't cleanly express (explicit reason listed in `coding-standards.md` for preferring API routes: "Specific HTTP status codes or headers")
+- Current client flow: `DeleteAccountDialog.tsx`'s `handleDelete()` does `fetch` → check `body.success` → `next-auth/react`'s `signOut({ callbackUrl: "/" })`. A Server Action can call `signOut` from `@/auth` directly and redirect server-side instead
+- `delete-account` currently has no rate limiting and no special status codes (just `{ success, error }` + a `401` for no session) — no functional gap to preserve beyond the redirect-after-delete behavior
 
 ## History
 
