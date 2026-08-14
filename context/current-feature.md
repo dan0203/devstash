@@ -1,31 +1,18 @@
-# Current Feature: Auth UI - Sign In, Register & Sign Out (Phase 3)
+# Current Feature
 
 <!-- Feature Name And Short Description -->
 
-Replace NextAuth default pages with custom UI. Update user avatar, email and username in bottom of sidebar.
-
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- `/sign-in` page: email + password fields, "Sign in with GitHub" button, link to register page, form validation and error display
-- `/register` page: name/email/password/confirm-password fields, form validation (passwords match, email format), submits to `POST /api/auth/register`, redirects to sign-in on success
-- Bottom of sidebar: user avatar (GitHub image or initials fallback), user name, dropdown/up on avatar click with "Sign out" link, clicking the icon navigates to `/profile`
+<!-- Goals & Requirements -->
 
 ## Notes
 
-- Avatar logic: if user has `image` (from GitHub) use it; otherwise generate initials from name (e.g., "Brad Traversy" → "BT")
-- Create a reusable Avatar component that handles both cases (image vs. initials fallback)
-- Testing checklist from spec:
-  1. `/sign-in` renders custom page
-  2. GitHub sign-in flow works
-  3. Email/password sign-in flow works
-  4. Avatar shows in top bar/sidebar (GitHub image or initials)
-  5. Clicking avatar shows dropdown
-  6. "Sign out" logs out and redirects
-  7. `/register` creates a new account and redirects to sign-in
+<!-- Any Extra Notes -->
 
 ## History
 
@@ -44,3 +31,4 @@ In Progress
 - **2026-08-13** — Fix N+1 / Redundant Dashboard Queries completed on `feature/fix-dashboard-n1-queries`. Surfaced by a `code-scanner` audit: `getDemoUserId()` was independently defined and DB-queried (`findUniqueOrThrow`) in every exported function of both `src/lib/db/collections.ts` and `src/lib/db/items.ts`, and `getCollectionsWithStats()` (full `collection.findMany` with nested `items → item → itemType`) was independently re-run by `getRecentCollections`, `getFavoriteCollections`, and `getSidebarRecentCollections` — together triggering 5 user lookups and 3 full collections queries per `/dashboard` request. Extracted `getDemoUserId()` into a new shared `src/lib/db/user.ts`, wrapped in React's `cache()` so it resolves once per request; wrapped `getCollectionsWithStats()` in `cache()` too so the three sidebar/dashboard views share one query instead of re-running it. Performance-only refactor — no behavior change (counts/ordering/favorites verified identical via SSR HTML) and no auth/session work (`demo@devstash.io` lookup pattern preserved as-is). `npm run build` and `npm run lint` both pass.
 - **2026-08-14** — Auth Setup (Phase 1) - NextAuth + GitHub Provider completed on `feature/auth-setup`. Installed `next-auth@5.0.0-beta.32` and `@auth/prisma-adapter`; split config into `src/auth.config.ts` (edge-compatible, GitHub provider only) and `src/auth.ts` (Prisma adapter, `session: { strategy: 'jwt' }`, `jwt`/`session` callbacks exposing `session.user.id`), following Auth.js's edge-compatibility guidance verified via Context7. Added `src/app/api/auth/[...nextauth]/route.ts` (destructures `GET`/`POST` from `handlers` — direct re-export doesn't work in v5 beta), `src/proxy.ts` (matcher-scoped to `/dashboard/:path*`, redirects unauthenticated users to `/api/auth/signin?callbackUrl=...`), and `src/types/next-auth.d.ts` (extends `Session.user` with `id`). Uses NextAuth's default sign-in page (no custom `pages.signIn`). Added `AUTH_SECRET` to `.env`/`.env.example` (`AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET` were already present in `.env`). Verified end-to-end via Playwright against the live dev server: `/dashboard` redirects to sign-in, and "Sign in with GitHub" correctly kicks off the OAuth flow to github.com with the right client ID and callback URL; didn't complete a real GitHub login (out of scope). Full sign-in/callback round-trip and credentials/email auth are not covered — GitHub OAuth only. `npm run build` passes.
 - **2026-08-14** — Auth Credentials (Phase 2) - Email/Password Provider completed on `feature/auth-credentials`. Added a Credentials provider alongside GitHub OAuth: `src/auth.config.ts` carries an edge-compatible placeholder (`authorize: () => null`), overridden in `src/auth.ts` with real bcrypt-based validation against `User.password` (field already existed from the earlier seed feature — no new migration needed). Added `POST /api/auth/register` (`src/app/api/auth/register/route.ts`), validating `name`/`email`/`password`/`confirmPassword` with `zod` (newly installed — coding-standards.md requires Zod for input validation), checking for an existing user, and hashing with `bcryptjs` (12 rounds, matching the seed script). Verified via curl (success, duplicate-email, and mismatched-password cases) and via Playwright against the live dev server: credentials sign-in from `/api/auth/signin` reaches `/dashboard`, and GitHub OAuth still correctly redirects to github.com with the right client ID/callback URL afterward. `npm run build` and `npm run lint` both pass.
+- **2026-08-14** — Auth UI (Phase 3) - Sign In, Register & Sign Out completed on `feature/auth-ui`. Added custom `/sign-in` (`src/app/sign-in/page.tsx` + `SignInForm.tsx`: email/password + "Sign in with GitHub", error display, respects `callbackUrl`) and `/register` (`src/app/register/page.tsx` + `RegisterForm.tsx`: client-side Zod validation mirroring the Phase 2 API schema, posts to `POST /api/auth/register`, redirects to sign-in on success with a sonner success toast). `src/auth.config.ts` now sets `pages.signIn: "/sign-in"`; `src/proxy.ts` redirects unauthenticated users to `/sign-in` (was `/api/auth/signin`) and now also gates `/profile`. Added a new minimal `/profile` page and a reusable `UserAvatar` component (`src/components/ui/user-avatar.tsx`, GitHub image or name-initials fallback). Sidebar footer (`SidebarContent.tsx`/`Sidebar.tsx`/`MobileSidebar.tsx`) now receives the real NextAuth session (fetched once in `dashboard/layout.tsx`) instead of `lib/mock-data.ts`'s `currentUser` for the avatar/name/email; the avatar links to `/profile` while clicking the name/email opens a shadcn dropdown-menu (added via `npx shadcn add dropdown-menu label`) with a "Sign out" item calling `next-auth/react`'s `signOut`. Added shadcn's `sonner` Toaster (`src/components/ui/sonner.tsx`, mounted once in root `layout.tsx`) with `richColors` enabled so success/error toasts are tinted correctly; dropped the unused `next-themes` dependency `sonner`'s CLI install pulled in since this app is dark-mode-only. Verified end-to-end via Playwright against the live dev server: custom sign-in page renders, credentials sign-in reaches `/dashboard`, GitHub OAuth button correctly redirects to github.com, sidebar avatar/name render from the real session, avatar click navigates to `/profile`, dropdown sign-out clears the session and redirects to `/sign-in` (re-confirmed `/dashboard` is protected again afterward), and registering a new account shows the green success toast and redirects to `/sign-in`, with the new account then able to sign in. `npm run build` and `npm run lint` both pass. A pre-existing, unrelated local edit to `next.config.ts` (devIndicators, quote style) was intentionally left uncommitted rather than bundled into this feature.
