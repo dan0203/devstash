@@ -1,43 +1,18 @@
-# Current Feature: Auth Setup - NextAuth + GitHub Provider
+# Current Feature
 
-Set up NextAuth v5 with Prisma adapter and GitHub OAuth, protecting `/dashboard/*` routes.
+<!-- Feature Name And Short Description -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Install NextAuth v5 (`next-auth@beta`) and `@auth/prisma-adapter`
-- Set up split auth config pattern for edge compatibility
-- Add GitHub OAuth provider
-- Protect `/dashboard/*` routes using Next.js 16 proxy
-- Redirect unauthenticated users to sign-in
-- Use NextAuth's default sign-in page (no custom `pages.signIn`)
+<!-- Goals & Requirements -->
 
 ## Notes
 
-**Files to create:**
-1. `src/auth.config.ts` - Edge-compatible config (providers only, no adapter)
-2. `src/auth.ts` - Full config with Prisma adapter and JWT strategy
-3. `src/app/api/auth/[...nextauth]/route.ts` - Export handlers from auth.ts
-4. `src/proxy.ts` - Route protection with redirect logic (same level as `app/`, named export `export const proxy = auth(...)`)
-5. `src/types/next-auth.d.ts` - Extend Session type with user.id
-
-**Key gotchas:**
-- Use Context7 to verify newest config/conventions before implementing
-- Use `next-auth@beta` (not `@latest`, which installs v4)
-- Use `session: { strategy: 'jwt' }` with split config pattern
-
-**Env vars:** `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
-
-**Testing:** Visit `/dashboard` → should redirect to sign-in → "Sign in with GitHub" → verify redirect back to `/dashboard` after auth.
-
-**References:**
-- https://authjs.dev/getting-started/installation#edge-compatibility
-- https://authjs.dev/getting-started/adapters/prisma
-
-Full spec: `context/features/auth-phase-1-spec.md`
+<!-- Any Extra Notes -->
 
 ## History
 
@@ -54,3 +29,4 @@ Full spec: `context/features/auth-phase-1-spec.md`
 - **2026-08-10** — Stats & Sidebar completed on `feature/stats-sidebar`. Sidebar (`SidebarContent.tsx`, `Sidebar.tsx`, `MobileSidebar.tsx`) now reads real database data instead of `lib/mock-data.ts`: item types come from a new `getItemTypesWithCounts()` in `src/lib/db/items.ts` (per-user item counts via `groupBy`, sorted by an explicit display order — Snippets, Prompts, Commands, Notes, Links, Files, Images — rather than DB insertion order), and collections come from two new functions in `src/lib/db/collections.ts` (`getFavoriteCollections()`, `getSidebarRecentCollections()`) built on a shared `getCollectionsWithStats()` helper refactored out of the existing `getRecentCollections()`. Added a "View all collections" link to `/collections` under the sidebar's recent-collections list. `dashboard/layout.tsx` fetches this data server-side and passes it down as props to the (client) sidebar components. The main-area stats row (`StatsRow`) was already fully DB-backed from prior features, so no changes were needed there. Verified via SSR HTML from the live dev server that the sidebar renders all 7 real item-type routes with correct counts/order and the 5 real seeded collections (real DB ids, not mock ones); `npm run build` and `npm run lint` both pass.
 - **2026-08-10** — Add Pro Badge to Sidebar completed on `feature/add-pro-badge-sidebar`. Restyled the existing ShadCN `Badge` shown next to Files/Images in `SidebarContent.tsx` (rendered when `!currentUser.isPro`): switched from `variant="secondary"` to `variant="outline"` and added `uppercase tracking-wide text-muted-foreground` for a subtler, uppercase "PRO" look. No new components or logic — the conditional render and `proTypeSlugs` gating from the earlier Dashboard UI Phase 2 feature were already in place. Verified via SSR HTML with `currentUser.isPro` temporarily toggled to `false` that both Files and Images render the badge correctly; `npm run build` passes.
 - **2026-08-13** — Fix N+1 / Redundant Dashboard Queries completed on `feature/fix-dashboard-n1-queries`. Surfaced by a `code-scanner` audit: `getDemoUserId()` was independently defined and DB-queried (`findUniqueOrThrow`) in every exported function of both `src/lib/db/collections.ts` and `src/lib/db/items.ts`, and `getCollectionsWithStats()` (full `collection.findMany` with nested `items → item → itemType`) was independently re-run by `getRecentCollections`, `getFavoriteCollections`, and `getSidebarRecentCollections` — together triggering 5 user lookups and 3 full collections queries per `/dashboard` request. Extracted `getDemoUserId()` into a new shared `src/lib/db/user.ts`, wrapped in React's `cache()` so it resolves once per request; wrapped `getCollectionsWithStats()` in `cache()` too so the three sidebar/dashboard views share one query instead of re-running it. Performance-only refactor — no behavior change (counts/ordering/favorites verified identical via SSR HTML) and no auth/session work (`demo@devstash.io` lookup pattern preserved as-is). `npm run build` and `npm run lint` both pass.
+- **2026-08-14** — Auth Setup (Phase 1) - NextAuth + GitHub Provider completed on `feature/auth-setup`. Installed `next-auth@5.0.0-beta.32` and `@auth/prisma-adapter`; split config into `src/auth.config.ts` (edge-compatible, GitHub provider only) and `src/auth.ts` (Prisma adapter, `session: { strategy: 'jwt' }`, `jwt`/`session` callbacks exposing `session.user.id`), following Auth.js's edge-compatibility guidance verified via Context7. Added `src/app/api/auth/[...nextauth]/route.ts` (destructures `GET`/`POST` from `handlers` — direct re-export doesn't work in v5 beta), `src/proxy.ts` (matcher-scoped to `/dashboard/:path*`, redirects unauthenticated users to `/api/auth/signin?callbackUrl=...`), and `src/types/next-auth.d.ts` (extends `Session.user` with `id`). Uses NextAuth's default sign-in page (no custom `pages.signIn`). Added `AUTH_SECRET` to `.env`/`.env.example` (`AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET` were already present in `.env`). Verified end-to-end via Playwright against the live dev server: `/dashboard` redirects to sign-in, and "Sign in with GitHub" correctly kicks off the OAuth flow to github.com with the right client ID and callback URL; didn't complete a real GitHub login (out of scope). Full sign-in/callback round-trip and credentials/email auth are not covered — GitHub OAuth only. `npm run build` passes.
