@@ -1,18 +1,31 @@
+"use client";
+
 import { Pin, Star } from "lucide-react";
 
 import { type ItemWithType } from "@/lib/db/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
+import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
 export function ItemCard({ item }: { item: ItemWithType }) {
   const Icon = itemTypeIcons[item.itemType.icon];
+  const { openDrawer } = useItemDrawer();
 
   return (
     <Card
       size="sm"
-      className="gap-2 border-l-2 p-4"
+      role="button"
+      tabIndex={0}
+      onClick={() => openDrawer(item.id)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openDrawer(item.id);
+        }
+      }}
+      className="cursor-pointer gap-2 border-l-2 p-4"
       style={{ borderLeftColor: item.itemType.color }}
     >
       <div className="flex items-start justify-between gap-2">

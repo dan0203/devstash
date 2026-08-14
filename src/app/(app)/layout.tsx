@@ -5,6 +5,8 @@ import { TopBar } from "@/components/dashboard/TopBar";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { MobileSidebar } from "@/components/dashboard/MobileSidebar";
 import { SidebarProvider } from "@/components/dashboard/sidebar-context";
+import { ItemDrawerProvider } from "@/components/dashboard/item-drawer-context";
+import { ItemDrawer } from "@/components/dashboard/ItemDrawer";
 import { getItemTypesWithCounts } from "@/lib/db/items";
 import { getFavoriteCollections, getSidebarRecentCollections } from "@/lib/db/collections";
 
@@ -26,24 +28,27 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
   return (
     <SidebarProvider>
-      <div className="flex h-dvh flex-col">
-        <TopBar />
-        <div className="flex min-h-0 flex-1">
-          <Sidebar
-            user={user}
-            itemTypes={itemTypes}
-            favoriteCollections={favoriteCollections}
-            recentCollections={recentCollections}
-          />
-          <MobileSidebar
-            user={user}
-            itemTypes={itemTypes}
-            favoriteCollections={favoriteCollections}
-            recentCollections={recentCollections}
-          />
-          {children}
+      <ItemDrawerProvider>
+        <div className="flex h-dvh flex-col">
+          <TopBar />
+          <div className="flex min-h-0 flex-1">
+            <Sidebar
+              user={user}
+              itemTypes={itemTypes}
+              favoriteCollections={favoriteCollections}
+              recentCollections={recentCollections}
+            />
+            <MobileSidebar
+              user={user}
+              itemTypes={itemTypes}
+              favoriteCollections={favoriteCollections}
+              recentCollections={recentCollections}
+            />
+            {children}
+          </div>
         </div>
-      </div>
+        <ItemDrawer />
+      </ItemDrawerProvider>
     </SidebarProvider>
   );
 }

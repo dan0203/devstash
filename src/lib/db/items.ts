@@ -20,6 +20,30 @@ export interface ItemStats {
   favorites: number;
 }
 
+export interface ItemDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  contentType: string;
+  content: string | null;
+  url: string | null;
+  fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
+  language: string | null;
+  tags: string[];
+  isFavorite: boolean;
+  isPinned: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  itemType: {
+    name: string;
+    icon: string;
+    color: string;
+  };
+  collections: { id: string; name: string }[];
+}
+
 export interface ItemTypeWithCount {
   id: string;
   name: string;
@@ -59,6 +83,45 @@ export async function getPinnedItems(userId: string): Promise<ItemWithType[]> {
   });
 
   return items.map(toItemWithType);
+}
+
+export async function getItemDetail(userId: string, itemId: string): Promise<ItemDetail | null> {
+  const item = await prisma.item.findFirst({
+    where: { id: itemId, userId },
+    include: {
+      tags: true,
+      itemType: true,
+      collections: { include: { collection: true } },
+    },
+  });
+  if (!item) return null;
+
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    contentType: item.contentType,
+    content: item.content,
+    url: item.url,
+    fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileSize: item.fileSize,
+    language: item.language,
+    tags: item.tags.map((tag) => tag.name),
+    isFavorite: item.isFavorite,
+    isPinned: item.isPinned,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+    itemType: {
+      name: item.itemType.name,
+      icon: item.itemType.icon,
+      color: item.itemType.color,
+    },
+    collections: item.collections.map(({ collection }) => ({
+      id: collection.id,
+      name: collection.name,
+    })),
+  };
 }
 
 export async function getItemsByType(userId: string, itemTypeId: string): Promise<ItemWithType[]> {
