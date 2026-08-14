@@ -29,11 +29,18 @@ export function ForgotPasswordForm() {
 
     setIsSubmitting(true);
     try {
-      await fetch("/api/auth/forgot-password", {
+      const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsed.data),
       });
+      const body = await res.json();
+
+      if (!body.success) {
+        setError(body.error ?? "Something went wrong");
+        return;
+      }
+
       setIsSubmitted(true);
     } catch {
       setError("Something went wrong — check your connection and try again");

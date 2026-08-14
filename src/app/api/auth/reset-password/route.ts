@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { consumePasswordResetToken } from "@/lib/password-reset";
+import { checkRateLimit, getClientIp, rateLimiters, rateLimitResponse } from "@/lib/rate-limit";
 
 const resetPasswordSchema = z
   .object({
@@ -28,6 +29,12 @@ export async function POST(request: Request) {
   }
 
   const { token, password } = parsed.data;
+
+  const ip = getClientIp(request);
+  const rateLimit = await checkRateLimit(rateLimiters.resetPassword, ip);
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit.reset);
+  }
 
   const email = await consumePasswordResetToken(token);
   if (!email) {

@@ -8,6 +8,7 @@ import {
   isEmailVerificationEnabled,
   sendVerificationEmail,
 } from "@/lib/verification-email";
+import { checkRateLimit, getClientIp, rateLimiters, rateLimitResponse } from "@/lib/rate-limit";
 
 const registerSchema = z
   .object({
@@ -33,6 +34,12 @@ export async function POST(request: Request) {
   }
 
   const { name, email, password } = parsed.data;
+
+  const ip = getClientIp(request);
+  const rateLimit = await checkRateLimit(rateLimiters.register, ip);
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit.reset);
+  }
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { createPasswordResetToken, sendPasswordResetEmail } from "@/lib/password-reset";
+import { checkRateLimit, getClientIp, rateLimiters, rateLimitResponse } from "@/lib/rate-limit";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email(),
@@ -20,6 +21,12 @@ export async function POST(request: Request) {
   }
 
   const { email } = parsed.data;
+
+  const ip = getClientIp(request);
+  const rateLimit = await checkRateLimit(rateLimiters.forgotPassword, ip);
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit.reset);
+  }
 
   try {
     const user = await prisma.user.findUnique({ where: { email } });
