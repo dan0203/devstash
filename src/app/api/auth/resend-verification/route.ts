@@ -1,0 +1,37 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+
+import { prisma } from "@/lib/prisma";
+import { createVerificationToken, sendVerificationEmail } from "@/lib/verification-email";
+
+const resendSchema = z.object({
+  email: z.string().email(),
+});
+
+export async function POST(request: Request) {
+  const body = await request.json();
+  const parsed = resendSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { success: false, error: parsed.error.issues[0].message },
+      { status: 400 }
+    );
+  }
+
+  const { email } = parsed.data;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (user?.password && !user.emailVerified) {
+      const token = await createVerificationToken(email);
+      await sendVerificationEmail(email, token);
+    }
+  } catch (error) {
+    console.error("Failed to resend verification email", error);
+  }
+
+  // Always return success, even if the account doesn't exist or is already
+  // verified, so this endpoint doesn't leak account existence.
+  return NextResponse.json({ success: true });
+}

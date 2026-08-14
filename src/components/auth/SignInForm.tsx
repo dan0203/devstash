@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,12 +18,25 @@ export function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isUnverified, setIsUnverified] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGithubSubmitting, setIsGithubSubmitting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+
+  useEffect(() => {
+    const verified = searchParams.get("verified");
+    if (verified === "1") {
+      toast.success("Email verified — you can now sign in");
+    } else if (verified === "0") {
+      toast.error("That verification link is invalid or expired");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleCredentialsSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setIsUnverified(false);
     setIsSubmitting(true);
 
     const result = await signIn("credentials", {
@@ -34,11 +48,27 @@ export function SignInForm() {
     setIsSubmitting(false);
 
     if (result?.error) {
-      setError("Invalid email or password");
+      if (result.code === "email_not_verified") {
+        setIsUnverified(true);
+        setError("Please verify your email before signing in");
+      } else {
+        setError("Invalid email or password");
+      }
       return;
     }
 
     router.push(callbackUrl);
+  }
+
+  async function handleResendVerification() {
+    setIsResending(true);
+    await fetch("/api/auth/resend-verification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    setIsResending(false);
+    toast.success("If that account exists, a new verification email is on its way");
   }
 
   async function handleGithubSignIn() {
@@ -73,6 +103,17 @@ export function SignInForm() {
         </div>
 
         {error && <p className="text-sm text-destructive">{error}</p>}
+        {isUnverified && (
+          <Button
+            type="button"
+            variant="link"
+            className="h-auto justify-start p-0 text-sm"
+            onClick={handleResendVerification}
+            disabled={isResending}
+          >
+            {isResending ? "Sending..." : "Resend verification email"}
+          </Button>
+        )}
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? "Signing in..." : "Sign in"}
