@@ -24,6 +24,11 @@ export async function getItemTypeBySlug(slug: string) {
   return itemTypes.find((itemType) => pluralize(itemType.name) === slug) ?? null;
 }
 
+export async function getItemTypeByName(name: string) {
+  const itemTypes = await getSystemItemTypesOrdered();
+  return itemTypes.find((itemType) => itemType.name === name) ?? null;
+}
+
 // Simple English pluralization covering the current system type names
 // (snippet, prompt, command, note, link, file, image) and common custom-type
 // shapes; not exhaustive, but safer than blind string concatenation.

@@ -46,6 +46,7 @@ export interface ItemDetail {
 
 export interface ItemTypeWithCount {
   id: string;
+  value: string;
   name: string;
   slug: string;
   icon: string;
@@ -190,6 +191,44 @@ export async function updateItem(
   return toItemDetail(item);
 }
 
+export interface CreateItemData {
+  title: string;
+  description: string | null;
+  contentType: "text" | "url";
+  content: string | null;
+  url: string | null;
+  language: string | null;
+  tags: string[];
+}
+
+export async function createItem(
+  userId: string,
+  itemTypeId: string,
+  data: CreateItemData
+): Promise<ItemDetail> {
+  const item = await prisma.item.create({
+    data: {
+      title: data.title,
+      description: data.description,
+      contentType: data.contentType,
+      content: data.content,
+      url: data.url,
+      language: data.language,
+      userId,
+      itemTypeId,
+      tags: {
+        connectOrCreate: data.tags.map((name) => ({
+          where: { userId_name: { userId, name } },
+          create: { name, userId },
+        })),
+      },
+    },
+    include: itemDetailInclude,
+  });
+
+  return toItemDetail(item);
+}
+
 export async function deleteItem(userId: string, itemId: string): Promise<boolean> {
   const existing = await prisma.item.findFirst({
     where: { id: itemId, userId },
@@ -243,6 +282,7 @@ export async function getItemTypesWithCounts(userId: string): Promise<ItemTypeWi
 
   return itemTypes.map((itemType) => ({
     id: itemType.id,
+    value: itemType.name,
     name: formatItemTypeName(itemType.name),
     slug: pluralize(itemType.name),
     icon: itemType.icon,

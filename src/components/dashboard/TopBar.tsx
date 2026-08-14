@@ -1,12 +1,21 @@
 "use client";
 
-import { Layers, Search, Plus, FolderPlus, Menu } from "lucide-react";
+import { Layers, Search, FolderPlus, Menu } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/dashboard/sidebar-context";
+import { NewItemDialog } from "@/components/dashboard/NewItemDialog";
+import { type ItemTypeWithCount } from "@/lib/db/items";
 
-export function TopBar() {
+const creatableTypeSlugs = new Set(["snippets", "prompts", "commands", "notes", "links"]);
+
+interface TopBarProps {
+  itemTypes: ItemTypeWithCount[];
+}
+
+export function TopBar({ itemTypes }: TopBarProps) {
   const { setMobileOpen } = useSidebar();
+  const creatableTypes = itemTypes.filter((type) => creatableTypeSlugs.has(type.slug));
 
   return (
     <header className="grid w-full shrink-0 grid-cols-[1fr_minmax(0,28rem)_1fr] items-center gap-4 border-b px-6 py-4">
@@ -39,10 +48,7 @@ export function TopBar() {
           <FolderPlus />
           New Collection
         </Button>
-        <Button>
-          <Plus />
-          New item
-        </Button>
+        <NewItemDialog itemTypes={creatableTypes} />
       </div>
     </header>
   );

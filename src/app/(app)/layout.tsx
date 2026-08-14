@@ -30,7 +30,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     <SidebarProvider>
       <ItemDrawerProvider>
         <div className="flex h-dvh flex-col">
-          <TopBar />
+          <TopBar itemTypes={itemTypes} />
           <div className="flex min-h-0 flex-1">
             <Sidebar
               user={user}
