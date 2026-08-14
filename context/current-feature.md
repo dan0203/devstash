@@ -1,18 +1,30 @@
-# Current Feature
+# Current Feature: Item Drawer — Edit Mode
 
-<!-- Feature Name And Short Description -->
+Clicking the Edit button (pencil icon) in the item drawer's action bar switches from view mode to edit mode inline. The same drawer stays open — fields become editable inputs.
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Edit button toggles the drawer into edit mode; action bar is replaced with Save/Cancel
+- Cancel discards changes and returns to view mode
+- Save persists via server action, returns to view mode, and refreshes the drawer data
+- Toast notification on save success or error
+- Editable for all types: Title (required), Description (optional), Tags (comma-separated → array)
+- Editable per type: Content (snippet/prompt/command/note), Language (snippet/command), URL (link)
+- Non-editable in edit mode (display only): item type, collections, created/updated dates
+- Client-side: disable Save when title is empty; no form library, controlled inputs with local state
+- After save, call `router.refresh()` so the underlying card list reflects changes
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- New server action `updateItem(itemId, data)` in `src/actions/items.ts`, following the `{ success, data, error }` pattern — validates input with Zod, gets session via `auth()`, validates ownership, calls the query function
+- New query function `updateItem` in `lib/db/items.ts`; tag handling is disconnect-all-then-connect-or-create; returns the updated `ItemDetail` so the drawer can refresh without a second fetch
+- Zod schema: `title` non-empty trimmed string; `description`/`content`/`url`/`language` optional string-or-null; `url` valid URL string when present; `tags` array of trimmed non-empty strings — validation is server-side source of truth, errors returned via `{ success: false, error }`
+- Content textarea only, no code editor yet
+- Visual reference: existing item drawer (`context/features/item-drawer-spec.md`, `context/screenshots/dashboard-ui-drawer.png`)
 
 ## History
 
