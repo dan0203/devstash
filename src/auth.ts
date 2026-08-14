@@ -8,9 +8,14 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import authConfig from "@/auth.config";
 import { isEmailVerificationEnabled } from "@/lib/verification-email";
+import { checkRateLimit, getClientIp, rateLimiters } from "@/lib/rate-limit";
 
 class EmailNotVerifiedError extends CredentialsSignin {
   code = "email_not_verified";
+}
+
+class RateLimitedError extends CredentialsSignin {
+  code = "rate_limited";
 }
 
 const {
@@ -71,11 +76,17 @@ const {
         email: {},
         password: {},
       },
-      authorize: async (credentials) => {
+      authorize: async (credentials, request) => {
         const email = credentials?.email;
         const password = credentials?.password;
         if (typeof email !== "string" || typeof password !== "string") {
           return null;
+        }
+
+        const ip = getClientIp(request);
+        const rateLimit = await checkRateLimit(rateLimiters.login, `${ip}:${email}`);
+        if (!rateLimit.success) {
+          throw new RateLimitedError();
         }
 
         const user = await prisma.user.findUnique({ where: { email } });
