@@ -43,22 +43,26 @@ export function RegisterForm() {
 
     setIsSubmitting(true);
 
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.data),
-    });
-    const body = await res.json();
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      });
+      const body = await res.json();
 
-    setIsSubmitting(false);
+      if (!body.success) {
+        setError(body.error ?? "Something went wrong");
+        return;
+      }
 
-    if (!body.success) {
-      setError(body.error ?? "Something went wrong");
-      return;
+      toast.success("Account created — you can now log in");
+      router.push("/sign-in");
+    } catch {
+      setError("Something went wrong — check your connection and try again");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    toast.success("Account created — you can now log in");
-    router.push("/sign-in");
   }
 
   return (

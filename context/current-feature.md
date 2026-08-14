@@ -1,18 +1,29 @@
-# Current Feature
+# Current Feature: Code-Scanner Findings Fix
 
-<!-- Feature Name And Short Description -->
+Fix all critical findings, warnings, and suggestions surfaced by the `code-scanner` agent run on 2026-08-14.
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- [x] Critical: `src/lib/db/user.ts`'s `getUserProfile` uses `findUniqueOrThrow` — a stale JWT for a deleted user should redirect to sign-in instead of throwing an unhandled 500 on `/profile`.
+- [x] Critical: Password changes don't invalidate existing JWT sessions — `POST /api/auth/change-password` should bump a token-version/`passwordChangedAt` claim so old sessions are rejected after a password change.
+- [x] Warning: Add `try/catch` around the network calls in `RegisterForm.tsx`, `SignInForm.tsx`, `ForgotPasswordForm.tsx`, `ResetPasswordForm.tsx`, `ChangePasswordDialog.tsx`, and `DeleteAccountDialog.tsx` so a network-level failure resets the loading state and shows an error toast instead of leaving the submit button stuck.
+- [x] Warning: Guard `NEXT_PUBLIC_APP_URL` usage in `src/app/api/auth/verify-email/route.ts` (fall back to `req.nextUrl.origin` or validate the env var) so a missing value doesn't 500.
+- [x] Warning: Deduplicate `ITEM_TYPE_DISPLAY_ORDER` and the type-name sort/format logic shared by `src/lib/db/items.ts` and `src/lib/db/profile.ts` into one shared helper.
+- [x] Warning: Replace the naive `itemType.name + "s"` slug pluralization in `src/lib/db/items.ts` with something that won't break for future custom type names.
+- [x] Suggestion: Add `aria-label="Search"` to the search `<Input>` in `src/components/dashboard/TopBar.tsx`.
+- [x] Suggestion: Consider `next/image` (with `remotePatterns` for `avatars.githubusercontent.com`) for GitHub avatar images in `user-avatar.tsx`/`avatar.tsx`.
+- [x] Suggestion: Add `aria-hidden="true"` to the decorative color dots in `SidebarContent.tsx` and `CollectionCard.tsx` for consistency with `profile/page.tsx`.
+- [x] Suggestion: Reformat `next.config.ts` to the repo's 2-space indentation convention.
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Source: `code-scanner` agent scan of `src/` (auth, dashboard/profile data layer, components, API routes), run 2026-08-14 after the dashboard/mock-data real-user migration.
+- Rate limiting on auth endpoints remains a separately-tracked open item from an earlier audit (`docs/audit-results/AUTH_SECURITY_REVIEW.md`) — not in scope for this feature.
+- Per user request, all three severity tiers (critical, warning, suggestion) are in scope, including the aria-label fix explicitly called out.
 
 ## History
 

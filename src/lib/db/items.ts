@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatItemTypeName, getSystemItemTypesOrdered, pluralize } from "@/lib/db/item-types";
 
 export interface ItemWithType {
   id: string;
@@ -80,23 +81,8 @@ export async function getItemStats(userId: string): Promise<ItemStats> {
   return { total, favorites };
 }
 
-const ITEM_TYPE_DISPLAY_ORDER = [
-  "snippet",
-  "prompt",
-  "command",
-  "note",
-  "link",
-  "file",
-  "image",
-];
-
 export async function getItemTypesWithCounts(userId: string): Promise<ItemTypeWithCount[]> {
-  const itemTypes = await prisma.itemType.findMany({
-    where: { isSystem: true },
-  });
-  itemTypes.sort(
-    (a, b) => ITEM_TYPE_DISPLAY_ORDER.indexOf(a.name) - ITEM_TYPE_DISPLAY_ORDER.indexOf(b.name)
-  );
+  const itemTypes = await getSystemItemTypesOrdered();
 
   const counts = await prisma.item.groupBy({
     by: ["itemTypeId"],
@@ -107,8 +93,8 @@ export async function getItemTypesWithCounts(userId: string): Promise<ItemTypeWi
 
   return itemTypes.map((itemType) => ({
     id: itemType.id,
-    name: itemType.name.charAt(0).toUpperCase() + itemType.name.slice(1) + "s",
-    slug: itemType.name + "s",
+    name: formatItemTypeName(itemType.name),
+    slug: pluralize(itemType.name),
     icon: itemType.icon,
     color: itemType.color,
     count: countByTypeId.get(itemType.id) ?? 0,

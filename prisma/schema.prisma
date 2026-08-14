@@ -55,12 +55,13 @@ model VerificationToken {
 // ── User ────────────────────────────────────────────────
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String? // bcrypt hash, null for OAuth-only accounts
+  id                String    @id @default(cuid())
+  name              String?
+  email             String?   @unique
+  emailVerified     DateTime?
+  image             String?
+  password          String? // bcrypt hash, null for OAuth-only accounts
+  passwordChangedAt DateTime? // bumped on every password change/reset; invalidates older JWTs
 
   isPro                Boolean @default(false)
   stripeCustomerId     String? @unique
@@ -140,7 +141,7 @@ model Collection {
   isFavorite  Boolean @default(false)
 
   defaultTypeId String?
-  defaultType    ItemType? @relation("CollectionDefaultType", fields: [defaultTypeId], references: [id])
+  defaultType   ItemType? @relation("CollectionDefaultType", fields: [defaultTypeId], references: [id])
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

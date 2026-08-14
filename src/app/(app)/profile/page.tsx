@@ -19,6 +19,10 @@ export default async function ProfilePage() {
     getProfileStats(session.user.id),
   ]);
 
+  if (!user) {
+    redirect("/sign-in?callbackUrl=/profile");
+  }
+
   return (
     <main className="min-h-0 flex-1 overflow-y-auto p-6">
       <div className="mx-auto flex max-w-2xl flex-col gap-6">

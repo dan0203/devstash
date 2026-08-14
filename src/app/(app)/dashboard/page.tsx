@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 import { auth } from "@/auth";
 import { getRecentCollections, getCollectionStats } from "@/lib/db/collections";
 import { getPinnedItems, getRecentItems, getItemStats } from "@/lib/db/items";
@@ -7,8 +9,13 @@ import { ItemCard } from "@/components/dashboard/ItemCard";
 
 export default async function DashboardPage() {
   const session = await auth();
-  // proxy.ts already redirects unauthenticated requests before they reach this page.
-  const userId = session!.user.id;
+  // proxy.ts's edge-only auth check can't see the DB-based invalidation in
+  // src/auth.ts's jwt callback (e.g. a stale token after a password change),
+  // so a "logged in" request here can still resolve to no session.
+  if (!session?.user) {
+    redirect("/sign-in");
+  }
+  const userId = session.user.id;
 
   const [recentCollections, collectionStats, pinnedItems, recentItems, itemStats] =
     await Promise.all([

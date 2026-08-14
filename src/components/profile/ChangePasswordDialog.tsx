@@ -59,23 +59,27 @@ export function ChangePasswordDialog() {
 
     setIsSubmitting(true);
 
-    const res = await fetch("/api/auth/change-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.data),
-    });
-    const body = await res.json();
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      });
+      const body = await res.json();
 
-    setIsSubmitting(false);
+      if (!body.success) {
+        setError(body.error ?? "Something went wrong");
+        return;
+      }
 
-    if (!body.success) {
-      setError(body.error ?? "Something went wrong");
-      return;
+      toast.success("Password updated");
+      setOpen(false);
+      reset();
+    } catch {
+      setError("Something went wrong — check your connection and try again");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    toast.success("Password updated");
-    setOpen(false);
-    reset();
   }
 
   return (

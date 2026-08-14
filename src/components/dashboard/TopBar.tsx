@@ -29,6 +29,7 @@ export function TopBar() {
         <Input
           type="search"
           placeholder="Search snippets, prompts, tags..."
+          aria-label="Search"
           className="pl-9"
         />
       </div>

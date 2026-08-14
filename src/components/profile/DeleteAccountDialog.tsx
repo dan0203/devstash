@@ -32,16 +32,21 @@ export function DeleteAccountDialog() {
   async function handleDelete() {
     setIsDeleting(true);
 
-    const res = await fetch("/api/auth/delete-account", { method: "POST" });
-    const body = await res.json();
+    try {
+      const res = await fetch("/api/auth/delete-account", { method: "POST" });
+      const body = await res.json();
 
-    if (!body.success) {
+      if (!body.success) {
+        toast.error(body.error ?? "Something went wrong");
+        return;
+      }
+
+      await signOut({ callbackUrl: "/" });
+    } catch {
+      toast.error("Something went wrong — check your connection and try again");
+    } finally {
       setIsDeleting(false);
-      toast.error(body.error ?? "Something went wrong");
-      return;
     }
-
-    await signOut({ callbackUrl: "/" });
   }
 
   return (
