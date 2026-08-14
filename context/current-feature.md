@@ -1,18 +1,23 @@
-# Current Feature
+# Current Feature: Rate Limit Change Password
 
-<!-- Feature Name And Short Description -->
+Fix a gap found by the auth-auditor's re-scan of `feature/rate-limiting-auth`: `POST /api/auth/change-password` has no rate limiting on its `currentPassword` check, so a hijacked session can be used as an unlimited oracle to brute-force the user's real plaintext password (valuable for credential reuse elsewhere, even though it grants no extra DevStash access on its own).
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Add rate limiting to `POST /api/auth/change-password`'s current-password check, using the existing `src/lib/rate-limit.ts` utility (`checkRateLimit`) — no new limiter infra needed, just a new named limiter
+- Key the limiter by `session.user.id` (not IP), since this endpoint is already session-gated — matches the auditor's suggested fix
+- Return the same 429 + `Retry-After` shape the other five auth endpoints use (`rateLimitResponse`)
+- Update `ChangePasswordDialog.tsx` to surface a 429 error the same way it already surfaces a wrong-current-password error
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Source: auth-auditor re-scan after `feature/rate-limiting-auth`, written to `docs/audit-results/AUTH_SECURITY_REVIEW.md` — Medium severity finding
+- A reasonable limit: 5 attempts / 15 min, matching `resetPassword`'s cadence (same "verify a password" shape)
+- This is a small, scoped fix — do not touch the other five endpoints, which are already correct per the audit
 
 ## History
 

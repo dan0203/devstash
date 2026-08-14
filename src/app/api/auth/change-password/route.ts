@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, rateLimiters, rateLimitResponse } from "@/lib/rate-limit";
 
 const changePasswordSchema = z
   .object({
@@ -32,6 +33,11 @@ export async function POST(request: Request) {
   }
 
   const { currentPassword, newPassword } = parsed.data;
+
+  const rateLimit = await checkRateLimit(rateLimiters.changePassword, session.user.id);
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit.reset);
+  }
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   if (!user?.password) {
