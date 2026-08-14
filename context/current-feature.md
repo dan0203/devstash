@@ -4,7 +4,7 @@ Add delete functionality for items, with a shadcn confirmation dialog and a toas
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 

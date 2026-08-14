@@ -6,7 +6,7 @@ import { Copy, Folder, Pencil, Pin, Star, Trash2, type LucideIcon } from "lucide
 import { toast } from "sonner";
 
 import { type ItemDetail } from "@/lib/db/items";
-import { updateItem } from "@/actions/items";
+import { updateItem, deleteItem } from "@/actions/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
 import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
@@ -24,6 +24,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const CONTENT_TYPES = new Set(["snippet", "prompt", "command", "note"]);
 const LANGUAGE_TYPES = new Set(["snippet", "command"]);
@@ -37,6 +48,7 @@ export function ItemDrawer() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
@@ -122,6 +134,22 @@ export function ItemDrawer() {
       router.refresh();
     } else {
       toast.error(result.error ?? "Failed to update item");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!item) return;
+
+    setDeleting(true);
+    const result = await deleteItem(item.id);
+    setDeleting(false);
+
+    if (result.success) {
+      toast.success("Item deleted");
+      closeDrawer();
+      router.refresh();
+    } else {
+      toast.error(result.error ?? "Failed to delete item");
     }
   };
 
@@ -352,9 +380,31 @@ export function ItemDrawer() {
                     <Pencil />
                   </Button>
                 </div>
-                <Button variant="destructive" size="icon-sm" aria-label="Delete">
-                  <Trash2 />
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger
+                    render={<Button variant="destructive" size="icon-sm" aria-label="Delete" />}
+                  >
+                    <Trash2 />
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete item?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This permanently deletes &quot;{item.title}&quot;. This cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        variant="destructive"
+                        onClick={handleDelete}
+                        disabled={deleting}
+                      >
+                        {deleting ? "Deleting..." : "Delete"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </SheetFooter>
             )}
           </>

@@ -3,7 +3,11 @@
 import { z } from "zod";
 
 import { auth } from "@/auth";
-import { updateItem as updateItemRecord, type ItemDetail } from "@/lib/db/items";
+import {
+  updateItem as updateItemRecord,
+  deleteItem as deleteItemRecord,
+  type ItemDetail,
+} from "@/lib/db/items";
 
 const updateItemSchema = z
   .object({
@@ -44,4 +48,23 @@ export async function updateItem(itemId: string, input: UpdateItemInput): Promis
   }
 
   return { success: true, data: updated };
+}
+
+export interface DeleteItemState {
+  success: boolean;
+  error?: string;
+}
+
+export async function deleteItem(itemId: string): Promise<DeleteItemState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Not signed in" };
+  }
+
+  const deleted = await deleteItemRecord(session.user.id, itemId);
+  if (!deleted) {
+    return { success: false, error: "Item not found" };
+  }
+
+  return { success: true };
 }
