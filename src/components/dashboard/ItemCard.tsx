@@ -5,7 +5,6 @@ import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 
 export function ItemCard({ item }: { item: ItemWithType }) {
   const Icon = itemTypeIcons[item.itemType.icon];
@@ -13,8 +12,8 @@ export function ItemCard({ item }: { item: ItemWithType }) {
   return (
     <Card
       size="sm"
-      className={cn("gap-2 border p-4", item.isPinned ? "border-2" : "border-transparent")}
-      style={item.isPinned ? { borderColor: item.itemType.color } : undefined}
+      className="gap-2 border-l-2 p-4"
+      style={{ borderLeftColor: item.itemType.color }}
     >
       <div className="flex items-start justify-between gap-2">
         <div
@@ -31,9 +30,7 @@ export function ItemCard({ item }: { item: ItemWithType }) {
 
       <div>
         <p className="truncate text-sm font-medium">{item.title}</p>
-        {item.description && (
-          <p className="line-clamp-2 text-xs text-muted-foreground">{item.description}</p>
-        )}
+        <p className="line-clamp-2 min-h-8 text-xs text-muted-foreground">{item.description}</p>
       </div>
 
       <div className="flex items-center justify-between gap-2">
