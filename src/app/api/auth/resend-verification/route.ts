@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     const user = await prisma.user.findUnique({ where: { email } });
     if (user?.password && !user.emailVerified) {
       const token = await createVerificationToken(email);
-      await sendVerificationEmail(email, token);
+      await sendVerificationEmail(email, token, new URL(request.url).origin);
     }
   } catch (error) {
     console.error("Failed to resend verification email", error);

@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const user = await prisma.user.findUnique({ where: { email } });
     if (user?.password) {
       const token = await createPasswordResetToken(email);
-      await sendPasswordResetEmail(email, token);
+      await sendPasswordResetEmail(email, token, new URL(request.url).origin);
     }
   } catch (error) {
     console.error("Failed to send password reset email", error);
