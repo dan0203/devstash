@@ -1,18 +1,25 @@
-# Current Feature
+# Current Feature: Delete Item
 
-<!-- Feature Name And Short Description -->
+Add delete functionality for items, with a shadcn confirmation dialog and a toast on completion.
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+Not Started
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Wire up the Item Drawer's existing Delete button (currently inert, per `feature/item-drawer`) to actually delete the item
+- Clicking Delete opens a shadcn confirmation dialog (`AlertDialog`, matching `DeleteAccountDialog`'s pattern) before anything is deleted
+- Confirming deletion removes the item from the database, scoped to the signed-in user (ownership-checked, same pattern as `updateItem`)
+- On success: show a sonner toast, close the drawer, and refresh the underlying item list/grid (`router.refresh()`, matching the edit-mode save flow)
+- On failure: show an error toast, keep the drawer open, don't lose state
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Follow the `{ success, data, error }` server action pattern (`coding-standards.md`) — add a `deleteItem(itemId)` action in `src/actions/items.ts` alongside the existing `updateItem`, plus a matching `deleteItem` query fn in `src/lib/db/items.ts` (ownership-checked via `findFirst` before deleting, like `updateItem`)
+- Unlike account deletion, this is a lower-stakes action — a plain shadcn `AlertDialog` confirm/cancel is enough, no typed "DELETE" confirmation needed
+- Add a Vitest unit test for the new `deleteItem` server action (`src/actions/items.test.ts`), following the existing pattern (no-session, not-found, happy-path); the `lib/db/items.ts` query fn stays out of scope per the established exclusion
+- `getItemDetail`'s consumers (dashboard, `/items/[type]`) both use `ItemCard`/drawer — confirm both surfaces refresh correctly after a delete
 
 ## History
 
