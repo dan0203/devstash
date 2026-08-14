@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Settings, ChevronDown, ChevronRight, Star } from "lucide-react";
+import type { Session } from "next-auth";
+import { signOut } from "next-auth/react";
+import { ChevronDown, ChevronRight, LogOut, Star } from "lucide-react";
 
 import { currentUser } from "@/lib/mock-data";
 import { type ItemTypeWithCount } from "@/lib/db/items";
@@ -10,22 +12,20 @@ import { type CollectionWithStats } from "@/lib/db/collections";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 const proTypeSlugs = new Set(["files", "images"]);
 
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
 interface SidebarContentProps {
   collapsed?: boolean;
+  user: Session["user"];
   itemTypes: ItemTypeWithCount[];
   favoriteCollections: CollectionWithStats[];
   recentCollections: CollectionWithStats[];
@@ -33,6 +33,7 @@ interface SidebarContentProps {
 
 export function SidebarContent({
   collapsed = false,
+  user,
   itemTypes,
   favoriteCollections,
   recentCollections,
@@ -121,22 +122,22 @@ export function SidebarContent({
 
       <div className="border-t border-sidebar-border p-3">
         <div className={cn("flex items-center gap-2.5", collapsed && "justify-center")}>
-          <Avatar className="size-8 shrink-0">
-            <AvatarFallback>{initials(currentUser.name)}</AvatarFallback>
-          </Avatar>
+          <Link href="/profile" title="Profile">
+            <UserAvatar name={user.name ?? user.email ?? "User"} image={user.image} />
+          </Link>
           {!collapsed && (
-            <>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{currentUser.name}</p>
-                <p className="truncate text-xs text-muted-foreground">{currentUser.email}</p>
-              </div>
-              <Link
-                href="/settings"
-                className="rounded-md p-1.5 text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
-              >
-                <Settings className="size-4" />
-              </Link>
-            </>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="min-w-0 flex-1 rounded-md px-1.5 py-1 text-left outline-none hover:bg-sidebar-accent focus-visible:bg-sidebar-accent">
+                <p className="truncate text-sm font-medium">{user.name ?? "Unnamed user"}</p>
+                <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="top" align="start">
+                <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/sign-in" })}>
+                  <LogOut />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>

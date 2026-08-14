@@ -1,5 +1,6 @@
 "use client";
 
+import type { Session } from "next-auth";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 import { useSidebar } from "@/components/dashboard/sidebar-context";
@@ -10,12 +11,13 @@ import { type ItemTypeWithCount } from "@/lib/db/items";
 import { type CollectionWithStats } from "@/lib/db/collections";
 
 interface SidebarProps {
+  user: Session["user"];
   itemTypes: ItemTypeWithCount[];
   favoriteCollections: CollectionWithStats[];
   recentCollections: CollectionWithStats[];
 }
 
-export function Sidebar({ itemTypes, favoriteCollections, recentCollections }: SidebarProps) {
+export function Sidebar({ user, itemTypes, favoriteCollections, recentCollections }: SidebarProps) {
   const { collapsed, toggleCollapsed } = useSidebar();
 
   return (
@@ -44,6 +46,7 @@ export function Sidebar({ itemTypes, favoriteCollections, recentCollections }: S
 
       <SidebarContent
         collapsed={collapsed}
+        user={user}
         itemTypes={itemTypes}
         favoriteCollections={favoriteCollections}
         recentCollections={recentCollections}

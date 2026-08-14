@@ -1,5 +1,7 @@
 "use client";
 
+import type { Session } from "next-auth";
+
 import { useSidebar } from "@/components/dashboard/sidebar-context";
 import { SidebarContent } from "@/components/dashboard/SidebarContent";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -7,12 +9,14 @@ import { type ItemTypeWithCount } from "@/lib/db/items";
 import { type CollectionWithStats } from "@/lib/db/collections";
 
 interface MobileSidebarProps {
+  user: Session["user"];
   itemTypes: ItemTypeWithCount[];
   favoriteCollections: CollectionWithStats[];
   recentCollections: CollectionWithStats[];
 }
 
 export function MobileSidebar({
+  user,
   itemTypes,
   favoriteCollections,
   recentCollections,
@@ -26,6 +30,7 @@ export function MobileSidebar({
           <SheetTitle>Navigation</SheetTitle>
         </div>
         <SidebarContent
+          user={user}
           itemTypes={itemTypes}
           favoriteCollections={favoriteCollections}
           recentCollections={recentCollections}
