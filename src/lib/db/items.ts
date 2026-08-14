@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { getDemoUserId } from "@/lib/db/user";
 
 export interface ItemWithType {
   id: string;
@@ -51,9 +50,7 @@ function toItemWithType(item: {
   };
 }
 
-export async function getPinnedItems(): Promise<ItemWithType[]> {
-  const userId = await getDemoUserId();
-
+export async function getPinnedItems(userId: string): Promise<ItemWithType[]> {
   const items = await prisma.item.findMany({
     where: { userId, isPinned: true },
     include: { tags: true, itemType: true },
@@ -63,9 +60,7 @@ export async function getPinnedItems(): Promise<ItemWithType[]> {
   return items.map(toItemWithType);
 }
 
-export async function getRecentItems(limit = 10): Promise<ItemWithType[]> {
-  const userId = await getDemoUserId();
-
+export async function getRecentItems(userId: string, limit = 10): Promise<ItemWithType[]> {
   const items = await prisma.item.findMany({
     where: { userId },
     include: { tags: true, itemType: true },
@@ -76,9 +71,7 @@ export async function getRecentItems(limit = 10): Promise<ItemWithType[]> {
   return items.map(toItemWithType);
 }
 
-export async function getItemStats(): Promise<ItemStats> {
-  const userId = await getDemoUserId();
-
+export async function getItemStats(userId: string): Promise<ItemStats> {
   const [total, favorites] = await Promise.all([
     prisma.item.count({ where: { userId } }),
     prisma.item.count({ where: { userId, isFavorite: true } }),
@@ -97,9 +90,7 @@ const ITEM_TYPE_DISPLAY_ORDER = [
   "image",
 ];
 
-export async function getItemTypesWithCounts(): Promise<ItemTypeWithCount[]> {
-  const userId = await getDemoUserId();
-
+export async function getItemTypesWithCounts(userId: string): Promise<ItemTypeWithCount[]> {
   const itemTypes = await prisma.itemType.findMany({
     where: { isSystem: true },
   });

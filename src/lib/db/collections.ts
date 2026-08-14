@@ -1,6 +1,5 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
-import { getDemoUserId } from "@/lib/db/user";
 
 export interface CollectionTypeSummary {
   icon: string;
@@ -24,9 +23,7 @@ export interface CollectionStats {
   favorites: number;
 }
 
-const getCollectionsWithStats = cache(async (): Promise<CollectionWithStats[]> => {
-  const userId = await getDemoUserId();
-
+const getCollectionsWithStats = cache(async (userId: string): Promise<CollectionWithStats[]> => {
   const collections = await prisma.collection.findMany({
     where: { userId },
     include: {
@@ -73,24 +70,28 @@ const getCollectionsWithStats = cache(async (): Promise<CollectionWithStats[]> =
   );
 });
 
-export async function getRecentCollections(limit = 6): Promise<CollectionWithStats[]> {
-  const withStats = await getCollectionsWithStats();
+export async function getRecentCollections(
+  userId: string,
+  limit = 6
+): Promise<CollectionWithStats[]> {
+  const withStats = await getCollectionsWithStats(userId);
   return withStats.slice(0, limit);
 }
 
-export async function getFavoriteCollections(): Promise<CollectionWithStats[]> {
-  const withStats = await getCollectionsWithStats();
+export async function getFavoriteCollections(userId: string): Promise<CollectionWithStats[]> {
+  const withStats = await getCollectionsWithStats(userId);
   return withStats.filter((collection) => collection.isFavorite);
 }
 
-export async function getSidebarRecentCollections(limit = 5): Promise<CollectionWithStats[]> {
-  const withStats = await getCollectionsWithStats();
+export async function getSidebarRecentCollections(
+  userId: string,
+  limit = 5
+): Promise<CollectionWithStats[]> {
+  const withStats = await getCollectionsWithStats(userId);
   return withStats.filter((collection) => !collection.isFavorite).slice(0, limit);
 }
 
-export async function getCollectionStats(): Promise<CollectionStats> {
-  const userId = await getDemoUserId();
-
+export async function getCollectionStats(userId: string): Promise<CollectionStats> {
   const [total, favorites] = await Promise.all([
     prisma.collection.count({ where: { userId } }),
     prisma.collection.count({ where: { userId, isFavorite: true } }),

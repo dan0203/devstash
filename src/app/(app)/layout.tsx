@@ -7,15 +7,15 @@ import { getItemTypesWithCounts } from "@/lib/db/items";
 import { getFavoriteCollections, getSidebarRecentCollections } from "@/lib/db/collections";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
-  const [session, itemTypes, favoriteCollections, recentCollections] = await Promise.all([
-    auth(),
-    getItemTypesWithCounts(),
-    getFavoriteCollections(),
-    getSidebarRecentCollections(5),
-  ]);
-
+  const session = await auth();
   // proxy.ts already redirects unauthenticated requests before they reach this layout.
   const user = session!.user;
+
+  const [itemTypes, favoriteCollections, recentCollections] = await Promise.all([
+    getItemTypesWithCounts(user.id),
+    getFavoriteCollections(user.id),
+    getSidebarRecentCollections(user.id, 5),
+  ]);
 
   return (
     <SidebarProvider>
