@@ -1,18 +1,20 @@
-# Current Feature
+# Current Feature: Code-Scanner Re-Scan Fixes
 
-<!-- Feature Name And Short Description -->
+Fix the two warnings surfaced by the code-scanner agent's re-scan of `fix/code-scanner-findings` after it merged to main.
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- [x] `src/lib/verification-email.ts` and `src/lib/password-reset.ts` build their email links with `new URL(path, process.env.NEXT_PUBLIC_APP_URL)` and no fallback, unlike `verify-email/route.ts` which was fixed to fall back to `req.nextUrl.origin`. Thread a request-derived origin fallback into `sendVerificationEmail`/`sendPasswordResetEmail` (or their token-creation callers) so they're not solely dependent on the env var being set.
+- [x] `src/lib/db/profile.ts`'s `getProfileStats` still reimplements the `prisma.itemType.findMany({ where: { isSystem: true } })` + `ITEM_TYPE_DISPLAY_ORDER` sort inline instead of calling the shared `getSystemItemTypesOrdered()` helper in `src/lib/db/item-types.ts` (added in the last feature specifically to dedupe this). Replace the inline fetch+sort with a call to `getSystemItemTypesOrdered()`.
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Source: `code-scanner` agent re-scan run 2026-08-14, after `fix/code-scanner-findings` merged to main (commit 4914c5b). No critical findings this pass.
+- Three suggestions were also surfaced (placeholder `layout.tsx` metadata, `pluralize()`/slug fragility for future custom types, inert `TopBar` search input) but were not requested to be fixed — out of scope for this feature.
 
 ## History
 

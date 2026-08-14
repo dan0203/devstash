@@ -32,8 +32,8 @@ export async function createPasswordResetToken(email: string) {
   return token;
 }
 
-export async function sendPasswordResetEmail(email: string, token: string) {
-  const resetUrl = new URL("/reset-password", process.env.NEXT_PUBLIC_APP_URL);
+export async function sendPasswordResetEmail(email: string, token: string, origin: string) {
+  const resetUrl = new URL("/reset-password", process.env.NEXT_PUBLIC_APP_URL ?? origin);
   resetUrl.searchParams.set("token", token);
 
   // resend.emails.send() resolves with { data, error } rather than throwing

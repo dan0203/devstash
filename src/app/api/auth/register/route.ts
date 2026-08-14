@@ -56,7 +56,7 @@ export async function POST(request: Request) {
   if (verificationEnabled) {
     try {
       const token = await createVerificationToken(email);
-      await sendVerificationEmail(email, token);
+      await sendVerificationEmail(email, token, new URL(request.url).origin);
     } catch (error) {
       console.error("Failed to send verification email", error);
       await prisma.user.delete({ where: { id: user.id } });

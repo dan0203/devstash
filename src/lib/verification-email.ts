@@ -30,8 +30,8 @@ export async function createVerificationToken(email: string) {
   return token;
 }
 
-export async function sendVerificationEmail(email: string, token: string) {
-  const verifyUrl = new URL("/api/auth/verify-email", process.env.NEXT_PUBLIC_APP_URL);
+export async function sendVerificationEmail(email: string, token: string, origin: string) {
+  const verifyUrl = new URL("/api/auth/verify-email", process.env.NEXT_PUBLIC_APP_URL ?? origin);
   verifyUrl.searchParams.set("token", token);
 
   // resend.emails.send() resolves with { data, error } rather than throwing
