@@ -6,7 +6,7 @@ import { SidebarProvider } from "@/components/dashboard/sidebar-context";
 import { getItemTypesWithCounts } from "@/lib/db/items";
 import { getFavoriteCollections, getSidebarRecentCollections } from "@/lib/db/collections";
 
-export default async function DashboardLayout({ children }: LayoutProps<"/dashboard">) {
+export default async function AppLayout({ children }: LayoutProps<"/">) {
   const [session, itemTypes, favoriteCollections, recentCollections] = await Promise.all([
     auth(),
     getItemTypesWithCounts(),
