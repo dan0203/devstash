@@ -4,7 +4,7 @@ Add a Credentials provider for email/password authentication with registration, 
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
