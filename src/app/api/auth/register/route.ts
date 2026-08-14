@@ -3,7 +3,11 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
-import { createVerificationToken, sendVerificationEmail } from "@/lib/verification-email";
+import {
+  createVerificationToken,
+  isEmailVerificationEnabled,
+  sendVerificationEmail,
+} from "@/lib/verification-email";
 
 const registerSchema = z
   .object({
@@ -39,16 +43,32 @@ export async function POST(request: Request) {
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
+  const verificationEnabled = isEmailVerificationEnabled();
 
   const user = await prisma.user.create({
-    data: { name, email, password: passwordHash },
+    data: {
+      name,
+      email,
+      password: passwordHash,
+      emailVerified: verificationEnabled ? null : new Date(),
+    },
   });
 
-  try {
-    const token = await createVerificationToken(email);
-    await sendVerificationEmail(email, token);
-  } catch (error) {
-    console.error("Failed to send verification email", error);
+  if (verificationEnabled) {
+    try {
+      const token = await createVerificationToken(email);
+      await sendVerificationEmail(email, token);
+    } catch (error) {
+      console.error("Failed to send verification email", error);
+      await prisma.user.delete({ where: { id: user.id } });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "We couldn't send your verification email. Please try again.",
+        },
+        { status: 502 }
+      );
+    }
   }
 
   return NextResponse.json({

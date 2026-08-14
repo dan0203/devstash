@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
-import { createVerificationToken, sendVerificationEmail } from "@/lib/verification-email";
+import {
+  createVerificationToken,
+  isEmailVerificationEnabled,
+  sendVerificationEmail,
+} from "@/lib/verification-email";
 
 const resendSchema = z.object({
   email: z.string().email(),
@@ -20,6 +24,10 @@ export async function POST(request: Request) {
   }
 
   const { email } = parsed.data;
+
+  if (!isEmailVerificationEnabled()) {
+    return NextResponse.json({ success: true });
+  }
 
   try {
     const user = await prisma.user.findUnique({ where: { email } });
