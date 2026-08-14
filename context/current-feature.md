@@ -1,18 +1,26 @@
-# Current Feature
+# Current Feature: Items List View
 
-<!-- Feature Name And Short Description -->
+Dynamic items listing page at `/items/[type]` that displays type-filtered items.
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Create dynamic route `/items/[type]` (e.g., `/items/snippets`, `/items/notes`)
+- Fetch and display items filtered by type
+- Responsive grid of `ItemCard` components
+- Responsive grid matching the dashboard (1 col / 2 cols at `sm` / 3 cols at `lg`)
+- Each card has a left border colored by item type
+- Follow existing codebase patterns
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Spec source: `context/features/item-list-view-spec.md`
+- `ItemCard`'s colored left-border-by-type behavior already exists (`src/components/dashboard/ItemCard.tsx`) — reuse as-is, no changes expected there.
+- Follows the file/route conventions discussed in `docs/item-crud-architecture.md` (dynamic `[type]` segment resolved via a type-slug lookup, server component fetching directly from `src/lib/db/items.ts`), though this feature is scoped to the read/list view only — no create/update/delete mutations.
+- `coding-standards.md`: server components by default, fetch directly with Prisma via the `lib/db` layer; dynamic routes for item pages.
 
 ## History
 

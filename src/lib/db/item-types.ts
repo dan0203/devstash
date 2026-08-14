@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 
 export const ITEM_TYPE_DISPLAY_ORDER = [
@@ -10,12 +11,17 @@ export const ITEM_TYPE_DISPLAY_ORDER = [
   "image",
 ];
 
-export async function getSystemItemTypesOrdered() {
+export const getSystemItemTypesOrdered = cache(async () => {
   const itemTypes = await prisma.itemType.findMany({ where: { isSystem: true } });
   itemTypes.sort(
     (a, b) => ITEM_TYPE_DISPLAY_ORDER.indexOf(a.name) - ITEM_TYPE_DISPLAY_ORDER.indexOf(b.name)
   );
   return itemTypes;
+});
+
+export async function getItemTypeBySlug(slug: string) {
+  const itemTypes = await getSystemItemTypesOrdered();
+  return itemTypes.find((itemType) => pluralize(itemType.name) === slug) ?? null;
 }
 
 // Simple English pluralization covering the current system type names
