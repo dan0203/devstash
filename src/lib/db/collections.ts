@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
+import { type ItemWithType } from "@/lib/db/items";
 
 export interface CollectionTypeSummary {
   icon: string;
@@ -78,6 +79,10 @@ export async function getRecentCollections(
   return withStats.slice(0, limit);
 }
 
+export async function getAllCollections(userId: string): Promise<CollectionWithStats[]> {
+  return getCollectionsWithStats(userId);
+}
+
 export async function getFavoriteCollections(userId: string): Promise<CollectionWithStats[]> {
   const withStats = await getCollectionsWithStats(userId);
   return withStats.filter((collection) => collection.isFavorite);
@@ -113,6 +118,71 @@ export async function getCollectionStats(userId: string): Promise<CollectionStat
   ]);
 
   return { total, favorites };
+}
+
+export interface CollectionDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  isFavorite: boolean;
+  items: ItemWithType[];
+  types: CollectionTypeSummary[];
+}
+
+export async function getCollectionDetail(
+  userId: string,
+  collectionId: string
+): Promise<CollectionDetail | null> {
+  const collection = await prisma.collection.findFirst({
+    where: { id: collectionId, userId },
+    include: {
+      items: {
+        include: {
+          item: { include: { tags: true, itemType: true } },
+        },
+        orderBy: { item: { updatedAt: "desc" } },
+      },
+    },
+  });
+  if (!collection) return null;
+
+  const typeCounts = new Map<string, CollectionTypeSummary>();
+  for (const { item } of collection.items) {
+    const existing = typeCounts.get(item.itemType.id);
+    typeCounts.set(item.itemType.id, {
+      icon: item.itemType.icon,
+      color: item.itemType.color,
+      count: (existing?.count ?? 0) + 1,
+    });
+  }
+
+  return {
+    id: collection.id,
+    name: collection.name,
+    description: collection.description,
+    isFavorite: collection.isFavorite,
+    items: collection.items.map(({ item }) => ({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      tags: item.tags.map((tag) => tag.name),
+      isFavorite: item.isFavorite,
+      isPinned: item.isPinned,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      fileUrl: item.fileUrl,
+      fileName: item.fileName,
+      fileSize: item.fileSize,
+      content: item.content,
+      url: item.url,
+      itemType: {
+        name: item.itemType.name,
+        icon: item.itemType.icon,
+        color: item.itemType.color,
+      },
+    })),
+    types: [...typeCounts.values()].sort((a, b) => b.count - a.count),
+  };
 }
 
 export interface CreateCollectionData {

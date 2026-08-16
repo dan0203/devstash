@@ -1,16 +1,26 @@
-# Current Feature
+# Current Feature: Collections Pages
 
-<!-- Feature Name And Short Description -->
+Add a `/collections` listing page and a `/collections/[id]` detail page showing that collection's items, and wire up the existing "View all collections" sidebar link and dashboard/sidebar collection cards to link into these pages.
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- `/collections` page lists all of the signed-in user's collections using the existing `CollectionCard` component (same card used on the dashboard's "Recent Collections" grid).
+- `/collections/[id]` page shows a single collection's details (name/description) and its items, rendered with the existing item cards (`ItemCard`, plus `ImageThumbnailCard`/`FileListRow` for image/file items, matching how `/items/[type]` already branches by type).
+- Sidebar's "View all collections" link (`SidebarContent.tsx`) points to `/collections` (already does — confirm/keep working).
+- Every collection card (dashboard's "Recent Collections" grid and the new `/collections` listing) links to its own `/collections/[id]` page.
+- Auth-guarded like other `(app)` routes; 404 via `notFound()` if the collection doesn't exist or isn't owned by the signed-in user (same ownership-scoping pattern as `getItemDetail`).
 
 ## Notes
+
+- Reuse `src/lib/db/collections.ts`'s existing `getCollectionsWithStats`/`getRecentCollections` for the listing page rather than adding a new near-duplicate query.
+- Need a new `getCollectionDetail(userId, collectionId)` (or similar) in `src/lib/db/collections.ts` to fetch one collection plus its items (via `ItemCollection` → `Item` → `itemType`), ownership-scoped.
+- `CollectionCard` currently isn't a link — check whether it needs to become one itself (wrapped in `next/link`) or whether the parent grid should wrap each card, consistent with how `ItemCard` handles its own click-to-open-drawer behavior.
+- No new item-creation/editing scope here — items within a collection should open the existing `ItemDrawer` on click, same as `/items/[type]`.
+- Follow Next.js 16's generated `PageProps<"/collections/[id]">` typing per `CLAUDE.md`.
 
 <!-- Any Extra Notes -->
 

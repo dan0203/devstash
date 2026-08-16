@@ -17,6 +17,7 @@ export interface ItemWithType {
   content: string | null;
   url: string | null;
   itemType: {
+    name: string;
     icon: string;
     color: string;
   };
@@ -75,7 +76,7 @@ function toItemWithType(item: {
   content: string | null;
   url: string | null;
   tags: { name: string }[];
-  itemType: { icon: string; color: string };
+  itemType: { name: string; icon: string; color: string };
 }): ItemWithType {
   return {
     id: item.id,
