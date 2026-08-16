@@ -127,3 +127,16 @@
     @apply font-sans;
     }
 }
+
+.monaco-editor .scrollbar .slider {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 4px;
+}
+
+.monaco-editor .scrollbar .slider:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+.monaco-editor .scrollbar .slider.active {
+  background: rgba(255, 255, 255, 0.35) !important;
+}
