@@ -71,6 +71,7 @@ Example v4 configuration:
 - Use shadcn/ui components where applicable
 - No inline styles
 - Dark mode first, light mode as option
+- Always use next/image. Never suppress @next/next/no-img-element — if a remote host isn't in next.config.ts's remotePatterns yet, add it instead of falling back to <img>
 
 ## Database
 

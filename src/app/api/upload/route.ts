@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { uploadToR2 } from "@/lib/r2";
 import { FILE_CONSTRAINTS, type UploadItemType } from "@/lib/file-constraints";
+import { checkRateLimit, rateLimiters, rateLimitResponse } from "@/lib/rate-limit";
 
 function getExtension(fileName: string): string {
   const dot = fileName.lastIndexOf(".");
@@ -13,6 +14,11 @@ export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ success: false, error: "Not signed in" }, { status: 401 });
+  }
+
+  const rateLimit = await checkRateLimit(rateLimiters.upload, session.user.id);
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit.reset);
   }
 
   const formData = await request.formData();

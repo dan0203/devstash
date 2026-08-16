@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { File as FileIcon, Upload, X } from "lucide-react";
 
 import { FILE_CONSTRAINTS, formatFileSize, type UploadItemType } from "@/lib/file-constraints";
@@ -80,12 +81,15 @@ export function FileUpload({ itemType, value, onChange, className }: FileUploadP
     return (
       <div className={cn("flex flex-col gap-2", className)}>
         {isImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={value.url}
-            alt={value.fileName}
-            className="max-h-48 w-full rounded-md border object-contain"
-          />
+          <div className="relative h-48 w-full overflow-hidden rounded-md border">
+            <Image
+              src={value.url}
+              alt={value.fileName}
+              fill
+              sizes="(min-width: 640px) 32rem, 100vw"
+              className="object-contain"
+            />
+          </div>
         ) : (
           <div className="flex items-center gap-2 rounded-md border bg-muted/40 p-3 text-sm">
             <FileIcon className="size-4 shrink-0 text-muted-foreground" />

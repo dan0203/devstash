@@ -16,7 +16,7 @@ import {
 import { type ItemWithType } from "@/lib/db/items";
 import { formatFileSize } from "@/lib/file-constraints";
 import { formatRelativeTime } from "@/lib/format";
-import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
+import { useDrawerCardProps } from "@/components/dashboard/use-drawer-card-props";
 import { Button } from "@/components/ui/button";
 
 const EXTENSION_ICONS: Record<string, LucideIcon> = {
@@ -39,20 +39,12 @@ function extensionIconKey(fileName: string | null): string {
 }
 
 export function FileListRow({ item }: { item: ItemWithType }) {
-  const { openDrawer } = useItemDrawer();
+  const drawerCardProps = useDrawerCardProps(item.id);
   const Icon = EXTENSION_ICONS[extensionIconKey(item.fileName)];
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      onClick={() => openDrawer(item.id)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          openDrawer(item.id);
-        }
-      }}
+      {...drawerCardProps}
       className="flex cursor-pointer flex-col gap-3 rounded-md border p-3 transition-colors hover:bg-accent/50 sm:flex-row sm:items-center sm:gap-4"
     >
       <div className="flex min-w-0 flex-1 items-center gap-3">
