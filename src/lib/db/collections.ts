@@ -91,6 +91,21 @@ export async function getSidebarRecentCollections(
   return withStats.filter((collection) => !collection.isFavorite).slice(0, limit);
 }
 
+export interface CollectionOption {
+  id: string;
+  name: string;
+}
+
+export async function getUserCollections(userId: string): Promise<CollectionOption[]> {
+  const collections = await prisma.collection.findMany({
+    where: { userId },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+
+  return collections;
+}
+
 export async function getCollectionStats(userId: string): Promise<CollectionStats> {
   const [total, favorites] = await Promise.all([
     prisma.collection.count({ where: { userId } }),

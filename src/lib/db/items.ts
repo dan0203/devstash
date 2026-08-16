@@ -168,6 +168,15 @@ export async function getItemDetail(userId: string, itemId: string): Promise<Ite
   return toItemDetail(item);
 }
 
+async function ownedCollectionIds(userId: string, collectionIds: string[]): Promise<string[]> {
+  if (collectionIds.length === 0) return [];
+  const owned = await prisma.collection.findMany({
+    where: { id: { in: collectionIds }, userId },
+    select: { id: true },
+  });
+  return owned.map((c) => c.id);
+}
+
 export interface UpdateItemData {
   title: string;
   description: string | null;
@@ -175,6 +184,7 @@ export interface UpdateItemData {
   url: string | null;
   language: string | null;
   tags: string[];
+  collectionIds: string[];
 }
 
 export async function updateItem(
@@ -187,6 +197,8 @@ export async function updateItem(
     select: { id: true },
   });
   if (!existing) return null;
+
+  const collectionIds = await ownedCollectionIds(userId, data.collectionIds);
 
   const item = await prisma.item.update({
     where: { id: itemId },
@@ -202,6 +214,10 @@ export async function updateItem(
           where: { userId_name: { userId, name } },
           create: { name, userId },
         })),
+      },
+      collections: {
+        deleteMany: {},
+        create: collectionIds.map((collectionId) => ({ collectionId })),
       },
     },
     include: itemDetailInclude,
@@ -221,6 +237,7 @@ export interface CreateItemData {
   fileName: string | null;
   fileSize: number | null;
   tags: string[];
+  collectionIds: string[];
 }
 
 export async function createItem(
@@ -228,6 +245,8 @@ export async function createItem(
   itemTypeId: string,
   data: CreateItemData
 ): Promise<ItemDetail> {
+  const collectionIds = await ownedCollectionIds(userId, data.collectionIds);
+
   const item = await prisma.item.create({
     data: {
       title: data.title,
@@ -246,6 +265,9 @@ export async function createItem(
           where: { userId_name: { userId, name } },
           create: { name, userId },
         })),
+      },
+      collections: {
+        create: collectionIds.map((collectionId) => ({ collectionId })),
       },
     },
     include: itemDetailInclude,

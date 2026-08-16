@@ -7,6 +7,7 @@ import { useSidebar } from "@/components/dashboard/sidebar-context";
 import { NewItemDialog } from "@/components/dashboard/NewItemDialog";
 import { NewCollectionDialog } from "@/components/dashboard/NewCollectionDialog";
 import { type ItemTypeWithCount } from "@/lib/db/items";
+import { type CollectionOption } from "@/lib/db/collections";
 
 const creatableTypeSlugs = new Set([
   "snippets",
@@ -20,9 +21,10 @@ const creatableTypeSlugs = new Set([
 
 interface TopBarProps {
   itemTypes: ItemTypeWithCount[];
+  collections: CollectionOption[];
 }
 
-export function TopBar({ itemTypes }: TopBarProps) {
+export function TopBar({ itemTypes, collections }: TopBarProps) {
   const { setMobileOpen } = useSidebar();
   const creatableTypes = itemTypes.filter((type) => creatableTypeSlugs.has(type.slug));
 
@@ -54,7 +56,7 @@ export function TopBar({ itemTypes }: TopBarProps) {
 
       <div className="flex items-center justify-self-end gap-2">
         <NewCollectionDialog />
-        <NewItemDialog itemTypes={creatableTypes} />
+        <NewItemDialog itemTypes={creatableTypes} collections={collections} />
       </div>
     </header>
   );

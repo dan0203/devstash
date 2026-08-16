@@ -34,6 +34,7 @@ const createItemSchema = z
     fileName: z.string().trim(),
     fileSize: z.number().nullable(),
     tags: z.array(z.string().trim().min(1)),
+    collectionIds: z.array(z.string()),
   })
   .refine((data) => data.itemType !== "link" || z.string().url().safeParse(data.url).success, {
     message: "Please enter a valid URL",
@@ -88,6 +89,7 @@ export async function createItem(input: CreateItemInput): Promise<CreateItemStat
     fileName: isFile ? parsed.data.fileName : null,
     fileSize: isFile ? parsed.data.fileSize : null,
     tags: parsed.data.tags,
+    collectionIds: parsed.data.collectionIds,
   });
 
   return { success: true, data: created };
@@ -101,6 +103,7 @@ const updateItemSchema = z
     url: z.string().nullable(),
     language: z.string().nullable(),
     tags: z.array(z.string().trim().min(1)),
+    collectionIds: z.array(z.string()),
   })
   .refine((data) => !data.url || z.string().url().safeParse(data.url).success, {
     message: "Please enter a valid URL",

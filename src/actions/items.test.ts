@@ -38,6 +38,7 @@ const validCreateInput = {
   fileName: "",
   fileSize: null,
   tags: ["docker", "cleanup"],
+  collectionIds: ["col-1"],
 };
 
 describe("createItem", () => {
@@ -103,6 +104,7 @@ describe("createItem", () => {
       fileName: null,
       fileSize: null,
       tags: ["docker", "cleanup"],
+      collectionIds: ["col-1"],
     });
     expect(result).toEqual({ success: true, data: created });
   });
@@ -169,6 +171,7 @@ const validInput = {
   url: null,
   language: "bash",
   tags: ["docker", "cleanup"],
+  collectionIds: ["col-1"],
 };
 
 describe("updateItem", () => {

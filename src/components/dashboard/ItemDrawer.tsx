@@ -14,13 +14,18 @@ import { ItemDrawerView } from "@/components/dashboard/ItemDrawerView";
 import { ItemDrawerEditForm } from "@/components/dashboard/ItemDrawerEditForm";
 import { ItemDrawerActions } from "@/components/dashboard/ItemDrawerActions";
 import { SectionLabel } from "@/components/dashboard/SectionLabel";
+import { type CollectionOption } from "@/lib/db/collections";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 
-export function ItemDrawer() {
+interface ItemDrawerProps {
+  collections: CollectionOption[];
+}
+
+export function ItemDrawer({ collections }: ItemDrawerProps) {
   const router = useRouter();
   const { openItemId, closeDrawer } = useItemDrawer();
   const { item, setItem, failed } = useItemDrawerData(openItemId);
@@ -34,6 +39,7 @@ export function ItemDrawer() {
   const [url, setUrl] = useState("");
   const [language, setLanguage] = useState("");
   const [tagsInput, setTagsInput] = useState("");
+  const [collectionIds, setCollectionIds] = useState<string[]>([]);
 
   const handleCopy = () => {
     if (!item) return;
@@ -51,6 +57,7 @@ export function ItemDrawer() {
     setUrl(item.url ?? "");
     setLanguage(item.language ?? "");
     setTagsInput(item.tags.join(", "));
+    setCollectionIds(item.collections.map((collection) => collection.id));
     setIsEditing(true);
   };
 
@@ -74,6 +81,7 @@ export function ItemDrawer() {
       url: url.trim() ? url : null,
       language: language.trim() ? language : null,
       tags,
+      collectionIds,
     });
     setSaving(false);
 
@@ -167,6 +175,9 @@ export function ItemDrawer() {
                   setLanguage={setLanguage}
                   tagsInput={tagsInput}
                   setTagsInput={setTagsInput}
+                  collections={collections}
+                  collectionIds={collectionIds}
+                  setCollectionIds={setCollectionIds}
                 />
               ) : (
                 <ItemDrawerView item={item} />

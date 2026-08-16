@@ -7,10 +7,12 @@ import { toast } from "sonner";
 
 import { createItem, type CreateItemInput } from "@/actions/items";
 import { type ItemTypeWithCount } from "@/lib/db/items";
+import { type CollectionOption } from "@/lib/db/collections";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { CodeEditor } from "@/components/dashboard/CodeEditor";
 import { MarkdownEditor } from "@/components/dashboard/MarkdownEditor";
 import { FileUpload, type UploadedFile } from "@/components/dashboard/FileUpload";
+import { CollectionSelect } from "@/components/dashboard/CollectionSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +34,7 @@ const FILE_TYPES = new Set(["file", "image"]);
 
 interface NewItemDialogProps {
   itemTypes: ItemTypeWithCount[];
+  collections: CollectionOption[];
 }
 
 const emptyForm = {
@@ -42,9 +45,10 @@ const emptyForm = {
   url: "",
   tagsInput: "",
   file: null as UploadedFile | null,
+  collectionIds: [] as string[],
 };
 
-export function NewItemDialog({ itemTypes }: NewItemDialogProps) {
+export function NewItemDialog({ itemTypes, collections }: NewItemDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [selectedType, setSelectedType] = useState(itemTypes[0]?.value ?? "");
@@ -80,6 +84,7 @@ export function NewItemDialog({ itemTypes }: NewItemDialogProps) {
         .split(",")
         .map((tag) => tag.trim())
         .filter(Boolean),
+      collectionIds: form.collectionIds,
     };
 
     try {
@@ -215,6 +220,15 @@ export function NewItemDialog({ itemTypes }: NewItemDialogProps) {
               />
             </div>
           )}
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Collections</Label>
+            <CollectionSelect
+              collections={collections}
+              selectedIds={form.collectionIds}
+              onChange={(collectionIds) => setForm((f) => ({ ...f, collectionIds }))}
+            />
+          </div>
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="new-item-tags">Tags</Label>

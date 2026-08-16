@@ -8,7 +8,11 @@ import { SidebarProvider } from "@/components/dashboard/sidebar-context";
 import { ItemDrawerProvider } from "@/components/dashboard/item-drawer-context";
 import { ItemDrawer } from "@/components/dashboard/ItemDrawer";
 import { getItemTypesWithCounts } from "@/lib/db/items";
-import { getFavoriteCollections, getSidebarRecentCollections } from "@/lib/db/collections";
+import {
+  getFavoriteCollections,
+  getSidebarRecentCollections,
+  getUserCollections,
+} from "@/lib/db/collections";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const session = await auth();
@@ -20,17 +24,18 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   }
   const user = session.user;
 
-  const [itemTypes, favoriteCollections, recentCollections] = await Promise.all([
+  const [itemTypes, favoriteCollections, recentCollections, collections] = await Promise.all([
     getItemTypesWithCounts(user.id),
     getFavoriteCollections(user.id),
     getSidebarRecentCollections(user.id, 5),
+    getUserCollections(user.id),
   ]);
 
   return (
     <SidebarProvider>
       <ItemDrawerProvider>
         <div className="flex h-dvh flex-col">
-          <TopBar itemTypes={itemTypes} />
+          <TopBar itemTypes={itemTypes} collections={collections} />
           <div className="flex min-h-0 flex-1">
             <Sidebar
               user={user}
@@ -47,7 +52,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             {children}
           </div>
         </div>
-        <ItemDrawer />
+        <ItemDrawer collections={collections} />
       </ItemDrawerProvider>
     </SidebarProvider>
   );

@@ -3,6 +3,8 @@ import { type Dispatch, type SetStateAction } from "react";
 import { CONTENT_TYPES, LANGUAGE_TYPES, URL_TYPES } from "@/components/dashboard/item-content-types";
 import { CodeEditor } from "@/components/dashboard/CodeEditor";
 import { MarkdownEditor } from "@/components/dashboard/MarkdownEditor";
+import { CollectionSelect } from "@/components/dashboard/CollectionSelect";
+import { type CollectionOption } from "@/lib/db/collections";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +23,9 @@ interface ItemDrawerEditFormProps {
   setLanguage: Dispatch<SetStateAction<string>>;
   tagsInput: string;
   setTagsInput: Dispatch<SetStateAction<string>>;
+  collections: CollectionOption[];
+  collectionIds: string[];
+  setCollectionIds: Dispatch<SetStateAction<string[]>>;
 }
 
 export function ItemDrawerEditForm({
@@ -37,6 +42,9 @@ export function ItemDrawerEditForm({
   setLanguage,
   tagsInput,
   setTagsInput,
+  collections,
+  collectionIds,
+  setCollectionIds,
 }: ItemDrawerEditFormProps) {
   return (
     <>
@@ -75,6 +83,14 @@ export function ItemDrawerEditForm({
           <Input id="item-edit-url" value={url} onChange={(e) => setUrl(e.target.value)} />
         </div>
       )}
+      <div className="flex flex-col gap-2">
+        <Label>Collections</Label>
+        <CollectionSelect
+          collections={collections}
+          selectedIds={collectionIds}
+          onChange={setCollectionIds}
+        />
+      </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="item-edit-tags">Tags</Label>
         <Input
