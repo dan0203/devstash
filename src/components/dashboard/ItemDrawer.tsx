@@ -11,6 +11,7 @@ import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
 import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
 import { CodeEditor } from "@/components/dashboard/CodeEditor";
+import { MarkdownEditor } from "@/components/dashboard/MarkdownEditor";
 import {
   Sheet,
   SheetContent,
@@ -164,7 +165,7 @@ export function ItemDrawer() {
         }
       }}
     >
-      <SheetContent className="flex w-full flex-col overflow-y-auto sm:max-w-md">
+      <SheetContent className="flex w-full flex-col overflow-y-auto data-[side=right]:sm:max-w-lg">
         {failed ? (
           <p className="p-4 text-sm text-muted-foreground">Couldn&apos;t load this item.</p>
         ) : !item || item.id !== openItemId ? (
@@ -234,13 +235,7 @@ export function ItemDrawer() {
                           language={language}
                         />
                       ) : (
-                        <Textarea
-                          id="item-edit-content"
-                          value={content}
-                          onChange={(e) => setContent(e.target.value)}
-                          rows={6}
-                          className="font-mono text-xs"
-                        />
+                        <MarkdownEditor value={content} onChange={setContent} />
                       )}
                     </div>
                   )}
@@ -289,9 +284,7 @@ export function ItemDrawer() {
                           readOnly
                         />
                       ) : (
-                        <pre className="max-h-64 overflow-auto rounded-md border bg-muted/40 p-3 text-xs whitespace-pre-wrap">
-                          {item.content}
-                        </pre>
+                        <MarkdownEditor value={item.content} readOnly />
                       )}
                     </div>
                   )}
