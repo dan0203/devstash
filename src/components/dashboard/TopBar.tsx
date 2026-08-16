@@ -1,10 +1,11 @@
 "use client";
 
-import { Layers, Search, FolderPlus, Menu } from "lucide-react";
+import { Layers, Search, Menu } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/dashboard/sidebar-context";
 import { NewItemDialog } from "@/components/dashboard/NewItemDialog";
+import { NewCollectionDialog } from "@/components/dashboard/NewCollectionDialog";
 import { type ItemTypeWithCount } from "@/lib/db/items";
 
 const creatableTypeSlugs = new Set([
@@ -52,10 +53,7 @@ export function TopBar({ itemTypes }: TopBarProps) {
       </div>
 
       <div className="flex items-center justify-self-end gap-2">
-        <Button variant="secondary">
-          <FolderPlus />
-          New Collection
-        </Button>
+        <NewCollectionDialog />
         <NewItemDialog itemTypes={creatableTypes} />
       </div>
     </header>
