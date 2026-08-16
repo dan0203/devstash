@@ -7,11 +7,14 @@ import { MobileSidebar } from "@/components/dashboard/MobileSidebar";
 import { SidebarProvider } from "@/components/dashboard/sidebar-context";
 import { ItemDrawerProvider } from "@/components/dashboard/item-drawer-context";
 import { ItemDrawer } from "@/components/dashboard/ItemDrawer";
-import { getItemTypesWithCounts } from "@/lib/db/items";
+import { CommandPaletteProvider } from "@/components/dashboard/command-palette-context";
+import { CommandPalette } from "@/components/dashboard/CommandPalette";
+import { getItemTypesWithCounts, getAllItemsForSearch } from "@/lib/db/items";
 import {
   getFavoriteCollections,
   getSidebarRecentCollections,
   getUserCollections,
+  getAllCollections,
 } from "@/lib/db/collections";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
@@ -24,35 +27,46 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   }
   const user = session.user;
 
-  const [itemTypes, favoriteCollections, recentCollections, collections] = await Promise.all([
-    getItemTypesWithCounts(user.id),
-    getFavoriteCollections(user.id),
-    getSidebarRecentCollections(user.id, 5),
-    getUserCollections(user.id),
-  ]);
+  const [itemTypes, favoriteCollections, recentCollections, collections, searchItems, allCollections] =
+    await Promise.all([
+      getItemTypesWithCounts(user.id),
+      getFavoriteCollections(user.id),
+      getSidebarRecentCollections(user.id, 5),
+      getUserCollections(user.id),
+      getAllItemsForSearch(user.id),
+      getAllCollections(user.id),
+    ]);
+  const searchCollections = allCollections.map((collection) => ({
+    id: collection.id,
+    name: collection.name,
+    itemCount: collection.itemCount,
+  }));
 
   return (
     <SidebarProvider>
       <ItemDrawerProvider>
-        <div className="flex h-dvh flex-col">
-          <TopBar itemTypes={itemTypes} collections={collections} />
-          <div className="flex min-h-0 flex-1">
-            <Sidebar
-              user={user}
-              itemTypes={itemTypes}
-              favoriteCollections={favoriteCollections}
-              recentCollections={recentCollections}
-            />
-            <MobileSidebar
-              user={user}
-              itemTypes={itemTypes}
-              favoriteCollections={favoriteCollections}
-              recentCollections={recentCollections}
-            />
-            {children}
+        <CommandPaletteProvider>
+          <div className="flex h-dvh flex-col">
+            <TopBar itemTypes={itemTypes} collections={collections} />
+            <div className="flex min-h-0 flex-1">
+              <Sidebar
+                user={user}
+                itemTypes={itemTypes}
+                favoriteCollections={favoriteCollections}
+                recentCollections={recentCollections}
+              />
+              <MobileSidebar
+                user={user}
+                itemTypes={itemTypes}
+                favoriteCollections={favoriteCollections}
+                recentCollections={recentCollections}
+              />
+              {children}
+            </div>
           </div>
-        </div>
-        <ItemDrawer collections={collections} />
+          <ItemDrawer collections={collections} />
+          <CommandPalette items={searchItems} collections={searchCollections} />
+        </CommandPaletteProvider>
       </ItemDrawerProvider>
     </SidebarProvider>
   );
