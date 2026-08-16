@@ -1,17 +1,27 @@
 "use client";
 
-import { Pin, Star } from "lucide-react";
+import type { MouseEvent } from "react";
+import { Copy, Pin, Star } from "lucide-react";
+import { toast } from "sonner";
 
 import { type ItemWithType } from "@/lib/db/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
 import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 export function ItemCard({ item }: { item: ItemWithType }) {
   const Icon = itemTypeIcons[item.itemType.icon];
   const { openDrawer } = useItemDrawer();
+  const copyText = item.content ?? item.url ?? "";
+
+  const handleCopy = (e: MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(copyText);
+    toast.success("Copied to clipboard");
+  };
 
   return (
     <Card
@@ -38,6 +48,17 @@ export function ItemCard({ item }: { item: ItemWithType }) {
         <div className="flex items-center gap-1.5 text-muted-foreground">
           {item.isPinned && <Pin className="size-3.5" />}
           {item.isFavorite && <Star className="size-3.5 fill-yellow-400 text-yellow-400" />}
+          {copyText && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Copy"
+              className="size-6 text-muted-foreground hover:text-foreground"
+              onClick={handleCopy}
+            >
+              <Copy className="size-3.5" />
+            </Button>
+          )}
         </div>
       </div>
 

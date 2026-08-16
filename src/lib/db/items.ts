@@ -14,6 +14,8 @@ export interface ItemWithType {
   fileUrl: string | null;
   fileName: string | null;
   fileSize: number | null;
+  content: string | null;
+  url: string | null;
   itemType: {
     icon: string;
     color: string;
@@ -70,6 +72,8 @@ function toItemWithType(item: {
   fileUrl: string | null;
   fileName: string | null;
   fileSize: number | null;
+  content: string | null;
+  url: string | null;
   tags: { name: string }[];
   itemType: { icon: string; color: string };
 }): ItemWithType {
@@ -85,6 +89,8 @@ function toItemWithType(item: {
     fileUrl: item.fileUrl,
     fileName: item.fileName,
     fileSize: item.fileSize,
+    content: item.content,
+    url: item.url,
     itemType: item.itemType,
   };
 }
