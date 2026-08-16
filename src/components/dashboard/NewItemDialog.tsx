@@ -9,6 +9,7 @@ import { createItem, type CreateItemInput } from "@/actions/items";
 import { type ItemTypeWithCount } from "@/lib/db/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { CodeEditor } from "@/components/dashboard/CodeEditor";
+import { MarkdownEditor } from "@/components/dashboard/MarkdownEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -166,12 +167,9 @@ export function NewItemDialog({ itemTypes }: NewItemDialogProps) {
                   language={form.language}
                 />
               ) : (
-                <Textarea
-                  id="new-item-content"
+                <MarkdownEditor
                   value={form.content}
-                  onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-                  rows={6}
-                  className="font-mono text-xs"
+                  onChange={(content) => setForm((f) => ({ ...f, content }))}
                 />
               )}
             </div>

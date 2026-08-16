@@ -140,3 +140,158 @@
 .monaco-editor .scrollbar .slider.active {
   background: rgba(255, 255, 255, 0.35) !important;
 }
+
+.themed-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.themed-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.themed-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.themed-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.themed-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.themed-scrollbar::-webkit-scrollbar-thumb:active {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.markdown-preview {
+  color: oklch(0.985 0 0);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+.markdown-preview > *:first-child {
+  margin-top: 0;
+}
+
+.markdown-preview > *:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+  font-weight: 600;
+  color: oklch(0.985 0 0);
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+}
+
+.markdown-preview h1 {
+  font-size: 1.4em;
+}
+.markdown-preview h2 {
+  font-size: 1.25em;
+}
+.markdown-preview h3 {
+  font-size: 1.1em;
+}
+.markdown-preview h4 {
+  font-size: 1em;
+}
+.markdown-preview h5 {
+  font-size: 0.9em;
+}
+.markdown-preview h6 {
+  font-size: 0.85em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.markdown-preview p {
+  margin: 0.5em 0;
+}
+
+.markdown-preview a {
+  color: #60a5fa;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.markdown-preview a:hover {
+  color: #93c5fd;
+}
+
+.markdown-preview code {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+}
+
+.markdown-preview pre {
+  background: #151515;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 0.75em 1em;
+  overflow-x: auto;
+  margin: 0.6em 0;
+}
+
+.markdown-preview pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.8em;
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  margin: 0.5em 0;
+  padding-left: 1.4em;
+}
+.markdown-preview ul {
+  list-style: disc;
+}
+.markdown-preview ol {
+  list-style: decimal;
+}
+.markdown-preview li {
+  margin: 0.2em 0;
+}
+
+.markdown-preview blockquote {
+  border-left: 3px solid rgba(255, 255, 255, 0.25);
+  margin: 0.6em 0;
+  padding: 0.1em 0 0.1em 0.9em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.markdown-preview table {
+  border-collapse: collapse;
+  margin: 0.6em 0;
+  width: 100%;
+  font-size: 0.85em;
+}
+.markdown-preview th,
+.markdown-preview td {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.4em 0.6em;
+  text-align: left;
+}
+.markdown-preview th {
+  background: rgba(255, 255, 255, 0.06);
+  font-weight: 600;
+}
+
+.markdown-preview hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin: 1em 0;
+}

@@ -18,7 +18,7 @@ const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ),
 });
 
-const MIN_HEIGHT = 120;
+const MIN_HEIGHT = 200;
 const MAX_HEIGHT = 400;
 
 const WINDOW_DOT_COLORS = ["#ff5f56", "#ffbd2e", "#27c93f"];
