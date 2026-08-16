@@ -9,8 +9,11 @@ export interface ItemWithType {
   tags: string[];
   isFavorite: boolean;
   isPinned: boolean;
+  createdAt: Date;
   updatedAt: Date;
   fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
   itemType: {
     icon: string;
     color: string;
@@ -62,8 +65,11 @@ function toItemWithType(item: {
   description: string | null;
   isFavorite: boolean;
   isPinned: boolean;
+  createdAt: Date;
   updatedAt: Date;
   fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
   tags: { name: string }[];
   itemType: { icon: string; color: string };
 }): ItemWithType {
@@ -74,8 +80,11 @@ function toItemWithType(item: {
     tags: item.tags.map((tag) => tag.name),
     isFavorite: item.isFavorite,
     isPinned: item.isPinned,
+    createdAt: item.createdAt,
     updatedAt: item.updatedAt,
     fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileSize: item.fileSize,
     itemType: item.itemType,
   };
 }
