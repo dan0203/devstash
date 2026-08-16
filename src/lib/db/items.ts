@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { formatItemTypeName, getSystemItemTypesOrdered, pluralize } from "@/lib/db/item-types";
+import { deleteFromR2, r2KeyFromUrl } from "@/lib/r2";
 
 export interface ItemWithType {
   id: string;
@@ -194,10 +195,13 @@ export async function updateItem(
 export interface CreateItemData {
   title: string;
   description: string | null;
-  contentType: "text" | "url";
+  contentType: "text" | "url" | "file";
   content: string | null;
   url: string | null;
   language: string | null;
+  fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
   tags: string[];
 }
 
@@ -214,6 +218,9 @@ export async function createItem(
       content: data.content,
       url: data.url,
       language: data.language,
+      fileUrl: data.fileUrl,
+      fileName: data.fileName,
+      fileSize: data.fileSize,
       userId,
       itemTypeId,
       tags: {
@@ -232,11 +239,16 @@ export async function createItem(
 export async function deleteItem(userId: string, itemId: string): Promise<boolean> {
   const existing = await prisma.item.findFirst({
     where: { id: itemId, userId },
-    select: { id: true },
+    select: { id: true, contentType: true, fileUrl: true },
   });
   if (!existing) return false;
 
   await prisma.item.delete({ where: { id: itemId } });
+
+  if (existing.contentType === "file" && existing.fileUrl) {
+    await deleteFromR2(r2KeyFromUrl(existing.fileUrl));
+  }
+
   return true;
 }
 

@@ -2,13 +2,14 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Copy, Folder, Pencil, Pin, Star, Trash2, type LucideIcon } from "lucide-react";
+import { Copy, Download, File as FileIcon, Folder, Pencil, Pin, Star, Trash2, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { type ItemDetail } from "@/lib/db/items";
 import { updateItem, deleteItem } from "@/actions/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
+import { formatFileSize } from "@/lib/file-constraints";
 import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
 import { CodeEditor } from "@/components/dashboard/CodeEditor";
 import { MarkdownEditor } from "@/components/dashboard/MarkdownEditor";
@@ -303,10 +304,25 @@ export function ItemDrawer() {
                   )}
                   {item.contentType === "file" && item.fileName && (
                     <div className="flex flex-col gap-2">
-                      <SectionLabel>File</SectionLabel>
-                      <div className="rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground">
-                        {item.fileName}
-                      </div>
+                      <SectionLabel>{item.itemType.name === "image" ? "Image" : "File"}</SectionLabel>
+                      {item.itemType.name === "image" && item.fileUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={item.fileUrl}
+                          alt={item.fileName}
+                          className="max-h-64 w-full rounded-md border object-contain"
+                        />
+                      ) : (
+                        <div className="flex items-center gap-2 rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground">
+                          <FileIcon className="size-4 shrink-0" />
+                          <span className="truncate">{item.fileName}</span>
+                        </div>
+                      )}
+                      {item.fileSize !== null && (
+                        <span className="text-xs text-muted-foreground">
+                          {formatFileSize(item.fileSize)}
+                        </span>
+                      )}
                     </div>
                   )}
 
@@ -383,9 +399,21 @@ export function ItemDrawer() {
                   >
                     <Pin className={item.isPinned ? "fill-current" : undefined} />
                   </Button>
-                  <Button variant="outline" size="icon-sm" aria-label="Copy" onClick={handleCopy}>
-                    <Copy />
-                  </Button>
+                  {item.contentType === "file" ? (
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      aria-label="Download"
+                      nativeButton={false}
+                      render={<a href={`/api/items/${item.id}/download`} />}
+                    >
+                      <Download />
+                    </Button>
+                  ) : (
+                    <Button variant="outline" size="icon-sm" aria-label="Copy" onClick={handleCopy}>
+                      <Copy />
+                    </Button>
+                  )}
                   <Button variant="outline" size="icon-sm" aria-label="Edit" onClick={handleEdit}>
                     <Pencil />
                   </Button>

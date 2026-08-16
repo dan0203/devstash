@@ -7,7 +7,15 @@ import { useSidebar } from "@/components/dashboard/sidebar-context";
 import { NewItemDialog } from "@/components/dashboard/NewItemDialog";
 import { type ItemTypeWithCount } from "@/lib/db/items";
 
-const creatableTypeSlugs = new Set(["snippets", "prompts", "commands", "notes", "links"]);
+const creatableTypeSlugs = new Set([
+  "snippets",
+  "prompts",
+  "commands",
+  "notes",
+  "links",
+  "files",
+  "images",
+]);
 
 interface TopBarProps {
   itemTypes: ItemTypeWithCount[];

@@ -10,6 +10,7 @@ import { type ItemTypeWithCount } from "@/lib/db/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { CodeEditor } from "@/components/dashboard/CodeEditor";
 import { MarkdownEditor } from "@/components/dashboard/MarkdownEditor";
+import { FileUpload, type UploadedFile } from "@/components/dashboard/FileUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +28,7 @@ import { cn } from "@/lib/utils";
 
 const CONTENT_TYPES = new Set(["snippet", "prompt", "command", "note"]);
 const LANGUAGE_TYPES = new Set(["snippet", "command"]);
+const FILE_TYPES = new Set(["file", "image"]);
 
 interface NewItemDialogProps {
   itemTypes: ItemTypeWithCount[];
@@ -39,6 +41,7 @@ const emptyForm = {
   language: "",
   url: "",
   tagsInput: "",
+  file: null as UploadedFile | null,
 };
 
 export function NewItemDialog({ itemTypes }: NewItemDialogProps) {
@@ -70,6 +73,9 @@ export function NewItemDialog({ itemTypes }: NewItemDialogProps) {
       content: form.content,
       language: form.language,
       url: form.url,
+      fileUrl: form.file?.url ?? "",
+      fileName: form.file?.fileName ?? "",
+      fileSize: form.file?.fileSize ?? null,
       tags: form.tagsInput
         .split(",")
         .map((tag) => tag.trim())
@@ -175,6 +181,17 @@ export function NewItemDialog({ itemTypes }: NewItemDialogProps) {
             </div>
           )}
 
+          {activeType && FILE_TYPES.has(activeType.value) && (
+            <div className="flex flex-col gap-1.5">
+              <Label>File</Label>
+              <FileUpload
+                itemType={activeType.value as "file" | "image"}
+                value={form.file}
+                onChange={(file) => setForm((f) => ({ ...f, file }))}
+              />
+            </div>
+          )}
+
           {activeType && LANGUAGE_TYPES.has(activeType.value) && (
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="new-item-language">Language</Label>
@@ -212,7 +229,14 @@ export function NewItemDialog({ itemTypes }: NewItemDialogProps) {
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           <DialogFooter>
-            <Button type="submit" disabled={submitting || !form.title.trim()}>
+            <Button
+              type="submit"
+              disabled={
+                submitting ||
+                !form.title.trim() ||
+                (activeType && FILE_TYPES.has(activeType.value) && !form.file)
+              }
+            >
               {submitting ? "Creating..." : "Create item"}
             </Button>
           </DialogFooter>

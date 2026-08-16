@@ -34,6 +34,9 @@ const validCreateInput = {
   content: "docker system prune -a --volumes",
   language: "bash",
   url: "",
+  fileUrl: "",
+  fileName: "",
+  fileSize: null,
   tags: ["docker", "cleanup"],
 };
 
@@ -96,6 +99,9 @@ describe("createItem", () => {
       content: "docker system prune -a --volumes",
       url: null,
       language: "bash",
+      fileUrl: null,
+      fileName: null,
+      fileSize: null,
       tags: ["docker", "cleanup"],
     });
     expect(result).toEqual({ success: true, data: created });
@@ -116,6 +122,42 @@ describe("createItem", () => {
       "user-1",
       "type-link",
       expect.objectContaining({ contentType: "url", content: null, url: "https://example.com" })
+    );
+  });
+
+  it("returns a validation error when a file item has no uploaded file", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+
+    const result = await createItem({ ...validCreateInput, itemType: "file", fileUrl: "" });
+
+    expect(result).toEqual({ success: false, error: "Please upload a file" });
+    expect(mockCreateItem).not.toHaveBeenCalled();
+  });
+
+  it("stores file metadata and omits content/url for an image item", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    mockGetItemTypeByName.mockResolvedValue({ id: "type-image", name: "image" });
+    mockCreateItem.mockResolvedValue({ id: "item-1" });
+
+    await createItem({
+      ...validCreateInput,
+      itemType: "image",
+      fileUrl: "https://r2.example.com/user-1/photo.png",
+      fileName: "photo.png",
+      fileSize: 1024,
+    });
+
+    expect(mockCreateItem).toHaveBeenCalledWith(
+      "user-1",
+      "type-image",
+      expect.objectContaining({
+        contentType: "file",
+        content: null,
+        url: null,
+        fileUrl: "https://r2.example.com/user-1/photo.png",
+        fileName: "photo.png",
+        fileSize: 1024,
+      })
     );
   });
 });

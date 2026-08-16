@@ -11,7 +11,16 @@ import {
 } from "@/lib/db/items";
 import { getItemTypeByName } from "@/lib/db/item-types";
 
-const CREATABLE_ITEM_TYPES = ["snippet", "prompt", "command", "note", "link"] as const;
+const CREATABLE_ITEM_TYPES = [
+  "snippet",
+  "prompt",
+  "command",
+  "note",
+  "link",
+  "file",
+  "image",
+] as const;
+const FILE_ITEM_TYPES = new Set(["file", "image"]);
 
 const createItemSchema = z
   .object({
@@ -21,12 +30,26 @@ const createItemSchema = z
     content: z.string(),
     language: z.string().trim(),
     url: z.string().trim(),
+    fileUrl: z.string().trim(),
+    fileName: z.string().trim(),
+    fileSize: z.number().nullable(),
     tags: z.array(z.string().trim().min(1)),
   })
   .refine((data) => data.itemType !== "link" || z.string().url().safeParse(data.url).success, {
     message: "Please enter a valid URL",
     path: ["url"],
-  });
+  })
+  .refine((data) => !FILE_ITEM_TYPES.has(data.itemType) || data.fileUrl.length > 0, {
+    message: "Please upload a file",
+    path: ["fileUrl"],
+  })
+  .refine(
+    (data) =>
+      !FILE_ITEM_TYPES.has(data.itemType) ||
+      !process.env.R2_PUBLIC_URL ||
+      data.fileUrl.startsWith(process.env.R2_PUBLIC_URL),
+    { message: "Invalid file reference", path: ["fileUrl"] }
+  );
 
 export type CreateItemInput = z.infer<typeof createItemSchema>;
 
@@ -53,13 +76,17 @@ export async function createItem(input: CreateItemInput): Promise<CreateItemStat
   }
 
   const isLink = parsed.data.itemType === "link";
+  const isFile = FILE_ITEM_TYPES.has(parsed.data.itemType);
   const created = await createItemRecord(session.user.id, itemType.id, {
     title: parsed.data.title,
     description: parsed.data.description || null,
-    contentType: isLink ? "url" : "text",
-    content: isLink ? null : parsed.data.content || null,
+    contentType: isFile ? "file" : isLink ? "url" : "text",
+    content: isFile || isLink ? null : parsed.data.content || null,
     url: isLink ? parsed.data.url : null,
     language: parsed.data.language || null,
+    fileUrl: isFile ? parsed.data.fileUrl : null,
+    fileName: isFile ? parsed.data.fileName : null,
+    fileSize: isFile ? parsed.data.fileSize : null,
     tags: parsed.data.tags,
   });
 
