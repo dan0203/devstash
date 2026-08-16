@@ -6,7 +6,7 @@
 4. Reset current-feature.md:
     - Change H1 back to `# Current Feature`
     - Clear Goals and Notes sections (keep placeholder comments)
-    - Set Status to Completed
+    - Reset Status to initial value
     - Add feature summary to the END of History
 5. Commit the reset: `chore: reset current-feature.md after completing [feature]`
 6. Push main to origin ONCE (single push with all changes)
