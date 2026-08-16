@@ -10,6 +10,7 @@ export interface ItemWithType {
   isFavorite: boolean;
   isPinned: boolean;
   updatedAt: Date;
+  fileUrl: string | null;
   itemType: {
     icon: string;
     color: string;
@@ -62,6 +63,7 @@ function toItemWithType(item: {
   isFavorite: boolean;
   isPinned: boolean;
   updatedAt: Date;
+  fileUrl: string | null;
   tags: { name: string }[];
   itemType: { icon: string; color: string };
 }): ItemWithType {
@@ -73,6 +75,7 @@ function toItemWithType(item: {
     isFavorite: item.isFavorite,
     isPinned: item.isPinned,
     updatedAt: item.updatedAt,
+    fileUrl: item.fileUrl,
     itemType: item.itemType,
   };
 }
