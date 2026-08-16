@@ -1,18 +1,25 @@
-# Current Feature
-
-<!-- Feature Name And Short Description -->
+# Current Feature: Collection Card Actions (Edit, Delete, Favorite icon)
 
 ## Status
 
-Completed
+Not Started
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- On `/collections/[id]` (collection detail page): add Edit, Delete, and Favorite buttons/icons.
+  - Favorite: icon/button only, not wired up to any logic yet (no favorite toggle behavior).
+  - Edit: opens a modal to edit the collection's metadata (name, description — the fields `NewCollectionDialog`/`createCollection` already support).
+  - Delete: requires a confirmation before deleting. Deleting the collection must NOT delete its items — only remove the collection (and its `ItemCollection` join rows); items themselves stay intact and simply no longer show that collection.
+- On `CollectionCard` (used on both `/collections` listing and the dashboard's "Recent Collections" grid): add a 3-dots icon that opens a dropdown with Edit, Delete, and Favorite entries (same semantics as above — Favorite inert for now, Edit opens the same metadata modal, Delete requires confirmation).
+  - Clicking anywhere else on the card (outside the 3-dots/dropdown) still navigates to `/collections/[id]`, i.e. the existing `next/link` wrapping stays for the rest of the card; the dropdown trigger must not also trigger navigation.
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Reuse the existing `NewCollectionDialog`/`createCollection` action pattern for edit where possible — likely a new `updateCollection` action + query fn (Zod-validated, `{ success, data, error }`, ownership-checked via `findFirst`), following the same conventions as `updateItem`.
+- Delete needs a new `deleteCollection` action + query fn — should only delete the `Collection` row (and cascade the `ItemCollection` join rows via Prisma's existing cascade or an explicit `deleteMany`), never touch `Item` rows themselves.
+- Confirmation UI: follow the existing `AlertDialog` pattern used by `DeleteAccountDialog`/item-drawer delete (plain confirm/cancel, no typed confirmation needed — matches item delete's stakes, not account delete's).
+- Favorite icon should visually indicate favorite state is not yet implemented as functional — just needs to render and be present in both locations (detail page action bar and card dropdown), no click handler wired to a mutation.
+- `CollectionCard`'s current full-card `next/link` needs the 3-dots trigger area carved out so it doesn't bubble a navigation click (e.g. `stopPropagation` on the dropdown trigger, matching patterns like `FileListRow`'s download-button `stopPropagation`).
 
 ## History
 
