@@ -10,6 +10,7 @@ import { updateItem, deleteItem } from "@/actions/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
 import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
+import { CodeEditor } from "@/components/dashboard/CodeEditor";
 import {
   Sheet,
   SheetContent,
@@ -226,13 +227,21 @@ export function ItemDrawer() {
                   {CONTENT_TYPES.has(item.itemType.name) && (
                     <div className="flex flex-col gap-2">
                       <Label htmlFor="item-edit-content">Content</Label>
-                      <Textarea
-                        id="item-edit-content"
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        rows={6}
-                        className="font-mono text-xs"
-                      />
+                      {LANGUAGE_TYPES.has(item.itemType.name) ? (
+                        <CodeEditor
+                          value={content}
+                          onChange={setContent}
+                          language={language}
+                        />
+                      ) : (
+                        <Textarea
+                          id="item-edit-content"
+                          value={content}
+                          onChange={(e) => setContent(e.target.value)}
+                          rows={6}
+                          className="font-mono text-xs"
+                        />
+                      )}
                     </div>
                   )}
                   {LANGUAGE_TYPES.has(item.itemType.name) && (
@@ -273,9 +282,17 @@ export function ItemDrawer() {
                   {item.contentType === "text" && item.content && (
                     <div className="flex flex-col gap-2">
                       <SectionLabel>Content</SectionLabel>
-                      <pre className="max-h-64 overflow-auto rounded-md border bg-muted/40 p-3 text-xs whitespace-pre-wrap">
-                        {item.content}
-                      </pre>
+                      {LANGUAGE_TYPES.has(item.itemType.name) ? (
+                        <CodeEditor
+                          value={item.content}
+                          language={item.language}
+                          readOnly
+                        />
+                      ) : (
+                        <pre className="max-h-64 overflow-auto rounded-md border bg-muted/40 p-3 text-xs whitespace-pre-wrap">
+                          {item.content}
+                        </pre>
+                      )}
                     </div>
                   )}
                   {item.contentType === "url" && item.url && (
