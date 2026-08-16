@@ -1,53 +1,29 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Copy, Download, File as FileIcon, Folder, Pencil, Pin, Star, Trash2, type LucideIcon } from "lucide-react";
+import { Folder } from "lucide-react";
 import { toast } from "sonner";
 
-import { type ItemDetail } from "@/lib/db/items";
 import { updateItem, deleteItem } from "@/actions/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
-import { formatFileSize } from "@/lib/file-constraints";
 import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
-import { CodeEditor } from "@/components/dashboard/CodeEditor";
-import { MarkdownEditor } from "@/components/dashboard/MarkdownEditor";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { useItemDrawerData } from "@/components/dashboard/use-item-drawer-data";
+import { ItemDrawerView } from "@/components/dashboard/ItemDrawerView";
+import { ItemDrawerEditForm } from "@/components/dashboard/ItemDrawerEditForm";
+import { ItemDrawerActions } from "@/components/dashboard/ItemDrawerActions";
+import { SectionLabel } from "@/components/dashboard/SectionLabel";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-
-const CONTENT_TYPES = new Set(["snippet", "prompt", "command", "note"]);
-const LANGUAGE_TYPES = new Set(["snippet", "command"]);
-const URL_TYPES = new Set(["link"]);
 
 export function ItemDrawer() {
   const router = useRouter();
   const { openItemId, closeDrawer } = useItemDrawer();
-  const [item, setItem] = useState<ItemDetail | null>(null);
-  const [failedId, setFailedId] = useState<string | null>(null);
+  const { item, setItem, failed } = useItemDrawerData(openItemId);
 
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -58,35 +34,6 @@ export function ItemDrawer() {
   const [url, setUrl] = useState("");
   const [language, setLanguage] = useState("");
   const [tagsInput, setTagsInput] = useState("");
-
-  // Derived rather than tracked with its own setState-in-effect call: whether
-  // the drawer is still loading for the current id is inferred inline below
-  // (item?.id !== openItemId) so TypeScript can narrow `item` in the JSX.
-  const failed = openItemId !== null && failedId === openItemId && item?.id !== openItemId;
-
-  useEffect(() => {
-    if (!openItemId) return;
-
-    let cancelled = false;
-
-    fetch(`/api/items/${openItemId}`)
-      .then((res) => res.json())
-      .then((body) => {
-        if (cancelled) return;
-        if (body.success) {
-          setItem(body.data);
-        } else {
-          setFailedId(openItemId);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setFailedId(openItemId);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [openItemId]);
 
   const handleCopy = () => {
     if (!item) return;
@@ -182,9 +129,7 @@ export function ItemDrawer() {
                   >
                     {(() => {
                       const Icon = itemTypeIcons[item.itemType.icon];
-                      return Icon ? (
-                        <Icon className="size-5" style={{ color: item.itemType.color }} />
-                      ) : null;
+                      return Icon ? <Icon className="size-5" style={{ color: item.itemType.color }} /> : null;
                     })()}
                   </div>
                   <div className="flex flex-col gap-1">
@@ -208,137 +153,23 @@ export function ItemDrawer() {
 
             <div className="flex flex-col gap-6 px-4">
               {isEditing ? (
-                <>
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="item-edit-title">Title</Label>
-                    <Input
-                      id="item-edit-title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="item-edit-description">Description</Label>
-                    <Textarea
-                      id="item-edit-description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={2}
-                    />
-                  </div>
-                  {CONTENT_TYPES.has(item.itemType.name) && (
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="item-edit-content">Content</Label>
-                      {LANGUAGE_TYPES.has(item.itemType.name) ? (
-                        <CodeEditor
-                          value={content}
-                          onChange={setContent}
-                          language={language}
-                        />
-                      ) : (
-                        <MarkdownEditor value={content} onChange={setContent} />
-                      )}
-                    </div>
-                  )}
-                  {LANGUAGE_TYPES.has(item.itemType.name) && (
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="item-edit-language">Language</Label>
-                      <Input
-                        id="item-edit-language"
-                        value={language}
-                        onChange={(e) => setLanguage(e.target.value)}
-                      />
-                    </div>
-                  )}
-                  {URL_TYPES.has(item.itemType.name) && (
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="item-edit-url">URL</Label>
-                      <Input id="item-edit-url" value={url} onChange={(e) => setUrl(e.target.value)} />
-                    </div>
-                  )}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="item-edit-tags">Tags</Label>
-                    <Input
-                      id="item-edit-tags"
-                      value={tagsInput}
-                      onChange={(e) => setTagsInput(e.target.value)}
-                      placeholder="react, hooks, performance"
-                    />
-                  </div>
-                </>
+                <ItemDrawerEditForm
+                  itemTypeName={item.itemType.name}
+                  title={title}
+                  setTitle={setTitle}
+                  description={description}
+                  setDescription={setDescription}
+                  content={content}
+                  setContent={setContent}
+                  url={url}
+                  setUrl={setUrl}
+                  language={language}
+                  setLanguage={setLanguage}
+                  tagsInput={tagsInput}
+                  setTagsInput={setTagsInput}
+                />
               ) : (
-                <>
-                  {item.description && (
-                    <div className="flex flex-col gap-2">
-                      <SectionLabel>Description</SectionLabel>
-                      <p className="text-sm text-foreground">{item.description}</p>
-                    </div>
-                  )}
-
-                  {item.contentType === "text" && item.content && (
-                    <div className="flex flex-col gap-2">
-                      <SectionLabel>Content</SectionLabel>
-                      {LANGUAGE_TYPES.has(item.itemType.name) ? (
-                        <CodeEditor
-                          value={item.content}
-                          language={item.language}
-                          readOnly
-                        />
-                      ) : (
-                        <MarkdownEditor value={item.content} readOnly />
-                      )}
-                    </div>
-                  )}
-                  {item.contentType === "url" && item.url && (
-                    <div className="flex flex-col gap-2">
-                      <SectionLabel>URL</SectionLabel>
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="truncate rounded-md border bg-muted/40 p-3 text-xs text-primary underline"
-                      >
-                        {item.url}
-                      </a>
-                    </div>
-                  )}
-                  {item.contentType === "file" && item.fileName && (
-                    <div className="flex flex-col gap-2">
-                      <SectionLabel>{item.itemType.name === "image" ? "Image" : "File"}</SectionLabel>
-                      {item.itemType.name === "image" && item.fileUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={item.fileUrl}
-                          alt={item.fileName}
-                          className="max-h-64 w-full rounded-md border object-contain"
-                        />
-                      ) : (
-                        <div className="flex items-center gap-2 rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground">
-                          <FileIcon className="size-4 shrink-0" />
-                          <span className="truncate">{item.fileName}</span>
-                        </div>
-                      )}
-                      {item.fileSize !== null && (
-                        <span className="text-xs text-muted-foreground">
-                          {formatFileSize(item.fileSize)}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {item.tags.length > 0 && (
-                    <div className="flex flex-col gap-2">
-                      <SectionLabel>Tags</SectionLabel>
-                      <div className="flex flex-wrap gap-1.5">
-                        {item.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-[10px]">
-                            #{tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
+                <ItemDrawerView item={item} />
               )}
 
               {item.collections.length > 0 && (
@@ -386,78 +217,18 @@ export function ItemDrawer() {
                 </Button>
               </SheetFooter>
             ) : (
-              <SheetFooter className="flex-row items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className={item.isFavorite ? "text-yellow-400" : undefined}>
-                    <Star className={item.isFavorite ? "fill-yellow-400 text-yellow-400" : undefined} />
-                    Favorite
-                  </Button>
-                  <Button
-                    variant={item.isPinned ? "secondary" : "outline"}
-                    size="icon-sm"
-                    aria-label="Pin"
-                  >
-                    <Pin className={item.isPinned ? "fill-current" : undefined} />
-                  </Button>
-                  {item.contentType === "file" ? (
-                    <Button
-                      variant="outline"
-                      size="icon-sm"
-                      aria-label="Download"
-                      nativeButton={false}
-                      render={<a href={`/api/items/${item.id}/download`} />}
-                    >
-                      <Download />
-                    </Button>
-                  ) : (
-                    <Button variant="outline" size="icon-sm" aria-label="Copy" onClick={handleCopy}>
-                      <Copy />
-                    </Button>
-                  )}
-                  <Button variant="outline" size="icon-sm" aria-label="Edit" onClick={handleEdit}>
-                    <Pencil />
-                  </Button>
-                </div>
-                <AlertDialog>
-                  <AlertDialogTrigger
-                    render={<Button variant="destructive" size="icon-sm" aria-label="Delete" />}
-                  >
-                    <Trash2 />
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete item?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This permanently deletes &quot;{item.title}&quot;. This cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        variant="destructive"
-                        onClick={handleDelete}
-                        disabled={deleting}
-                      >
-                        {deleting ? "Deleting..." : "Delete"}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </SheetFooter>
+              <ItemDrawerActions
+                item={item}
+                onCopy={handleCopy}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                deleting={deleting}
+              />
             )}
           </>
         )}
       </SheetContent>
     </Sheet>
-  );
-}
-
-function SectionLabel({ icon: Icon, children }: { icon?: LucideIcon; children: ReactNode }) {
-  return (
-    <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-muted-foreground">
-      {Icon && <Icon className="size-3.5" />}
-      {children}
-    </h3>
   );
 }
 

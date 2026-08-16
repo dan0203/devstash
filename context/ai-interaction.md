@@ -67,3 +67,4 @@ Review AI-generated code periodically, especially for:
 - Performance (unnecessary re-renders, N+1 queries)
 - Logic errors (edge cases)
 - Patterns (matches existing codebase?)
+- Code structure — run a `code-scanner` pass specifically for oversized files/components and duplicated logic that should be extracted into a function, component, or utility

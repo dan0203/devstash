@@ -36,6 +36,7 @@ Scan the codebase and report any issues you find. If no folder is specified, sca
 - Inconsistent naming conventions
 - TypeScript `any` types
 - Magic numbers (unexplained numeric literals that should be named constants)
+- Also grep for eslint-disable comments and check whether each suppression is still justified
 
 ### Patterns
 

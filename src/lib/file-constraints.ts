@@ -1,8 +1,8 @@
 export const FILE_CONSTRAINTS = {
   image: {
     maxSize: 5 * 1024 * 1024,
-    extensions: [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"],
-    mimeTypes: ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"],
+    extensions: [".png", ".jpg", ".jpeg", ".gif", ".webp"],
+    mimeTypes: ["image/png", "image/jpeg", "image/gif", "image/webp"],
   },
   file: {
     maxSize: 10 * 1024 * 1024,

@@ -1,5 +1,7 @@
 # Item Types
 
+> **Status: partially outdated.** Written on 2026-08-14, before item CRUD, file/image upload, and the type-specific list views (`ImageThumbnailCard`, `FileListRow`) existed. The "7 types" table, content-kind classification, and shared-properties sections below are still accurate; the "Display differences" section's `ItemCard` description and the note about `file`/`image` having zero seeded rows are stale — see the corrections inline below.
+
 DevStash items are the atomic unit of the app. Every item has a **type** (`ItemType`), which determines its color/icon and how its content is stored and rendered. There are 7 **system types** (`isSystem: true`, `userId: null`, shared across all users, seeded once); custom user-defined types are a post-MVP Pro feature and not yet implemented.
 
 > **Note on sources:** the research prompt names `@src/lib/constants.tsx` as a source, but that file does not exist in the codebase. The equivalent logic is split across two files instead:
@@ -34,7 +36,7 @@ Every `Item.contentType` is one of three kinds, which determines which `Item` fi
 | `url` | link | `url` (required) | `content`, `language`, `fileUrl`, `fileName`, `fileSize` |
 | `file` | file, image | `fileUrl`, `fileName`, `fileSize` | `content`, `language`, `url` |
 
-`prisma/seed.ts` sets `contentType` per item as `data.url ? "url" : "text"` — it never seeds `file`/`image` items (Pro-gated upload flow isn't implemented yet), so those two types currently have zero seeded rows.
+`prisma/seed.ts` sets `contentType` per item as `data.url ? "url" : "text"` and never seeds `file`/`image` items, so those two types have zero *seeded* rows — but the upload flow itself (`feature/file-image-upload`) is implemented, and users can create real `file`/`image` items via upload.
 
 ## Shared properties
 
@@ -44,7 +46,7 @@ All `ItemType` rows share: `id`, `name`, `icon` (Lucide icon name, resolved via 
 
 ## Display differences
 
-- **`ItemCard`** (`src/components/dashboard/ItemCard.tsx`): renders every type uniformly — an icon swatch tinted with `itemType.color` (icon resolved via `itemTypeIcons[item.itemType.icon]`), title, optional description, up to 3 tags, relative-time stamp. A colored left/full border appears when `isPinned`. There's no type-specific rendering yet (e.g. no code preview for snippets, no thumbnail for images, no favicon for links) — `ItemWithType` doesn't even carry `contentType`/`content`/`url` today, only `itemType.icon`/`itemType.color`.
+- **`ItemCard`** (`src/components/dashboard/ItemCard.tsx`): renders `snippet`/`prompt`/`command`/`note`/`link` uniformly — an icon swatch tinted with `itemType.color` (icon resolved via `itemTypeIcons[item.itemType.icon]`), title, optional description, up to 3 tags, relative-time stamp, with a colored border when `isPinned`. `image` and `file` types get dedicated list views instead of `ItemCard`: `ImageThumbnailCard` (16:9 thumbnail grid, `feature/image-gallery-view`) and `FileListRow` (single-column rows with per-extension icons and a direct-download button, `feature/file-list-view`) — `src/app/(app)/items/[type]/page.tsx` branches on `itemType.name` to pick which one renders.
 - **`CollectionCard`** (`src/components/dashboard/CollectionCard.tsx`): since a collection holds mixed types, it shows a single dot colored by the *dominant* item type in the collection, plus a small row of icons (one per distinct type present, deduped) — not per-item colors.
 - **Sidebar** (`SidebarContent.tsx`, via `getItemTypesWithCounts`): lists all 7 system types in fixed display order with per-user item counts; `file`/`image` show a "Pro" badge when the signed-in user's `isPro` is false.
 - **Pro gating**: `file` and `image` are the only types restricted to Pro users (per `project-overview.md`'s monetization table); the other 5 are free-tier.

@@ -7,14 +7,14 @@ import { toast } from "sonner";
 import { type ItemWithType } from "@/lib/db/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
-import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
+import { useDrawerCardProps } from "@/components/dashboard/use-drawer-card-props";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 export function ItemCard({ item }: { item: ItemWithType }) {
   const Icon = itemTypeIcons[item.itemType.icon];
-  const { openDrawer } = useItemDrawer();
+  const drawerCardProps = useDrawerCardProps(item.id);
   const copyText = item.content ?? item.url ?? "";
 
   const handleCopy = (e: MouseEvent) => {
@@ -26,15 +26,7 @@ export function ItemCard({ item }: { item: ItemWithType }) {
   return (
     <Card
       size="sm"
-      role="button"
-      tabIndex={0}
-      onClick={() => openDrawer(item.id)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          openDrawer(item.id);
-        }
-      }}
+      {...drawerCardProps}
       className="cursor-pointer gap-2 border-l-2 p-4"
       style={{ borderLeftColor: item.itemType.color }}
     >
