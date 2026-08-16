@@ -4,6 +4,7 @@ import { Layers, Search, Menu } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/dashboard/sidebar-context";
+import { useCommandPalette } from "@/components/dashboard/command-palette-context";
 import { NewItemDialog } from "@/components/dashboard/NewItemDialog";
 import { NewCollectionDialog } from "@/components/dashboard/NewCollectionDialog";
 import { type ItemTypeWithCount } from "@/lib/db/items";
@@ -26,6 +27,7 @@ interface TopBarProps {
 
 export function TopBar({ itemTypes, collections }: TopBarProps) {
   const { setMobileOpen } = useSidebar();
+  const { setOpen: setCommandPaletteOpen } = useCommandPalette();
   const creatableTypes = itemTypes.filter((type) => creatableTypeSlugs.has(type.slug));
 
   return (
@@ -50,8 +52,13 @@ export function TopBar({ itemTypes, collections }: TopBarProps) {
           type="search"
           placeholder="Search snippets, prompts, tags..."
           aria-label="Search"
-          className="pl-9"
+          className="cursor-pointer pl-9 pr-12"
+          readOnly
+          onClick={() => setCommandPaletteOpen(true)}
         />
+        <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded border px-1.5 py-0.5 text-xs text-muted-foreground">
+          ⌘K
+        </kbd>
       </div>
 
       <div className="flex items-center justify-self-end gap-2">

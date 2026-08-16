@@ -303,6 +303,39 @@ export async function getItemsByType(userId: string, itemTypeId: string): Promis
   return items.map(toItemWithType);
 }
 
+export interface SearchItem {
+  id: string;
+  title: string;
+  preview: string | null;
+  itemType: {
+    name: string;
+    icon: string;
+    color: string;
+  };
+}
+
+export async function getAllItemsForSearch(userId: string): Promise<SearchItem[]> {
+  const items = await prisma.item.findMany({
+    where: { userId },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      content: true,
+      url: true,
+      itemType: { select: { name: true, icon: true, color: true } },
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  return items.map((item) => ({
+    id: item.id,
+    title: item.title,
+    preview: item.description ?? item.content ?? item.url ?? null,
+    itemType: item.itemType,
+  }));
+}
+
 export async function getRecentItems(userId: string, limit = 10): Promise<ItemWithType[]> {
   const items = await prisma.item.findMany({
     where: { userId },
