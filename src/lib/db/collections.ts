@@ -214,3 +214,45 @@ export async function createCollection(
     description: collection.description,
   };
 }
+
+export interface UpdateCollectionData {
+  name: string;
+  description: string | null;
+}
+
+export async function updateCollection(
+  userId: string,
+  collectionId: string,
+  data: UpdateCollectionData
+): Promise<Collection | null> {
+  const existing = await prisma.collection.findFirst({
+    where: { id: collectionId, userId },
+  });
+  if (!existing) return null;
+
+  const updated = await prisma.collection.update({
+    where: { id: collectionId },
+    data: {
+      name: data.name,
+      description: data.description,
+    },
+  });
+
+  return {
+    id: updated.id,
+    name: updated.name,
+    description: updated.description,
+  };
+}
+
+export async function deleteCollection(userId: string, collectionId: string): Promise<boolean> {
+  const existing = await prisma.collection.findFirst({
+    where: { id: collectionId, userId },
+  });
+  if (!existing) return false;
+
+  // Only removes the Collection row (and its ItemCollection join rows via the
+  // schema's onDelete: Cascade) — items themselves are untouched.
+  await prisma.collection.delete({ where: { id: collectionId } });
+  return true;
+}

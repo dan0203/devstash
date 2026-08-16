@@ -6,6 +6,7 @@ import { itemTypeIcons } from "@/lib/icon-map";
 import { ItemCard } from "@/components/dashboard/ItemCard";
 import { ImageThumbnailCard } from "@/components/dashboard/ImageThumbnailCard";
 import { FileListRow } from "@/components/dashboard/FileListRow";
+import { CollectionDetailActions } from "@/components/dashboard/CollectionDetailActions";
 
 export default async function CollectionDetailPage(props: PageProps<"/collections/[id]">) {
   const session = await auth();
@@ -29,7 +30,10 @@ export default async function CollectionDetailPage(props: PageProps<"/collection
     <main className="min-h-0 flex-1 overflow-y-auto p-6">
       <div className="mx-auto flex max-w-5xl flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <h1 className="text-lg font-semibold">{collection.name}</h1>
+          <div className="flex items-start justify-between gap-4">
+            <h1 className="text-lg font-semibold">{collection.name}</h1>
+            <CollectionDetailActions collection={collection} />
+          </div>
           {collection.description && (
             <p className="text-sm text-muted-foreground">{collection.description}</p>
           )}
