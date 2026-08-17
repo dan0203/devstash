@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Session } from "next-auth";
 import { signOut } from "next-auth/react";
-import { ChevronDown, ChevronRight, LogOut, Star } from "lucide-react";
+import { ChevronDown, ChevronRight, LogOut, Settings, Star } from "lucide-react";
 
 import { type ItemTypeWithCount } from "@/lib/db/items";
 import { type CollectionWithStats } from "@/lib/db/collections";
@@ -131,6 +131,10 @@ export function SidebarContent({
                 <p className="truncate text-xs text-muted-foreground">{user.email}</p>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" align="start">
+                <DropdownMenuItem render={<Link href="/settings" />}>
+                  <Settings />
+                  Settings
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/sign-in" })}>
                   <LogOut />
                   Sign out

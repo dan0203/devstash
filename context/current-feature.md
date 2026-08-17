@@ -1,18 +1,26 @@
-# Current Feature
+# Current Feature: Settings Page
 
 <!-- Feature Name And Short Description -->
 
+Add a protected `/settings` page reachable from a new "Settings" link in the user-icon dropdown at the bottom of the sidebar. Move the Account Actions (change/forgot password, delete account) off the profile page and onto this new settings page.
+
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
 <!-- Goals & Requirements -->
+- New route `/settings`, protected the same way `/dashboard`/`/profile` are (add to `src/proxy.ts`'s matcher; redirect unauthenticated users to `/sign-in`).
+- Add a "Settings" item to the existing sidebar user dropdown (`SidebarContent.tsx`/`Sidebar.tsx`/`MobileSidebar.tsx`), alongside the existing "Sign out" entry, linking to `/settings`.
+- Move the profile page's "Account Actions" card (currently `ChangePasswordDialog` + `DeleteAccountDialog` in `src/app/(app)/profile/page.tsx`) to the new `/settings` page.
+- `/profile` keeps account info + usage stats only, no longer renders the account-actions card.
+- Settings page should live under the existing `(app)` route group/layout so it renders inside the sidebar/top-bar shell, matching `/profile`/`/dashboard`.
 
 ## Notes
 
 <!-- Any Extra Notes -->
+- Confirmed with user: "forgot password" in the spec refers to the existing `ChangePasswordDialog` (change password while logged in), not the separate `/forgot-password` email-reset flow. No new forgot-password link is being added to Settings.
 - `getCollectionsPage` slices the existing cached `getCollectionsWithStats(userId)` result rather than doing a DB-level `skip`/`take` — collection counts are small (free tier caps at 3, Pro collections are still typically few compared to items), and a true paginated query would mean either abandoning the shared cache used by the sidebar/dashboard or maintaining two parallel collection-fetch code paths. `/items/[type]` and `/collections/[id]` (the item-heavy lists) do use real DB-level pagination.
 
 ## History
