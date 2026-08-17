@@ -1,6 +1,7 @@
 "use client";
 
-import { Layers, Search, Menu } from "lucide-react";
+import Link from "next/link";
+import { Layers, Search, Menu, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/dashboard/sidebar-context";
@@ -62,6 +63,9 @@ export function TopBar({ itemTypes, collections }: TopBarProps) {
       </div>
 
       <div className="flex items-center justify-self-end gap-2">
+        <Button variant="ghost" size="icon-sm" aria-label="Favorites" nativeButton={false} render={<Link href="/favorites" />}>
+          <Star className="size-4" />
+        </Button>
         <NewCollectionDialog />
         <NewItemDialog itemTypes={creatableTypes} collections={collections} />
       </div>
