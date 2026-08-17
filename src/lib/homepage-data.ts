@@ -82,10 +82,10 @@ export const FREE_PLAN_UNAVAILABLE_FEATURES = ["File & Image uploads", "AI featu
 export const PRO_PLAN_FEATURES = [
   "Unlimited items",
   "Unlimited collections",
-  "Files & image uploads",
+  "All item types including Files & Images",
   "AI auto-tagging, summaries & explain",
   "AI prompt optimizer",
-  "Data export",
+  "Data export (JSON/ZIP)",
   "Priority support",
 ];
 

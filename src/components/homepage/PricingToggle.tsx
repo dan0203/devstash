@@ -38,9 +38,10 @@ export function PricingToggle() {
           <h3 className="mb-3 text-lg font-semibold">Free</h3>
           <div className="mb-1.5 flex items-baseline gap-1">
             <span className="text-4xl font-extrabold">$0</span>
-            <span className="text-sm text-muted-foreground">/mo</span>
+            <span className="text-sm text-muted-foreground">/month</span>
           </div>
-          <ul className="mt-6 flex flex-1 flex-col gap-2.5">
+          <p className="mb-6 text-sm text-muted-foreground">Perfect for getting started</p>
+          <ul className="flex flex-1 flex-col gap-2.5">
             {FREE_PLAN_FEATURES.map((feature) => (
               <PlanFeature key={feature}>{feature}</PlanFeature>
             ))}
@@ -65,14 +66,14 @@ export function PricingToggle() {
             Most Popular
           </Badge>
           <h3 className="mb-3 text-lg font-semibold">Pro</h3>
-          <div className={cn("flex items-baseline gap-1", isYearly ? "mb-1.5" : "mb-6")}>
-            <span className="text-4xl font-extrabold">{isYearly ? "$72" : "$8"}</span>
-            <span className="text-sm text-muted-foreground">{isYearly ? "/yr" : "/mo"}</span>
+          <div className="mb-1.5 flex items-baseline gap-1">
+            <span className="text-4xl font-extrabold">{isYearly ? "$6" : "$8"}</span>
+            <span className="text-sm text-muted-foreground">
+              /month{isYearly ? " (billed $72/year)" : ""}
+            </span>
           </div>
-          {isYearly && (
-            <p className="mb-6 text-sm text-green-400">billed annually — that&apos;s $6/month</p>
-          )}
-          <ul className="mt-6 flex flex-1 flex-col gap-2.5">
+          <p className="mb-6 text-sm text-muted-foreground">For serious developers</p>
+          <ul className="flex flex-1 flex-col gap-2.5">
             {PRO_PLAN_FEATURES.map((feature) => (
               <PlanFeature key={feature}>{feature}</PlanFeature>
             ))}
