@@ -9,6 +9,7 @@ import { ItemDrawerProvider } from "@/components/dashboard/item-drawer-context";
 import { ItemDrawer } from "@/components/dashboard/ItemDrawer";
 import { CommandPaletteProvider } from "@/components/dashboard/command-palette-context";
 import { CommandPalette } from "@/components/dashboard/CommandPalette";
+import { EditorPreferencesProvider } from "@/components/dashboard/editor-preferences-context";
 import { getItemTypesWithCounts, getAllItemsForSearch } from "@/lib/db/items";
 import {
   getFavoriteCollections,
@@ -16,6 +17,7 @@ import {
   getUserCollections,
   getAllCollections,
 } from "@/lib/db/collections";
+import { getEditorPreferences } from "@/lib/db/user";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const session = await auth();
@@ -27,15 +29,23 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   }
   const user = session.user;
 
-  const [itemTypes, favoriteCollections, recentCollections, collections, searchItems, allCollections] =
-    await Promise.all([
-      getItemTypesWithCounts(user.id),
-      getFavoriteCollections(user.id),
-      getSidebarRecentCollections(user.id, 5),
-      getUserCollections(user.id),
-      getAllItemsForSearch(user.id),
-      getAllCollections(user.id),
-    ]);
+  const [
+    itemTypes,
+    favoriteCollections,
+    recentCollections,
+    collections,
+    searchItems,
+    allCollections,
+    editorPreferences,
+  ] = await Promise.all([
+    getItemTypesWithCounts(user.id),
+    getFavoriteCollections(user.id),
+    getSidebarRecentCollections(user.id, 5),
+    getUserCollections(user.id),
+    getAllItemsForSearch(user.id),
+    getAllCollections(user.id),
+    getEditorPreferences(user.id),
+  ]);
   const searchCollections = allCollections.map((collection) => ({
     id: collection.id,
     name: collection.name,
@@ -46,26 +56,28 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     <SidebarProvider>
       <ItemDrawerProvider>
         <CommandPaletteProvider>
-          <div className="flex h-dvh flex-col">
-            <TopBar itemTypes={itemTypes} collections={collections} />
-            <div className="flex min-h-0 flex-1">
-              <Sidebar
-                user={user}
-                itemTypes={itemTypes}
-                favoriteCollections={favoriteCollections}
-                recentCollections={recentCollections}
-              />
-              <MobileSidebar
-                user={user}
-                itemTypes={itemTypes}
-                favoriteCollections={favoriteCollections}
-                recentCollections={recentCollections}
-              />
-              {children}
+          <EditorPreferencesProvider initialPreferences={editorPreferences}>
+            <div className="flex h-dvh flex-col">
+              <TopBar itemTypes={itemTypes} collections={collections} />
+              <div className="flex min-h-0 flex-1">
+                <Sidebar
+                  user={user}
+                  itemTypes={itemTypes}
+                  favoriteCollections={favoriteCollections}
+                  recentCollections={recentCollections}
+                />
+                <MobileSidebar
+                  user={user}
+                  itemTypes={itemTypes}
+                  favoriteCollections={favoriteCollections}
+                  recentCollections={recentCollections}
+                />
+                {children}
+              </div>
             </div>
-          </div>
-          <ItemDrawer collections={collections} />
-          <CommandPalette items={searchItems} collections={searchCollections} />
+            <ItemDrawer collections={collections} />
+            <CommandPalette items={searchItems} collections={searchCollections} />
+          </EditorPreferencesProvider>
         </CommandPaletteProvider>
       </ItemDrawerProvider>
     </SidebarProvider>
