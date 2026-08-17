@@ -117,7 +117,7 @@ export function NewItemDialog({ itemTypes, collections }: NewItemDialogProps) {
         <Plus />
         <span className="hidden md:inline">New item</span>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>New item</DialogTitle>
           <DialogDescription>Add a new item to your stash.</DialogDescription>
