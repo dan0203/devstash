@@ -8,6 +8,8 @@ import type { editor as MonacoEditorNS } from "monaco-editor";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useEditorPreferences } from "@/components/dashboard/editor-preferences-context";
+import { defineCustomMonacoThemes } from "@/lib/monaco-themes";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -38,6 +40,7 @@ export function CodeEditor({
   readOnly = false,
   className,
 }: CodeEditorProps) {
+  const { preferences } = useEditorPreferences();
   const [height, setHeight] = useState(MIN_HEIGHT);
   const [copied, setCopied] = useState(false);
   const editorRef = useRef<MonacoEditorNS.IStandaloneCodeEditor | null>(null);
@@ -100,18 +103,20 @@ export function CodeEditor({
       <MonacoEditor
         value={value}
         language={mapMonacoLanguage(language)}
-        theme="vs-dark"
+        theme={preferences.theme}
         height={height}
         onChange={(newValue) => onChange?.(newValue ?? "")}
+        beforeMount={defineCustomMonacoThemes}
         onMount={handleMount}
         options={{
           readOnly,
           domReadOnly: readOnly,
-          minimap: { enabled: false },
-          fontSize: 13,
+          minimap: { enabled: preferences.minimap },
+          fontSize: preferences.fontSize,
+          tabSize: preferences.tabSize,
           lineNumbers: "on",
           folding: false,
-          wordWrap: "on",
+          wordWrap: preferences.wordWrap ? "on" : "off",
           scrollBeyondLastLine: false,
           renderLineHighlight: readOnly ? "none" : "line",
           padding: { top: 12, bottom: 12 },

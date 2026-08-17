@@ -5,6 +5,7 @@ import { getUserProfile } from "@/lib/db/user";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChangePasswordDialog } from "@/components/settings/ChangePasswordDialog";
 import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
+import { EditorPreferencesSettings } from "@/components/settings/EditorPreferencesSettings";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -21,6 +22,16 @@ export default async function SettingsPage() {
   return (
     <main className="min-h-0 flex-1 overflow-y-auto p-6">
       <div className="mx-auto flex max-w-2xl flex-col gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Editor preferences</CardTitle>
+            <CardDescription>Customize how the code editor looks and behaves</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <EditorPreferencesSettings />
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Account actions</CardTitle>

@@ -67,6 +67,8 @@ model User {
   stripeCustomerId     String? @unique
   stripeSubscriptionId String? @unique
 
+  editorPreferences Json? // font size, tab size, word wrap, minimap, theme
+
   accounts    Account[]
   sessions    Session[]
   items       Item[]
