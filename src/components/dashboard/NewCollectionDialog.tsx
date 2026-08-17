@@ -75,9 +75,9 @@ export function NewCollectionDialog() {
         if (!next) reset();
       }}
     >
-      <DialogTrigger render={<Button variant="secondary" />}>
+      <DialogTrigger render={<Button variant="secondary" aria-label="New Collection" />}>
         <FolderPlus />
-        New Collection
+        <span className="hidden md:inline">New Collection</span>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
