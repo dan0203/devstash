@@ -2,11 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { FREE_PLAN_FEATURES, PRO_PLAN_FEATURES } from "@/lib/homepage-data";
+import {
+  FREE_PLAN_FEATURES,
+  FREE_PLAN_UNAVAILABLE_FEATURES,
+  PRO_PLAN_FEATURES,
+} from "@/lib/homepage-data";
 import { cn } from "@/lib/utils";
 
 export function PricingToggle() {
@@ -23,7 +27,7 @@ export function PricingToggle() {
         />
         <span className="text-sm text-muted-foreground">
           Yearly
-          <Badge className="ml-1.5 bg-green-500/10 text-green-400" variant="secondary">
+          <Badge className="ml-1.5 bg-green-500 text-neutral-800" variant="secondary">
             Save 25%
           </Badge>
         </span>
@@ -39,6 +43,11 @@ export function PricingToggle() {
           <ul className="mt-6 flex flex-1 flex-col gap-2.5">
             {FREE_PLAN_FEATURES.map((feature) => (
               <PlanFeature key={feature}>{feature}</PlanFeature>
+            ))}
+            {FREE_PLAN_UNAVAILABLE_FEATURES.map((feature) => (
+              <PlanFeature key={feature} available={false}>
+                {feature}
+              </PlanFeature>
             ))}
           </ul>
           <Button
@@ -81,10 +90,25 @@ export function PricingToggle() {
   );
 }
 
-function PlanFeature({ children }: { children: string }) {
+function PlanFeature({
+  children,
+  available = true,
+}: {
+  children: string;
+  available?: boolean;
+}) {
   return (
-    <li className="flex items-start gap-2 text-sm text-muted-foreground">
-      <Check className="mt-0.5 size-3.5 shrink-0 text-green-400" />
+    <li
+      className={cn(
+        "flex items-start gap-2 text-sm",
+        available ? "text-muted-foreground" : "text-muted-foreground/50"
+      )}
+    >
+      {available ? (
+        <Check className="mt-0.5 size-3.5 shrink-0 text-green-400" />
+      ) : (
+        <X className="mt-0.5 size-3.5 shrink-0 text-muted-foreground/50" />
+      )}
       {children}
     </li>
   );

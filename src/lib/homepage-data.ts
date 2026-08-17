@@ -77,6 +77,8 @@ export const FREE_PLAN_FEATURES = [
   "Basic search",
 ];
 
+export const FREE_PLAN_UNAVAILABLE_FEATURES = ["File & Image uploads", "AI features"];
+
 export const PRO_PLAN_FEATURES = [
   "Unlimited items",
   "Unlimited collections",
