@@ -353,6 +353,16 @@ export async function getAllItemsForSearch(userId: string): Promise<SearchItem[]
   }));
 }
 
+export async function getFavoriteItems(userId: string): Promise<ItemWithType[]> {
+  const items = await prisma.item.findMany({
+    where: { userId, isFavorite: true },
+    include: { tags: true, itemType: true },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  return items.map(toItemWithType);
+}
+
 export async function getRecentItems(userId: string, limit = 10): Promise<ItemWithType[]> {
   const items = await prisma.item.findMany({
     where: { userId },

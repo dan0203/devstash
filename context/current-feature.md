@@ -1,18 +1,24 @@
-# Current Feature
-
-<!-- Feature Name And Short Description -->
+# Current Feature: Favorites Page
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Add star icon button to TopBar linking to /favorites
+- Create /favorites route with protection
+- Fetch all user favorited items and collections
+- Compact list view (VS Code/terminal style, not cards)
+- Each row: type icon, title, type badge, date added
+- Separate sections for items and collections with counts
+- Click item opens ItemDrawer, click collection navigates to /collections/[id]
+- Empty state when no favorites
+- Sort by most recently favorited (updatedAt)
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- UI style: monospace or semi-monospace font, minimal padding, high density, subtle hover states, no cards or heavy borders, clean lines only.
 - `getCollectionsPage` slices the existing cached `getCollectionsWithStats(userId)` result rather than doing a DB-level `skip`/`take` — collection counts are small (free tier caps at 3, Pro collections are still typically few compared to items), and a true paginated query would mean either abandoning the shared cache used by the sidebar/dashboard or maintaining two parallel collection-fetch code paths. `/items/[type]` and `/collections/[id]` (the item-heavy lists) do use real DB-level pagination.
 
 ## History
