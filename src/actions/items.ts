@@ -7,6 +7,7 @@ import {
   createItem as createItemRecord,
   updateItem as updateItemRecord,
   deleteItem as deleteItemRecord,
+  toggleItemFavorite as toggleItemFavoriteRecord,
   type ItemDetail,
 } from "@/lib/db/items";
 import { getItemTypeByName } from "@/lib/db/item-types";
@@ -154,4 +155,24 @@ export async function deleteItem(itemId: string): Promise<DeleteItemState> {
   }
 
   return { success: true };
+}
+
+export interface ToggleFavoriteState {
+  success: boolean;
+  isFavorite?: boolean;
+  error?: string;
+}
+
+export async function toggleItemFavorite(itemId: string): Promise<ToggleFavoriteState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Not signed in" };
+  }
+
+  const isFavorite = await toggleItemFavoriteRecord(session.user.id, itemId);
+  if (isFavorite === null) {
+    return { success: false, error: "Item not found" };
+  }
+
+  return { success: true, isFavorite };
 }

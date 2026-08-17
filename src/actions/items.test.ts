@@ -2,14 +2,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // vi.mock factories are hoisted above imports/const declarations, so the
 // mocks they reference must be created via vi.hoisted().
-const { mockAuth, mockCreateItem, mockUpdateItem, mockDeleteItem, mockGetItemTypeByName } =
-  vi.hoisted(() => ({
-    mockAuth: vi.fn(),
-    mockCreateItem: vi.fn(),
-    mockUpdateItem: vi.fn(),
-    mockDeleteItem: vi.fn(),
-    mockGetItemTypeByName: vi.fn(),
-  }));
+const {
+  mockAuth,
+  mockCreateItem,
+  mockUpdateItem,
+  mockDeleteItem,
+  mockToggleItemFavorite,
+  mockGetItemTypeByName,
+} = vi.hoisted(() => ({
+  mockAuth: vi.fn(),
+  mockCreateItem: vi.fn(),
+  mockUpdateItem: vi.fn(),
+  mockDeleteItem: vi.fn(),
+  mockToggleItemFavorite: vi.fn(),
+  mockGetItemTypeByName: vi.fn(),
+}));
 
 vi.mock(import("@/auth"), () => ({
   auth: mockAuth,
@@ -19,13 +26,14 @@ vi.mock(import("@/lib/db/items"), () => ({
   createItem: mockCreateItem,
   updateItem: mockUpdateItem,
   deleteItem: mockDeleteItem,
+  toggleItemFavorite: mockToggleItemFavorite,
 }) as never);
 
 vi.mock(import("@/lib/db/item-types"), () => ({
   getItemTypeByName: mockGetItemTypeByName,
 }) as never);
 
-import { createItem, updateItem, deleteItem } from "./items";
+import { createItem, updateItem, deleteItem, toggleItemFavorite } from "./items";
 
 const validCreateInput = {
   itemType: "snippet" as const,
@@ -259,5 +267,39 @@ describe("deleteItem", () => {
 
     expect(mockDeleteItem).toHaveBeenCalledWith("user-1", "item-1");
     expect(result).toEqual({ success: true });
+  });
+});
+
+describe("toggleItemFavorite", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns an error when there is no signed-in session", async () => {
+    mockAuth.mockResolvedValue(null);
+
+    const result = await toggleItemFavorite("item-1");
+
+    expect(result).toEqual({ success: false, error: "Not signed in" });
+    expect(mockToggleItemFavorite).not.toHaveBeenCalled();
+  });
+
+  it("returns Item not found when the query function can't find/own the item", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    mockToggleItemFavorite.mockResolvedValue(null);
+
+    const result = await toggleItemFavorite("item-1");
+
+    expect(result).toEqual({ success: false, error: "Item not found" });
+  });
+
+  it("delegates to the query function and returns the new favorite state", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    mockToggleItemFavorite.mockResolvedValue(true);
+
+    const result = await toggleItemFavorite("item-1");
+
+    expect(mockToggleItemFavorite).toHaveBeenCalledWith("user-1", "item-1");
+    expect(result).toEqual({ success: true, isFavorite: true });
   });
 });

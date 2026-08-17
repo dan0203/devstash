@@ -20,14 +20,27 @@ interface ItemDrawerActionsProps {
   onCopy: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onToggleFavorite: () => void;
   deleting: boolean;
 }
 
-export function ItemDrawerActions({ item, onCopy, onEdit, onDelete, deleting }: ItemDrawerActionsProps) {
+export function ItemDrawerActions({
+  item,
+  onCopy,
+  onEdit,
+  onDelete,
+  onToggleFavorite,
+  deleting,
+}: ItemDrawerActionsProps) {
   return (
     <SheetFooter className="flex-row items-center justify-between">
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" className={item.isFavorite ? "text-yellow-400" : undefined}>
+        <Button
+          variant="outline"
+          size="sm"
+          className={item.isFavorite ? "text-yellow-400" : undefined}
+          onClick={onToggleFavorite}
+        >
           <Star className={item.isFavorite ? "fill-yellow-400 text-yellow-400" : undefined} />
           Favorite
         </Button>

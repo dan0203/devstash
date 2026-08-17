@@ -2,14 +2,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // vi.mock factories are hoisted above imports/const declarations, so the
 // mocks they reference must be created via vi.hoisted().
-const { mockAuth, mockCreateCollection, mockUpdateCollection, mockDeleteCollection } = vi.hoisted(
-  () => ({
-    mockAuth: vi.fn(),
-    mockCreateCollection: vi.fn(),
-    mockUpdateCollection: vi.fn(),
-    mockDeleteCollection: vi.fn(),
-  })
-);
+const {
+  mockAuth,
+  mockCreateCollection,
+  mockUpdateCollection,
+  mockDeleteCollection,
+  mockToggleCollectionFavorite,
+} = vi.hoisted(() => ({
+  mockAuth: vi.fn(),
+  mockCreateCollection: vi.fn(),
+  mockUpdateCollection: vi.fn(),
+  mockDeleteCollection: vi.fn(),
+  mockToggleCollectionFavorite: vi.fn(),
+}));
 
 vi.mock(import("@/auth"), () => ({
   auth: mockAuth,
@@ -19,9 +24,15 @@ vi.mock(import("@/lib/db/collections"), () => ({
   createCollection: mockCreateCollection,
   updateCollection: mockUpdateCollection,
   deleteCollection: mockDeleteCollection,
+  toggleCollectionFavorite: mockToggleCollectionFavorite,
 }) as never);
 
-import { createCollection, updateCollection, deleteCollection } from "./collections";
+import {
+  createCollection,
+  updateCollection,
+  deleteCollection,
+  toggleCollectionFavorite,
+} from "./collections";
 
 const validCreateInput = {
   name: "React Patterns",
@@ -179,5 +190,39 @@ describe("deleteCollection", () => {
 
     expect(mockDeleteCollection).toHaveBeenCalledWith("user-1", "col-1");
     expect(result).toEqual({ success: true });
+  });
+});
+
+describe("toggleCollectionFavorite", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns an error when there is no signed-in session", async () => {
+    mockAuth.mockResolvedValue(null);
+
+    const result = await toggleCollectionFavorite("col-1");
+
+    expect(result).toEqual({ success: false, error: "Not signed in" });
+    expect(mockToggleCollectionFavorite).not.toHaveBeenCalled();
+  });
+
+  it("returns an error when the collection isn't found or isn't owned by the user", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    mockToggleCollectionFavorite.mockResolvedValue(null);
+
+    const result = await toggleCollectionFavorite("col-1");
+
+    expect(result).toEqual({ success: false, error: "Collection not found" });
+  });
+
+  it("delegates to toggleCollectionFavorite and returns the new favorite state", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    mockToggleCollectionFavorite.mockResolvedValue(false);
+
+    const result = await toggleCollectionFavorite("col-1");
+
+    expect(mockToggleCollectionFavorite).toHaveBeenCalledWith("user-1", "col-1");
+    expect(result).toEqual({ success: true, isFavorite: false });
   });
 });

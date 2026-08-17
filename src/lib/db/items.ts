@@ -277,6 +277,25 @@ export async function createItem(
   return toItemDetail(item);
 }
 
+export async function toggleItemFavorite(userId: string, itemId: string): Promise<boolean | null> {
+  const existing = await prisma.item.findFirst({
+    where: { id: itemId, userId },
+    select: { isFavorite: true },
+  });
+  if (!existing) return null;
+
+  // Raw SQL so this doesn't bump `updatedAt` (Prisma Client's mutation
+  // resolver sets @updatedAt on every .update() call) — favoriting shouldn't
+  // reorder "recent items" lists or shift a collection's last-updated item.
+  const [updated] = await prisma.$queryRaw<{ isFavorite: boolean }[]>`
+    UPDATE "Item" SET "isFavorite" = ${!existing.isFavorite}
+    WHERE "id" = ${itemId}
+    RETURNING "isFavorite"
+  `;
+
+  return updated.isFavorite;
+}
+
 export async function deleteItem(userId: string, itemId: string): Promise<boolean> {
   const existing = await prisma.item.findFirst({
     where: { id: itemId, userId },

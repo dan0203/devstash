@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Folder } from "lucide-react";
 import { toast } from "sonner";
 
-import { updateItem, deleteItem } from "@/actions/items";
+import { updateItem, deleteItem, toggleItemFavorite } from "@/actions/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
 import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
@@ -92,6 +92,18 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
       router.refresh();
     } else {
       toast.error(result.error ?? "Failed to update item");
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!item) return;
+
+    const result = await toggleItemFavorite(item.id);
+    if (result.success && result.isFavorite !== undefined) {
+      setItem({ ...item, isFavorite: result.isFavorite });
+      router.refresh();
+    } else {
+      toast.error(result.error ?? "Failed to update favorite");
     }
   };
 
@@ -233,6 +245,7 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
                 onCopy={handleCopy}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onToggleFavorite={handleToggleFavorite}
                 deleting={deleting}
               />
             )}

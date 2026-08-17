@@ -1,9 +1,11 @@
 "use client";
 
 import type { MouseEvent } from "react";
+import { useRouter } from "next/navigation";
 import { Copy, Pin, Star } from "lucide-react";
 import { toast } from "sonner";
 
+import { toggleItemFavorite } from "@/actions/items";
 import { type ItemWithType } from "@/lib/db/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
@@ -13,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 export function ItemCard({ item }: { item: ItemWithType }) {
+  const router = useRouter();
   const Icon = itemTypeIcons[item.itemType.icon];
   const drawerCardProps = useDrawerCardProps(item.id);
   const copyText = item.content ?? item.url ?? "";
@@ -21,6 +24,16 @@ export function ItemCard({ item }: { item: ItemWithType }) {
     e.stopPropagation();
     navigator.clipboard.writeText(copyText);
     toast.success("Copied to clipboard");
+  };
+
+  const handleToggleFavorite = async (e: MouseEvent) => {
+    e.stopPropagation();
+    const result = await toggleItemFavorite(item.id);
+    if (result.success) {
+      router.refresh();
+    } else {
+      toast.error(result.error ?? "Failed to update favorite");
+    }
   };
 
   return (
@@ -39,7 +52,17 @@ export function ItemCard({ item }: { item: ItemWithType }) {
         </div>
         <div className="flex items-center gap-1.5 text-muted-foreground">
           {item.isPinned && <Pin className="size-3.5" />}
-          {item.isFavorite && <Star className="size-3.5 fill-yellow-400 text-yellow-400" />}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={item.isFavorite ? "Unfavorite" : "Favorite"}
+            className="size-6 text-muted-foreground hover:text-foreground"
+            onClick={handleToggleFavorite}
+          >
+            <Star
+              className={item.isFavorite ? "size-3.5 fill-yellow-400 text-yellow-400" : "size-3.5"}
+            />
+          </Button>
           {copyText && (
             <Button
               variant="ghost"

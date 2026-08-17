@@ -1,18 +1,25 @@
-# Current Feature
+# Current Feature: Favorite Toggle (Drawer, Collection Page, Cards)
 
-<!-- Feature Name And Short Description -->
+Wire up the existing but currently inert/display-only favorite stars for items and collections into real, clickable toggles.
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Item Drawer (`ItemDrawerActions.tsx`): the "Favorite" button becomes clickable and toggles `Item.isFavorite`.
+- Collection detail page (`CollectionDetailActions.tsx`): the "Favorite" button becomes clickable and toggles `Collection.isFavorite`.
+- Collection card 3-dots menu (`CollectionCardMenu.tsx`, used on `/collections` and the dashboard's "Recent Collections" grid): the "Favorite" dropdown item becomes clickable and toggles `Collection.isFavorite`.
+- Item/collection cards (`ItemCard.tsx`, `CollectionCard.tsx`): the static star indicator becomes a clickable toggle in place, without navigating/opening the drawer or collection page (stop propagation, matching the existing `CollectionCardMenu` pattern).
+- All toggles reflect optimistically or via `router.refresh()` (matching existing conventions in this codebase, e.g. edit/delete flows) so sidebar favorite counts, `/favorites`, and stats update live.
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Add `toggleItemFavorite(itemId)` and `toggleCollectionFavorite(collectionId)` Server Actions (`src/actions/items.ts` / `src/actions/collections.ts`), following the existing `{ success, data, error }` pattern, session via `auth()`, ownership-checked in the corresponding `src/lib/db` query fn (same `findFirst({ id, userId })` pattern already used by `updateItem`/`updateCollection`/`deleteItem`/`deleteCollection`).
+- `FavoriteItemRow.tsx`/`FavoriteCollectionRow.tsx` (the `/favorites` page) explicitly removed their per-row star per prior feedback ("redundant on an already-favorites-only page") — leave those as-is, out of scope here.
+- Follow the established `stopPropagation` pattern (`CollectionCardMenu`, `useDrawerCardProps`) for any favorite click target that sits inside a larger clickable card/row, so toggling favorite never triggers navigation or drawer-open as a side effect.
+- Add Vitest tests for both new Server Actions in `src/actions/items.test.ts` / `src/actions/collections.test.ts`, mirroring the existing update/delete test patterns; the underlying `src/lib/db/**` query fns stay untested per the established exclusion.
 - `getCollectionsPage` slices the existing cached `getCollectionsWithStats(userId)` result rather than doing a DB-level `skip`/`take` — collection counts are small (free tier caps at 3, Pro collections are still typically few compared to items), and a true paginated query would mean either abandoning the shared cache used by the sidebar/dashboard or maintaining two parallel collection-fetch code paths. `/items/[type]` and `/collections/[id]` (the item-heavy lists) do use real DB-level pagination.
 
 ## History

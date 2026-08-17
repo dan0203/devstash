@@ -7,6 +7,7 @@ import {
   createCollection as createCollectionRecord,
   updateCollection as updateCollectionRecord,
   deleteCollection as deleteCollectionRecord,
+  toggleCollectionFavorite as toggleCollectionFavoriteRecord,
   type Collection,
 } from "@/lib/db/collections";
 
@@ -100,4 +101,24 @@ export async function deleteCollection(collectionId: string): Promise<DeleteColl
   }
 
   return { success: true };
+}
+
+export interface ToggleFavoriteState {
+  success: boolean;
+  isFavorite?: boolean;
+  error?: string;
+}
+
+export async function toggleCollectionFavorite(collectionId: string): Promise<ToggleFavoriteState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Not signed in" };
+  }
+
+  const isFavorite = await toggleCollectionFavoriteRecord(session.user.id, collectionId);
+  if (isFavorite === null) {
+    return { success: false, error: "Collection not found" };
+  }
+
+  return { success: true, isFavorite };
 }

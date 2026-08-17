@@ -278,6 +278,28 @@ export async function updateCollection(
   };
 }
 
+export async function toggleCollectionFavorite(
+  userId: string,
+  collectionId: string
+): Promise<boolean | null> {
+  const existing = await prisma.collection.findFirst({
+    where: { id: collectionId, userId },
+    select: { isFavorite: true },
+  });
+  if (!existing) return null;
+
+  // Raw SQL so this doesn't bump `updatedAt` (Prisma Client's mutation
+  // resolver sets @updatedAt on every .update() call) — favoriting shouldn't
+  // reorder collection listings.
+  const [updated] = await prisma.$queryRaw<{ isFavorite: boolean }[]>`
+    UPDATE "Collection" SET "isFavorite" = ${!existing.isFavorite}
+    WHERE "id" = ${collectionId}
+    RETURNING "isFavorite"
+  `;
+
+  return updated.isFavorite;
+}
+
 export async function deleteCollection(userId: string, collectionId: string): Promise<boolean> {
   const existing = await prisma.collection.findFirst({
     where: { id: collectionId, userId },
