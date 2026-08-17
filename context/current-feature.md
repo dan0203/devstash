@@ -13,7 +13,6 @@ Not Started
 ## Notes
 
 <!-- Any Extra Notes -->
-- `getCollectionsPage` slices the existing cached `getCollectionsWithStats(userId)` result rather than doing a DB-level `skip`/`take` — collection counts are small (free tier caps at 3, Pro collections are still typically few compared to items), and a true paginated query would mean either abandoning the shared cache used by the sidebar/dashboard or maintaining two parallel collection-fetch code paths. `/items/[type]` and `/collections/[id]` (the item-heavy lists) do use real DB-level pagination.
 
 ## History
 
