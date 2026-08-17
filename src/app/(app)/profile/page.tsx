@@ -5,8 +5,6 @@ import { getUserProfile } from "@/lib/db/user";
 import { getProfileStats } from "@/lib/db/profile";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChangePasswordDialog } from "@/components/profile/ChangePasswordDialog";
-import { DeleteAccountDialog } from "@/components/profile/DeleteAccountDialog";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -71,17 +69,6 @@ export default async function ProfilePage() {
                 <span className="text-xs text-muted-foreground">{type.name}</span>
               </div>
             ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Account actions</CardTitle>
-            <CardDescription>Manage your password and account</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-3">
-            {user.hasPassword && <ChangePasswordDialog />}
-            <DeleteAccountDialog />
           </CardContent>
         </Card>
       </div>
