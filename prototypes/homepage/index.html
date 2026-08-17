@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevStash — Stop Losing Your Developer Knowledge</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="logo">
+        <span class="logo-mark">&lt;/&gt;</span>
+        DevStash
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="nav-actions">
+        <a href="#" class="btn btn-ghost">Sign In</a>
+        <a href="#" class="btn btn-primary">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-text fade-in">
+      <h1 class="hero-headline">
+        Stop Losing Your<br class="headline-break" /> <span class="gradient-text">Developer Knowledge</span>
+      </h1>
+      <p class="hero-subheadline">
+        Snippets, prompts, commands, and notes end up scattered across a dozen tools.
+        DevStash brings all of it into one fast, searchable, AI-enhanced hub.
+      </p>
+      <div class="hero-ctas">
+        <a href="#" class="btn btn-primary btn-lg">Get Started Free</a>
+        <a href="#features" class="btn btn-ghost btn-lg">See Features</a>
+      </div>
+    </div>
+
+    <div class="hero-visual fade-in">
+      <!-- Chaos Container -->
+      <div class="chaos-box">
+        <div class="box-label">Your knowledge today...</div>
+        <div class="chaos-field" id="chaosField">
+          <div class="chaos-icon" data-icon="notion" aria-label="Notion">
+            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z"/></svg>
+          </div>
+          <div class="chaos-icon" data-icon="github" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          </div>
+          <div class="chaos-icon" data-icon="slack" aria-label="Slack">
+            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/></svg>
+          </div>
+          <div class="chaos-icon" data-icon="vscode" aria-label="VS Code">
+            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .326 8.74L3.899 12 .326 15.26a1 1 0 0 0 .001 1.479L1.65 17.94a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.942-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z"/></svg>
+          </div>
+          <div class="chaos-icon" data-icon="tabs" aria-label="Browser tabs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 4v4"/><path d="M2 8h20"/><path d="M6 4v4"/></svg>
+          </div>
+          <div class="chaos-icon" data-icon="terminal" aria-label="Terminal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M12 19h8"/><path d="m4 17 6-6-6-6"/></svg>
+          </div>
+          <div class="chaos-icon" data-icon="file" aria-label="Text file">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+          </div>
+          <div class="chaos-icon" data-icon="bookmark" aria-label="Bookmark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transform Arrow -->
+      <div class="transform-arrow">
+        <svg viewBox="0 0 60 24" class="arrow-svg" aria-hidden="true">
+          <line x1="2" y1="12" x2="48" y2="12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          <path d="M38 2 L54 12 L38 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <!-- Dashboard Preview -->
+      <div class="dashboard-box">
+        <div class="box-label">...with DevStash</div>
+        <div class="dashboard-mock">
+          <div class="mock-sidebar">
+            <div class="mock-nav-item active"><span class="mock-nav-dot" style="--accent:#3b82f6"></span>Snippets</div>
+            <div class="mock-nav-item"><span class="mock-nav-dot" style="--accent:#8b5cf6"></span>Prompts</div>
+            <div class="mock-nav-item"><span class="mock-nav-dot" style="--accent:#f97316"></span>Commands</div>
+            <div class="mock-nav-item"><span class="mock-nav-dot" style="--accent:#fde047"></span>Notes</div>
+            <div class="mock-nav-item"><span class="mock-nav-dot" style="--accent:#6b7280"></span>Files</div>
+            <div class="mock-nav-item"><span class="mock-nav-dot" style="--accent:#ec4899"></span>Images</div>
+            <div class="mock-nav-item"><span class="mock-nav-dot" style="--accent:#10b981"></span>Links</div>
+          </div>
+          <div class="mock-content">
+            <div class="mock-section-title">COLLECTIONS</div>
+            <div class="mock-grid">
+              <div class="mock-card" style="--accent:#3b82f6"></div>
+              <div class="mock-card" style="--accent:#8b5cf6"></div>
+              <div class="mock-card" style="--accent:#f97316"></div>
+              <div class="mock-card" style="--accent:#fde047"></div>
+            </div>
+            <div class="mock-section-title">RECENT ITEMS</div>
+            <div class="mock-grid">
+              <div class="mock-card" style="--accent:#ec4899"></div>
+              <div class="mock-card" style="--accent:#10b981"></div>
+              <div class="mock-card" style="--accent:#6b7280"></div>
+              <div class="mock-card" style="--accent:#3b82f6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="section-inner">
+      <h2 class="section-title fade-in">Everything, one place</h2>
+      <p class="section-subtitle fade-in">Purpose-built for how developers actually work.</p>
+
+      <div class="features-grid">
+        <div class="feature-card fade-in" style="--accent:#3b82f6">
+          <div class="feature-icon">&lt;/&gt;</div>
+          <h3>Code Snippets</h3>
+          <p>Save and organize reusable code with syntax highlighting for any language.</p>
+        </div>
+        <div class="feature-card fade-in" style="--accent:#8b5cf6">
+          <div class="feature-icon">✨</div>
+          <h3>AI Prompts</h3>
+          <p>Keep your best prompts, contexts, and system messages ready to reuse.</p>
+        </div>
+        <div class="feature-card fade-in" style="--accent:#fde047">
+          <div class="feature-icon">⌘</div>
+          <h3>Instant Search</h3>
+          <p>Find anything in milliseconds — content, tags, titles, and types.</p>
+        </div>
+        <div class="feature-card fade-in" style="--accent:#f97316">
+          <div class="feature-icon">&gt;_</div>
+          <h3>Commands</h3>
+          <p>Never re-Google that flag combination again.</p>
+        </div>
+        <div class="feature-card fade-in" style="--accent:#6b7280">
+          <div class="feature-icon">📁</div>
+          <h3>Files &amp; Docs</h3>
+          <p>Attach files, images, and reference docs alongside your notes.</p>
+        </div>
+        <div class="feature-card fade-in" style="--accent:#10b981">
+          <div class="feature-icon">🗂</div>
+          <h3>Collections</h3>
+          <p>Group anything, of any type, into collections that make sense to you.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI Section -->
+  <section class="ai-section">
+    <div class="section-inner ai-inner">
+      <div class="ai-copy fade-in">
+        <span class="badge badge-pro">Pro Feature</span>
+        <h2 class="section-title">Let AI do the busywork</h2>
+        <p class="section-subtitle">Spend less time organizing and more time building.</p>
+        <ul class="ai-checklist">
+          <li><span class="check">✓</span> AI auto-tag suggestions</li>
+          <li><span class="check">✓</span> AI summaries of long snippets and notes</li>
+          <li><span class="check">✓</span> "Explain this code" on demand</li>
+          <li><span class="check">✓</span> AI prompt optimizer</li>
+        </ul>
+      </div>
+
+      <div class="ai-demo fade-in">
+        <div class="code-editor-mock">
+          <div class="editor-header">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="editor-filename">debounce.ts</span>
+          </div>
+          <pre class="editor-body"><code><span class="tok-kw">function</span> <span class="tok-fn">debounce</span>(fn, delay) {
+  <span class="tok-kw">let</span> timer;
+  <span class="tok-kw">return</span> (...args) =&gt; {
+    <span class="tok-fn">clearTimeout</span>(timer);
+    timer = <span class="tok-fn">setTimeout</span>(() =&gt; fn(...args), delay);
+  };
+}</code></pre>
+          <div class="ai-tags-demo">
+            <span class="ai-tags-label">✨ AI Generated Tags</span>
+            <div class="tag-chips">
+              <span class="chip">javascript</span>
+              <span class="chip">performance</span>
+              <span class="chip">utility</span>
+              <span class="chip">closures</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="pricing" id="pricing">
+    <div class="section-inner">
+      <h2 class="section-title fade-in">Simple pricing</h2>
+      <p class="section-subtitle fade-in">Start free. Upgrade when you need more.</p>
+
+      <div class="pricing-toggle fade-in">
+        <span class="toggle-label" id="labelMonthly">Monthly</span>
+        <button class="toggle-switch" id="billingToggle" aria-label="Toggle yearly billing" aria-pressed="false">
+          <span class="toggle-knob"></span>
+        </button>
+        <span class="toggle-label" id="labelYearly">Yearly <span class="save-badge">Save 25%</span></span>
+      </div>
+
+      <div class="pricing-grid">
+        <div class="price-card fade-in">
+          <h3>Free</h3>
+          <div class="price"><span class="price-amount">$0</span><span class="price-period">/mo</span></div>
+          <ul class="price-features">
+            <li>50 items total</li>
+            <li>3 collections</li>
+            <li>All system types except Files/Images</li>
+            <li>Basic search</li>
+          </ul>
+          <a href="#" class="btn btn-ghost btn-block">Get Started</a>
+        </div>
+
+        <div class="price-card price-card-featured fade-in">
+          <span class="badge badge-popular">Most Popular</span>
+          <h3>Pro</h3>
+          <div class="price">
+            <span class="price-amount" id="proPrice">$8</span><span class="price-period" id="proPeriod">/mo</span>
+          </div>
+          <div class="price-note" id="proPriceNote" hidden>billed annually — that's $6/month</div>
+          <ul class="price-features">
+            <li>Unlimited items</li>
+            <li>Unlimited collections</li>
+            <li>Files &amp; image uploads</li>
+            <li>AI auto-tagging, summaries &amp; explain</li>
+            <li>AI prompt optimizer</li>
+            <li>Data export</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="#" class="btn btn-primary btn-block">Upgrade to Pro</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="section-inner cta-inner fade-in">
+      <h2>Ready to Organize Your Knowledge?</h2>
+      <p>Join developers who stopped losing their best snippets, prompts, and notes.</p>
+      <a href="#" class="btn btn-primary btn-lg">Get Started Free</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="section-inner footer-inner">
+      <div class="footer-brand">
+        <a href="#" class="logo">
+          <span class="logo-mark">&lt;/&gt;</span>
+          DevStash
+        </a>
+        <p>A developer knowledge hub for everything you'd otherwise lose.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About</a>
+        <a href="#">Blog</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span id="copyrightYear"></span>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
