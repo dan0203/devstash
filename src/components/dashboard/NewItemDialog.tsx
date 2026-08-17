@@ -113,9 +113,9 @@ export function NewItemDialog({ itemTypes, collections }: NewItemDialogProps) {
         if (!next) reset();
       }}
     >
-      <DialogTrigger render={<Button />}>
+      <DialogTrigger render={<Button aria-label="New item" />}>
         <Plus />
-        New item
+        <span className="hidden md:inline">New item</span>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
