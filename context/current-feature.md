@@ -1,18 +1,26 @@
-# Current Feature
+# Current Feature: Favorites Page Sorting
 
-<!-- Feature Name And Short Description -->
+Add client-side sorting to the `/favorites` page so items and collections can be sorted by name, date, and item type.
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Add a sort control (dropdown/select) to `/favorites` with 5 sort options: Newest first (default), Oldest first, A to Z, Z to A, Item type.
+- Sorting is client-side only (data is already fully fetched server-side by `getFavoriteItems`/`getFavoriteCollections`) — no new server actions or DB queries needed.
+- Newest/Oldest first: by `updatedAt` (newest = current default ordering).
+- A to Z / Z to A: alphabetical by title (items) / name (collections), ascending or descending.
+- Item type: group/sort by item type name; collections have no single type, so decide how this sort applies to the Collections section (e.g. falls back to A-Z) as part of implementation.
+- Sorting should apply independently to the Items section and Collections section (both already rendered as separate lists via `FavoriteItemRow`/`FavoriteCollectionRow`).
+- Preserve existing styling/behavior (monospace list rows, star indicator, type badge colors, drawer/navigation on click).
 
 ## Notes
 
 <!-- Any Extra Notes -->
+- `/favorites` (added in `feature/favorites-page`) currently renders `getFavoriteItems(userId)` and `getFavoriteCollections(userId)` results as-is, sorted by `updatedAt` desc with no user-facing sort control.
+- Since data is small (favorites list, not the full item set) and already fetched server-side, sorting should happen client-side in a new client component wrapper rather than adding query params / server round-trips.
 - `getCollectionsPage` slices the existing cached `getCollectionsWithStats(userId)` result rather than doing a DB-level `skip`/`take` — collection counts are small (free tier caps at 3, Pro collections are still typically few compared to items), and a true paginated query would mean either abandoning the shared cache used by the sidebar/dashboard or maintaining two parallel collection-fetch code paths. `/items/[type]` and `/collections/[id]` (the item-heavy lists) do use real DB-level pagination.
 
 ## History

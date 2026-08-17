@@ -4,8 +4,7 @@ import { Star } from "lucide-react";
 import { auth } from "@/auth";
 import { getFavoriteItems } from "@/lib/db/items";
 import { getFavoriteCollections } from "@/lib/db/collections";
-import { FavoriteItemRow } from "@/components/dashboard/FavoriteItemRow";
-import { FavoriteCollectionRow } from "@/components/dashboard/FavoriteCollectionRow";
+import { FavoritesList } from "@/components/dashboard/FavoritesList";
 
 export default async function FavoritesPage() {
   const session = await auth();
@@ -31,33 +30,7 @@ export default async function FavoritesPage() {
         {isEmpty ? (
           <p className="text-sm text-muted-foreground">No favorites yet.</p>
         ) : (
-          <div className="flex flex-col gap-6 font-mono text-sm">
-            {items.length > 0 && (
-              <section className="flex flex-col gap-1">
-                <h2 className="px-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                  Items ({items.length})
-                </h2>
-                <div className="flex flex-col divide-y divide-border/60 border-y">
-                  {items.map((item) => (
-                    <FavoriteItemRow key={item.id} item={item} />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {collections.length > 0 && (
-              <section className="flex flex-col gap-1">
-                <h2 className="px-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                  Collections ({collections.length})
-                </h2>
-                <div className="flex flex-col divide-y divide-border/60 border-y">
-                  {collections.map((collection) => (
-                    <FavoriteCollectionRow key={collection.id} collection={collection} />
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
+          <FavoritesList items={items} collections={collections} />
         )}
       </div>
     </main>
