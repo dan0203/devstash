@@ -1,18 +1,27 @@
-# Current Feature
+# Current Feature: Pagination
 
-<!-- Feature Name And Short Description -->
+Add pagination for items and collections listings with numbered page links.
 
 ## Status
 
-Completed
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Add pagination to `/items/[type]`, `/collections` (all collections), and `/collections/[id]` (items within a collection) pages
+- Pagination controls at bottom with page numbers and prev/next links
+- Disable (grey out) prev/next when not available
+- Use constants: `ITEMS_PER_PAGE = 21` (items lists), `COLLECTIONS_PER_PAGE = 21` (collections list)
+- Dashboard limits: `DASHBOARD_COLLECTIONS_LIMIT = 6`, `DASHBOARD_RECENT_ITEMS_LIMIT = 10`
+- Do not fetch all resources at once — only fetch the amount a page requires
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Source spec: `context/features/pagination-spec.md`
+- Existing dashboard queries currently fetch fixed-size sets already (recent collections/items) — check whether those need updating to use the new named constants instead of magic numbers.
+- `/items/[type]` and `/collections/[id]` currently fetch all matching items unbounded; these need real DB-level pagination (skip/take), not client-side slicing.
+- Clarified constant scope after initial review: `COLLECTIONS_PER_PAGE` governs the `/collections` listing (paginating collections themselves, via a new `getCollectionsPage`), while `/collections/[id]` paginates the *items* inside one collection and correctly uses `ITEMS_PER_PAGE` instead (initially wired to `COLLECTIONS_PER_PAGE` by mistake — fixed after user feedback that `/collections` had no pagination at all).
+- `getCollectionsPage` slices the existing cached `getCollectionsWithStats(userId)` result rather than doing a DB-level `skip`/`take` — collection counts are small (free tier caps at 3, Pro collections are still typically few compared to items), and a true paginated query would mean either abandoning the shared cache used by the sidebar/dashboard or maintaining two parallel collection-fetch code paths. `/items/[type]` and `/collections/[id]` (the item-heavy lists) do use real DB-level pagination.
 
 ## History
 

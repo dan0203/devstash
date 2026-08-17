@@ -3,10 +3,12 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getCollectionDetail } from "@/lib/db/collections";
 import { itemTypeIcons } from "@/lib/icon-map";
+import { ITEMS_PER_PAGE } from "@/lib/constants";
 import { ItemCard } from "@/components/dashboard/ItemCard";
 import { ImageThumbnailCard } from "@/components/dashboard/ImageThumbnailCard";
 import { FileListRow } from "@/components/dashboard/FileListRow";
 import { CollectionDetailActions } from "@/components/dashboard/CollectionDetailActions";
+import { PaginationControls } from "@/components/dashboard/PaginationControls";
 
 export default async function CollectionDetailPage(props: PageProps<"/collections/[id]">) {
   const session = await auth();
@@ -15,10 +17,15 @@ export default async function CollectionDetailPage(props: PageProps<"/collection
   }
 
   const { id } = await props.params;
-  const collection = await getCollectionDetail(session.user.id, id);
+  const { page: pageParam } = await props.searchParams;
+  const page = Math.max(1, Number(pageParam) || 1);
+
+  const collection = await getCollectionDetail(session.user.id, id, page, ITEMS_PER_PAGE);
   if (!collection) {
     notFound();
   }
+
+  const totalPages = Math.max(1, Math.ceil(collection.totalCount / ITEMS_PER_PAGE));
 
   const imageItems = collection.items.filter((item) => item.itemType.name === "image");
   const fileItems = collection.items.filter((item) => item.itemType.name === "file");
@@ -91,6 +98,12 @@ export default async function CollectionDetailPage(props: PageProps<"/collection
         ) : (
           <p className="text-sm text-muted-foreground">No items in this collection yet.</p>
         )}
+
+        <PaginationControls
+          basePath={`/collections/${id}`}
+          currentPage={page}
+          totalPages={totalPages}
+        />
       </div>
     </main>
   );

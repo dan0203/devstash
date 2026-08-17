@@ -83,6 +83,24 @@ export async function getAllCollections(userId: string): Promise<CollectionWithS
   return getCollectionsWithStats(userId);
 }
 
+export interface PaginatedCollections {
+  collections: CollectionWithStats[];
+  totalCount: number;
+}
+
+export async function getCollectionsPage(
+  userId: string,
+  page: number,
+  perPage: number
+): Promise<PaginatedCollections> {
+  const withStats = await getCollectionsWithStats(userId);
+  const start = (page - 1) * perPage;
+  return {
+    collections: withStats.slice(start, start + perPage),
+    totalCount: withStats.length,
+  };
+}
+
 export async function getFavoriteCollections(userId: string): Promise<CollectionWithStats[]> {
   const withStats = await getCollectionsWithStats(userId);
   return withStats.filter((collection) => collection.isFavorite);
@@ -127,27 +145,41 @@ export interface CollectionDetail {
   isFavorite: boolean;
   items: ItemWithType[];
   types: CollectionTypeSummary[];
+  totalCount: number;
 }
 
 export async function getCollectionDetail(
   userId: string,
-  collectionId: string
+  collectionId: string,
+  page: number,
+  perPage: number
 ): Promise<CollectionDetail | null> {
   const collection = await prisma.collection.findFirst({
     where: { id: collectionId, userId },
-    include: {
-      items: {
-        include: {
-          item: { include: { tags: true, itemType: true } },
-        },
-        orderBy: { item: { updatedAt: "desc" } },
-      },
-    },
+    select: { id: true, name: true, description: true, isFavorite: true },
   });
   if (!collection) return null;
 
+  // Type counts are aggregated over every item in the collection (not just the
+  // current page), so this stays a lightweight, non-paginated query — only the
+  // itemType relation is selected, no item content/tags/file fields.
+  const [allItemTypes, pagedItemCollections, totalCount] = await Promise.all([
+    prisma.itemCollection.findMany({
+      where: { collectionId },
+      select: { item: { select: { itemType: { select: { id: true, icon: true, color: true } } } } },
+    }),
+    prisma.itemCollection.findMany({
+      where: { collectionId },
+      include: { item: { include: { tags: true, itemType: true } } },
+      orderBy: { item: { updatedAt: "desc" } },
+      skip: (page - 1) * perPage,
+      take: perPage,
+    }),
+    prisma.itemCollection.count({ where: { collectionId } }),
+  ]);
+
   const typeCounts = new Map<string, CollectionTypeSummary>();
-  for (const { item } of collection.items) {
+  for (const { item } of allItemTypes) {
     const existing = typeCounts.get(item.itemType.id);
     typeCounts.set(item.itemType.id, {
       icon: item.itemType.icon,
@@ -161,7 +193,7 @@ export async function getCollectionDetail(
     name: collection.name,
     description: collection.description,
     isFavorite: collection.isFavorite,
-    items: collection.items.map(({ item }) => ({
+    items: pagedItemCollections.map(({ item }) => ({
       id: item.id,
       title: item.title,
       description: item.description,
@@ -182,6 +214,7 @@ export async function getCollectionDetail(
       },
     })),
     types: [...typeCounts.values()].sort((a, b) => b.count - a.count),
+    totalCount,
   };
 }
 

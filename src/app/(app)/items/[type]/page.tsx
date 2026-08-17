@@ -3,9 +3,11 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getItemTypeBySlug, formatItemTypeName } from "@/lib/db/item-types";
 import { getItemsByType } from "@/lib/db/items";
+import { ITEMS_PER_PAGE } from "@/lib/constants";
 import { ItemCard } from "@/components/dashboard/ItemCard";
 import { ImageThumbnailCard } from "@/components/dashboard/ImageThumbnailCard";
 import { FileListRow } from "@/components/dashboard/FileListRow";
+import { PaginationControls } from "@/components/dashboard/PaginationControls";
 
 export default async function ItemTypePage(props: PageProps<"/items/[type]">) {
   const session = await auth();
@@ -22,7 +24,16 @@ export default async function ItemTypePage(props: PageProps<"/items/[type]">) {
     notFound();
   }
 
-  const items = await getItemsByType(session.user.id, itemType.id);
+  const { page: pageParam } = await props.searchParams;
+  const page = Math.max(1, Number(pageParam) || 1);
+
+  const { items, totalCount } = await getItemsByType(
+    session.user.id,
+    itemType.id,
+    page,
+    ITEMS_PER_PAGE
+  );
+  const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
   const typeName = formatItemTypeName(itemType.name);
   const isImageGallery = itemType.name === "image";
   const isFileList = itemType.name === "file";
@@ -61,6 +72,8 @@ export default async function ItemTypePage(props: PageProps<"/items/[type]">) {
             No {typeName.toLowerCase()} yet.
           </p>
         )}
+
+        <PaginationControls basePath={`/items/${type}`} currentPage={page} totalPages={totalPages} />
       </div>
     </main>
   );

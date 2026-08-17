@@ -293,14 +293,31 @@ export async function deleteItem(userId: string, itemId: string): Promise<boolea
   return true;
 }
 
-export async function getItemsByType(userId: string, itemTypeId: string): Promise<ItemWithType[]> {
-  const items = await prisma.item.findMany({
-    where: { userId, itemTypeId },
-    include: { tags: true, itemType: true },
-    orderBy: { updatedAt: "desc" },
-  });
+export interface PaginatedItems {
+  items: ItemWithType[];
+  totalCount: number;
+}
 
-  return items.map(toItemWithType);
+export async function getItemsByType(
+  userId: string,
+  itemTypeId: string,
+  page: number,
+  perPage: number
+): Promise<PaginatedItems> {
+  const where = { userId, itemTypeId };
+
+  const [items, totalCount] = await Promise.all([
+    prisma.item.findMany({
+      where,
+      include: { tags: true, itemType: true },
+      orderBy: { updatedAt: "desc" },
+      skip: (page - 1) * perPage,
+      take: perPage,
+    }),
+    prisma.item.count({ where }),
+  ]);
+
+  return { items: items.map(toItemWithType), totalCount };
 }
 
 export interface SearchItem {

@@ -1,16 +1,26 @@
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { getAllCollections } from "@/lib/db/collections";
+import { getCollectionsPage } from "@/lib/db/collections";
+import { COLLECTIONS_PER_PAGE } from "@/lib/constants";
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
+import { PaginationControls } from "@/components/dashboard/PaginationControls";
 
-export default async function CollectionsPage() {
+export default async function CollectionsPage(props: PageProps<"/collections">) {
   const session = await auth();
   if (!session?.user) {
     redirect("/sign-in");
   }
 
-  const collections = await getAllCollections(session.user.id);
+  const { page: pageParam } = await props.searchParams;
+  const page = Math.max(1, Number(pageParam) || 1);
+
+  const { collections, totalCount } = await getCollectionsPage(
+    session.user.id,
+    page,
+    COLLECTIONS_PER_PAGE
+  );
+  const totalPages = Math.max(1, Math.ceil(totalCount / COLLECTIONS_PER_PAGE));
 
   return (
     <main className="min-h-0 flex-1 overflow-y-auto p-6">
@@ -26,6 +36,8 @@ export default async function CollectionsPage() {
         ) : (
           <p className="text-sm text-muted-foreground">No collections yet.</p>
         )}
+
+        <PaginationControls basePath="/collections" currentPage={page} totalPages={totalPages} />
       </div>
     </main>
   );
