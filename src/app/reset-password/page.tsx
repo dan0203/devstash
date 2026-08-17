@@ -9,7 +9,7 @@ export default function ResetPasswordPage() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6 p-6">
       <Link href="/" className="flex items-center gap-2 font-semibold">
-        <Layers className="size-5" />
+        <Layers className="size-5 text-blue-500" />
         DevStash
       </Link>
 
