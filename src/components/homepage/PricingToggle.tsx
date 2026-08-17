@@ -30,13 +30,13 @@ export function PricingToggle() {
       </div>
 
       <div className="mx-auto grid max-w-[720px] grid-cols-1 gap-6 sm:grid-cols-2">
-        <div className="rounded-xl border border-border bg-card p-9 px-7">
+        <div className="flex flex-col rounded-xl border border-border bg-card p-9 px-7">
           <h3 className="mb-3 text-lg font-semibold">Free</h3>
           <div className="mb-1.5 flex items-baseline gap-1">
             <span className="text-4xl font-extrabold">$0</span>
             <span className="text-sm text-muted-foreground">/mo</span>
           </div>
-          <ul className="mt-6 flex flex-col gap-2.5">
+          <ul className="mt-6 flex flex-1 flex-col gap-2.5">
             {FREE_PLAN_FEATURES.map((feature) => (
               <PlanFeature key={feature}>{feature}</PlanFeature>
             ))}
@@ -51,7 +51,7 @@ export function PricingToggle() {
           </Button>
         </div>
 
-        <div className="relative rounded-xl border border-blue-500 bg-card p-9 px-7 ring-1 ring-blue-500">
+        <div className="relative flex flex-col rounded-xl border border-blue-500 bg-card p-9 px-7 ring-1 ring-blue-500">
           <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-br from-sky-400 to-blue-600 text-white">
             Most Popular
           </Badge>
@@ -63,7 +63,7 @@ export function PricingToggle() {
           {isYearly && (
             <p className="mb-6 text-sm text-green-400">billed annually — that&apos;s $6/month</p>
           )}
-          <ul className="mt-6 flex flex-col gap-2.5">
+          <ul className="mt-6 flex flex-1 flex-col gap-2.5">
             {PRO_PLAN_FEATURES.map((feature) => (
               <PlanFeature key={feature}>{feature}</PlanFeature>
             ))}
