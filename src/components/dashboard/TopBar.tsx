@@ -66,7 +66,7 @@ export function TopBar({ itemTypes, collections }: TopBarProps) {
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-end gap-1 md:flex-none md:gap-2">
+      <div className="flex flex-1 items-center justify-end gap-2 md:flex-none">
         <Button
           variant="ghost"
           size="icon-sm"

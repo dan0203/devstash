@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Layers } from "lucide-react";
+import { Layers, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
@@ -41,6 +47,17 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-2.5">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={<Button variant="ghost" size="icon-sm" aria-label="Open menu" className="sm:hidden" />}
+            >
+              <Menu className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem render={<a href="#features" />}>Features</DropdownMenuItem>
+              <DropdownMenuItem render={<a href="#pricing" />}>Pricing</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button variant="outline" nativeButton={false} render={<Link href="/sign-in" />}>
             Sign In
           </Button>

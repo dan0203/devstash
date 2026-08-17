@@ -50,7 +50,7 @@ export function ItemCard({ item }: { item: ItemWithType }) {
         >
           {Icon && <Icon className="size-4" style={{ color: item.itemType.color }} />}
         </div>
-        <div className="flex items-center gap-1.5 text-muted-foreground">
+        <div className="flex items-center gap-2 text-muted-foreground">
           {item.isPinned && <Pin className="size-3.5" />}
           <Button
             variant="ghost"
