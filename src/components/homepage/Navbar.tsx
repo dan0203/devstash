@@ -38,12 +38,12 @@ export function Navbar() {
         </Link>
 
         <div className="hidden gap-7 text-sm text-muted-foreground sm:flex">
-          <a href="#features" className="hover:text-foreground">
+          <Link href="/#features" className="hover:text-foreground">
             Features
-          </a>
-          <a href="#pricing" className="hover:text-foreground">
+          </Link>
+          <Link href="/#pricing" className="hover:text-foreground">
             Pricing
-          </a>
+          </Link>
         </div>
 
         <div className="flex items-center gap-2.5">
@@ -54,8 +54,8 @@ export function Navbar() {
               <Menu className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem render={<a href="#features" />}>Features</DropdownMenuItem>
-              <DropdownMenuItem render={<a href="#pricing" />}>Pricing</DropdownMenuItem>
+              <DropdownMenuItem render={<Link href="/#features" />}>Features</DropdownMenuItem>
+              <DropdownMenuItem render={<Link href="/#pricing" />}>Pricing</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Button variant="outline" nativeButton={false} render={<Link href="/sign-in" />}>

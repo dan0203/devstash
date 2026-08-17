@@ -44,7 +44,7 @@ export function TopBar({ itemTypes, collections }: TopBarProps) {
           <Menu className="size-4" />
         </Button>
         <Link href="/dashboard" className="flex items-center gap-2">
-          <Layers className="size-5" />
+          <Layers className="size-5 text-blue-500" />
           <span className="hidden font-semibold md:inline">DevStash</span>
         </Link>
       </div>
