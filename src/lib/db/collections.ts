@@ -171,7 +171,7 @@ export async function getCollectionDetail(
     prisma.itemCollection.findMany({
       where: { collectionId },
       include: { item: { include: { tags: true, itemType: true } } },
-      orderBy: { item: { updatedAt: "desc" } },
+      orderBy: [{ item: { isPinned: "desc" } }, { item: { updatedAt: "desc" } }],
       skip: (page - 1) * perPage,
       take: perPage,
     }),

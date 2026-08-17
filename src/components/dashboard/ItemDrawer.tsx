@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Folder } from "lucide-react";
 import { toast } from "sonner";
 
-import { updateItem, deleteItem, toggleItemFavorite } from "@/actions/items";
+import { updateItem, deleteItem, toggleItemFavorite, toggleItemPin } from "@/actions/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
 import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
@@ -104,6 +104,22 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
       router.refresh();
     } else {
       toast.error(result.error ?? "Failed to update favorite");
+    }
+  };
+
+  const handleTogglePin = async () => {
+    if (!item) return;
+
+    const previousIsPinned = item.isPinned;
+    setItem({ ...item, isPinned: !previousIsPinned });
+
+    const result = await toggleItemPin(item.id);
+    if (result.success && result.isPinned !== undefined) {
+      toast.success(result.isPinned ? "Item pinned" : "Item unpinned");
+      router.refresh();
+    } else {
+      setItem((current) => (current ? { ...current, isPinned: previousIsPinned } : current));
+      toast.error(result.error ?? "Failed to update pin");
     }
   };
 
@@ -246,6 +262,7 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onToggleFavorite={handleToggleFavorite}
+                onTogglePin={handleTogglePin}
                 deleting={deleting}
               />
             )}

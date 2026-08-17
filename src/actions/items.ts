@@ -8,6 +8,7 @@ import {
   updateItem as updateItemRecord,
   deleteItem as deleteItemRecord,
   toggleItemFavorite as toggleItemFavoriteRecord,
+  toggleItemPin as toggleItemPinRecord,
   type ItemDetail,
 } from "@/lib/db/items";
 import { getItemTypeByName } from "@/lib/db/item-types";
@@ -175,4 +176,24 @@ export async function toggleItemFavorite(itemId: string): Promise<ToggleFavorite
   }
 
   return { success: true, isFavorite };
+}
+
+export interface TogglePinState {
+  success: boolean;
+  isPinned?: boolean;
+  error?: string;
+}
+
+export async function toggleItemPin(itemId: string): Promise<TogglePinState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Not signed in" };
+  }
+
+  const isPinned = await toggleItemPinRecord(session.user.id, itemId);
+  if (isPinned === null) {
+    return { success: false, error: "Item not found" };
+  }
+
+  return { success: true, isPinned };
 }

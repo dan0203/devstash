@@ -8,6 +8,7 @@ const {
   mockUpdateItem,
   mockDeleteItem,
   mockToggleItemFavorite,
+  mockToggleItemPin,
   mockGetItemTypeByName,
 } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
@@ -15,6 +16,7 @@ const {
   mockUpdateItem: vi.fn(),
   mockDeleteItem: vi.fn(),
   mockToggleItemFavorite: vi.fn(),
+  mockToggleItemPin: vi.fn(),
   mockGetItemTypeByName: vi.fn(),
 }));
 
@@ -27,13 +29,14 @@ vi.mock(import("@/lib/db/items"), () => ({
   updateItem: mockUpdateItem,
   deleteItem: mockDeleteItem,
   toggleItemFavorite: mockToggleItemFavorite,
+  toggleItemPin: mockToggleItemPin,
 }) as never);
 
 vi.mock(import("@/lib/db/item-types"), () => ({
   getItemTypeByName: mockGetItemTypeByName,
 }) as never);
 
-import { createItem, updateItem, deleteItem, toggleItemFavorite } from "./items";
+import { createItem, updateItem, deleteItem, toggleItemFavorite, toggleItemPin } from "./items";
 
 const validCreateInput = {
   itemType: "snippet" as const,
@@ -301,5 +304,39 @@ describe("toggleItemFavorite", () => {
 
     expect(mockToggleItemFavorite).toHaveBeenCalledWith("user-1", "item-1");
     expect(result).toEqual({ success: true, isFavorite: true });
+  });
+});
+
+describe("toggleItemPin", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns an error when there is no signed-in session", async () => {
+    mockAuth.mockResolvedValue(null);
+
+    const result = await toggleItemPin("item-1");
+
+    expect(result).toEqual({ success: false, error: "Not signed in" });
+    expect(mockToggleItemPin).not.toHaveBeenCalled();
+  });
+
+  it("returns Item not found when the query function can't find/own the item", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    mockToggleItemPin.mockResolvedValue(null);
+
+    const result = await toggleItemPin("item-1");
+
+    expect(result).toEqual({ success: false, error: "Item not found" });
+  });
+
+  it("delegates to the query function and returns the new pin state", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    mockToggleItemPin.mockResolvedValue(true);
+
+    const result = await toggleItemPin("item-1");
+
+    expect(mockToggleItemPin).toHaveBeenCalledWith("user-1", "item-1");
+    expect(result).toEqual({ success: true, isPinned: true });
   });
 });

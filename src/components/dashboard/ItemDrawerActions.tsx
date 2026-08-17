@@ -21,6 +21,7 @@ interface ItemDrawerActionsProps {
   onEdit: () => void;
   onDelete: () => void;
   onToggleFavorite: () => void;
+  onTogglePin: () => void;
   deleting: boolean;
 }
 
@@ -30,6 +31,7 @@ export function ItemDrawerActions({
   onEdit,
   onDelete,
   onToggleFavorite,
+  onTogglePin,
   deleting,
 }: ItemDrawerActionsProps) {
   return (
@@ -44,7 +46,12 @@ export function ItemDrawerActions({
           <Star className={item.isFavorite ? "fill-yellow-400 text-yellow-400" : undefined} />
           Favorite
         </Button>
-        <Button variant={item.isPinned ? "secondary" : "outline"} size="icon-sm" aria-label="Pin">
+        <Button
+          variant={item.isPinned ? "secondary" : "outline"}
+          size="icon-sm"
+          aria-label="Pin"
+          onClick={onTogglePin}
+        >
           <Pin className={item.isPinned ? "fill-current" : undefined} />
         </Button>
         {item.contentType === "file" ? (

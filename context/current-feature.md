@@ -1,18 +1,24 @@
-# Current Feature
+# Current Feature: Pinned Items
 
-<!-- Feature Name And Short Description -->
+Make the existing Pin button in ItemDrawer functional, with pinned items sorting to the top of listings and appearing on the dashboard's pinned items section.
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Create `toggleItemPin` server action
+- Make Pin button in ItemDrawer clickable (exists but no onClick)
+- Optimistic UI updates for instant feedback
+- Toast notification on success/error
+- Pinned items sort to top of listings
+- Follow the Favorite Button feature's pattern
+- Items only (not collections)
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Pin icon on ItemCard remains a static indicator (not clickable there)
 
 ## History
 
