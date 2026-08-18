@@ -63,9 +63,11 @@ model User {
   password          String? // bcrypt hash, null for OAuth-only accounts
   passwordChangedAt DateTime? // bumped on every password change/reset; invalidates older JWTs
 
-  isPro                Boolean @default(false)
-  stripeCustomerId     String? @unique
-  stripeSubscriptionId String? @unique
+  isPro                  Boolean   @default(false)
+  stripeCustomerId       String?   @unique
+  stripeSubscriptionId   String?   @unique
+  stripePriceId          String? // which price (monthly/yearly) — for billing UI copy in Phase 2
+  stripeCurrentPeriodEnd DateTime? // renewal/expiry date; also lets isPro be safely flipped false past this date if a cancellation webhook is ever missed
 
   editorPreferences Json? // font size, tab size, word wrap, minimap, theme
 

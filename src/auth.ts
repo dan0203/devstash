@@ -51,8 +51,9 @@ const {
       if (token.sub) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub },
-          select: { passwordChangedAt: true },
+          select: { passwordChangedAt: true, isPro: true },
         });
+        token.isPro = dbUser?.isPro ?? false;
         const dbChangedAt = dbUser?.passwordChangedAt?.getTime() ?? null;
         const tokenChangedAt = typeof token.pwChangedAt === "number" ? token.pwChangedAt : null;
         if (dbChangedAt !== null && dbChangedAt !== tokenChangedAt) {
