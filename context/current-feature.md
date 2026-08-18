@@ -1,21 +1,18 @@
 # Current Feature
 
+<!-- No active feature. Run /feature load to start one. -->
+
 ## Status
 
-Completed
+Not Started
 
 ## Goals
 
-Add a clear upgrade path for free users:
-
-- A new `/upgrade` page (under the `(app)` route group, protected) showing plan comparison cards similar to the homepage's pricing section, with a Monthly/Yearly toggle for the Pro plan.
-- Clicking "Upgrade" on the Pro plan goes through Stripe Checkout (reusing the existing `createCheckoutSession` server action), for whichever billing interval is selected.
-- An "Upgrade" button in the app's top bar (`TopBar.tsx`), visible only to free users, linking to `/upgrade`. Styled as a `ghost` variant button — more subtle than the other top-bar buttons (New Collection/New Item use `secondary`/default).
+<!-- Populated by /feature load -->
 
 ## Notes
 
-- Reuse `FREE_PLAN_FEATURES`/`PRO_PLAN_FEATURES` from `src/lib/homepage-data.ts` for the feature lists instead of duplicating them.
-- Reuse `createCheckoutSession` from `src/actions/billing.ts` (already used by `BillingSettings.tsx` on `/settings`) rather than adding a new server action.
+<!-- Populated by /feature load -->
 
 ## History
 
