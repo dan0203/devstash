@@ -9,7 +9,7 @@ import { MarkdownEditor } from "@/components/dashboard/MarkdownEditor";
 import { SectionLabel } from "@/components/dashboard/SectionLabel";
 import { Badge } from "@/components/ui/badge";
 
-export function ItemDrawerView({ item }: { item: ItemDetail }) {
+export function ItemDrawerView({ item, isPro }: { item: ItemDetail; isPro: boolean }) {
   return (
     <>
       {item.description && (
@@ -23,7 +23,12 @@ export function ItemDrawerView({ item }: { item: ItemDetail }) {
         <div className="flex flex-col gap-2">
           <SectionLabel>Content</SectionLabel>
           {LANGUAGE_TYPES.has(item.itemType.name) ? (
-            <CodeEditor value={item.content} language={item.language} readOnly />
+            <CodeEditor
+              value={item.content}
+              language={item.language}
+              readOnly
+              explain={{ itemTypeName: item.itemType.name, isPro }}
+            />
           ) : (
             <MarkdownEditor value={item.content} readOnly />
           )}

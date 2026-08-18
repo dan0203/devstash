@@ -31,6 +31,7 @@ export const rateLimiters = {
   upload: createLimiter("upload", 20, "1 h"),
   aiSuggestTags: createLimiter("ai-suggest-tags", 20, "1 h"),
   aiSuggestDescription: createLimiter("ai-suggest-description", 20, "1 h"),
+  aiExplainCode: createLimiter("ai-explain-code", 20, "1 h"),
 };
 
 export interface RateLimitResult {

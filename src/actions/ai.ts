@@ -127,6 +127,91 @@ function parseDescriptionFromResponse(outputText: string): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+const explainCodeSchema = z.object({
+  content: z.string().trim().min(1, "Content is required"),
+  language: z.string().nullable().optional(),
+  itemType: z.string(),
+});
+
+export type ExplainCodeInput = z.infer<typeof explainCodeSchema>;
+
+export interface ExplainCodeState {
+  success: boolean;
+  explanation?: string;
+  error?: string;
+}
+
+const GENERIC_EXPLAIN_ERROR = "Couldn't generate an explanation. Try again.";
+
+function parseExplanationFromResponse(outputText: string): string | null {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(outputText);
+  } catch {
+    return null;
+  }
+
+  const explanation = (raw as { explanation?: unknown })?.explanation;
+  if (typeof explanation !== "string") return null;
+
+  const trimmed = explanation.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+export async function explainCode(input: ExplainCodeInput): Promise<ExplainCodeState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Not signed in" };
+  }
+
+  if (!session.user.isPro) {
+    return { success: false, error: "AI features require a Pro plan" };
+  }
+
+  if (!isAiEnabled()) {
+    return { success: false, error: "AI features are not configured" };
+  }
+
+  const parsed = explainCodeSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0].message };
+  }
+
+  const rl = await checkRateLimit(rateLimiters.aiExplainCode, session.user.id);
+  if (!rl.success) {
+    return { success: false, error: rateLimitErrorMessage(rl.reset) };
+  }
+
+  const { content, language, itemType } = parsed.data;
+  const truncatedContent = content.trim().slice(0, CONTENT_TRUNCATE_LENGTH);
+
+  const detailLines = [
+    `Item type: ${itemType}`,
+    language ? `Language: ${language}` : null,
+    `Content:\n${truncatedContent}`,
+  ].filter(Boolean);
+
+  try {
+    const response = await openai.responses.create({
+      model: AI_MODEL,
+      instructions:
+        'You are a code-explanation assistant for a developer knowledge base. Given a code snippet or terminal command, explain what it does and the key concepts involved in about 200-300 words. Format the explanation as markdown (short paragraphs, inline code, and lists where useful). Respond with strict JSON only, in the shape {"explanation": "..."}, and nothing else.',
+      input: `Explain this code and respond in JSON.\n\n${detailLines.join("\n")}`,
+      text: { format: { type: "json_object" } },
+    });
+
+    const explanation = parseExplanationFromResponse(response.output_text ?? "");
+    if (!explanation) {
+      return { success: false, error: GENERIC_EXPLAIN_ERROR };
+    }
+
+    return { success: true, explanation };
+  } catch (error) {
+    console.error("explainCode failed", error);
+    return { success: false, error: GENERIC_EXPLAIN_ERROR };
+  }
+}
+
 export async function generateDescription(
   input: GenerateDescriptionInput
 ): Promise<GenerateDescriptionState> {

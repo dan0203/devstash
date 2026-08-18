@@ -173,7 +173,7 @@ export function ItemDrawer({ collections, isPro }: ItemDrawerProps) {
                   {...editForm}
                 />
               ) : (
-                <ItemDrawerView item={item} />
+                <ItemDrawerView item={item} isPro={isPro} />
               )}
 
               {item.collections.length > 0 && (

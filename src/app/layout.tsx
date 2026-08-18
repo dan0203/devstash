@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Libre_Franklin, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 const libreFranklin = Libre_Franklin({
@@ -26,8 +27,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${libreFranklin.variable} ${geistMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
-        <Toaster />
+        <TooltipProvider>
+          {children}
+          <Toaster />
+        </TooltipProvider>
       </body>
     </html>
   );
