@@ -14,7 +14,7 @@ export function useItemEditForm() {
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
   const [url, setUrl] = useState("");
-  const [language, setLanguage] = useState("");
+  const [language, setLanguage] = useState("plaintext");
   const [tagsInput, setTagsInput] = useState("");
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
 
@@ -23,7 +23,7 @@ export function useItemEditForm() {
     setDescription(item.description ?? "");
     setContent(item.content ?? "");
     setUrl(item.url ?? "");
-    setLanguage(item.language ?? "");
+    setLanguage(item.language ?? "plaintext");
     setTagsInput(item.tags.join(", "));
     setCollectionIds(item.collections.map((collection) => collection.id));
   }

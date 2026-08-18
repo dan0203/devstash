@@ -38,7 +38,7 @@ const emptyForm = {
   title: "",
   description: "",
   content: "",
-  language: "",
+  language: "plaintext",
   url: "",
   tagsInput: "",
   file: null as UploadedFile | null,
