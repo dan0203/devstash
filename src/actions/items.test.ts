@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // vi.mock factories are hoisted above imports/const declarations, so the
 // mocks they reference must be created via vi.hoisted().
@@ -10,6 +10,7 @@ const {
   mockToggleItemFavorite,
   mockToggleItemPin,
   mockGetItemTypeByName,
+  mockGetItemStats,
 } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
   mockCreateItem: vi.fn(),
@@ -18,6 +19,7 @@ const {
   mockToggleItemFavorite: vi.fn(),
   mockToggleItemPin: vi.fn(),
   mockGetItemTypeByName: vi.fn(),
+  mockGetItemStats: vi.fn(),
 }));
 
 vi.mock(import("@/auth"), () => ({
@@ -30,6 +32,7 @@ vi.mock(import("@/lib/db/items"), () => ({
   deleteItem: mockDeleteItem,
   toggleItemFavorite: mockToggleItemFavorite,
   toggleItemPin: mockToggleItemPin,
+  getItemStats: mockGetItemStats,
 }) as never);
 
 vi.mock(import("@/lib/db/item-types"), () => ({
@@ -172,6 +175,60 @@ describe("createItem", () => {
         fileSize: 1024,
       })
     );
+  });
+
+  describe("with ENFORCE_PLAN_LIMITS=true", () => {
+    const originalEnforce = process.env.ENFORCE_PLAN_LIMITS;
+
+    beforeEach(() => {
+      process.env.ENFORCE_PLAN_LIMITS = "true";
+    });
+
+    afterEach(() => {
+      process.env.ENFORCE_PLAN_LIMITS = originalEnforce;
+    });
+
+    it("rejects a free user at the item limit", async () => {
+      mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: false } });
+      mockGetItemStats.mockResolvedValue({ total: 50, favorites: 0 });
+
+      const result = await createItem(validCreateInput);
+
+      expect(result).toEqual({
+        success: false,
+        error: "Free plan limit reached (50 items). Upgrade to Pro for unlimited items.",
+      });
+      expect(mockCreateItem).not.toHaveBeenCalled();
+    });
+
+    it("never blocks a pro user regardless of item count", async () => {
+      mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
+      mockGetItemStats.mockResolvedValue({ total: 200, favorites: 0 });
+      mockGetItemTypeByName.mockResolvedValue({ id: "type-1", name: "snippet" });
+      mockCreateItem.mockResolvedValue({ id: "item-1" });
+
+      const result = await createItem(validCreateInput);
+
+      expect(result.success).toBe(true);
+      expect(mockCreateItem).toHaveBeenCalled();
+    });
+
+    it("rejects a free user creating a file item", async () => {
+      mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: false } });
+      mockGetItemStats.mockResolvedValue({ total: 0, favorites: 0 });
+
+      const result = await createItem({
+        ...validCreateInput,
+        itemType: "file",
+        fileUrl: "https://r2.example.com/user-1/doc.pdf",
+      });
+
+      expect(result).toEqual({
+        success: false,
+        error: "File and image uploads require a Pro plan",
+      });
+      expect(mockCreateItem).not.toHaveBeenCalled();
+    });
   });
 });
 

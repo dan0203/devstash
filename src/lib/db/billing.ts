@@ -54,3 +54,27 @@ export async function getUserIdByStripeCustomerId(stripeCustomerId: string): Pro
 
   return user?.id ?? null;
 }
+
+export interface StripeCustomerContext {
+  stripeCustomerId: string | null;
+  email: string | null;
+  name: string | null;
+}
+
+export async function getStripeCustomerContext(userId: string): Promise<StripeCustomerContext | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { stripeCustomerId: true, email: true, name: true },
+  });
+
+  if (!user) return null;
+
+  return { stripeCustomerId: user.stripeCustomerId, email: user.email, name: user.name };
+}
+
+export async function setStripeCustomerId(userId: string, stripeCustomerId: string): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { stripeCustomerId },
+  });
+}

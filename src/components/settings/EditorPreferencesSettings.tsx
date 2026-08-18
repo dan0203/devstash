@@ -32,71 +32,71 @@ export function EditorPreferencesSettings() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="editor-font-size">Font size</Label>
-          <Select
-            value={String(preferences.fontSize)}
-            onValueChange={(value) =>
-              setPreferences({ ...preferences, fontSize: Number(value) })
-            }
-          >
-            <SelectTrigger id="editor-font-size" className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {EDITOR_FONT_SIZES.map((size) => (
-                <SelectItem key={size} value={String(size)}>
-                  {size}px
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="flex items-center justify-between rounded-lg border border-input px-4 py-3">
+        <Label htmlFor="editor-font-size">Font size</Label>
+        <Select
+          value={String(preferences.fontSize)}
+          onValueChange={(value) =>
+            setPreferences({ ...preferences, fontSize: Number(value) })
+          }
+        >
+          <SelectTrigger id="editor-font-size" className="w-24">
+            <SelectValue>{(value: string) => `${value}px`}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {EDITOR_FONT_SIZES.map((size) => (
+              <SelectItem key={size} value={String(size)}>
+                {size}px
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="editor-tab-size">Tab size</Label>
-          <Select
-            value={String(preferences.tabSize)}
-            onValueChange={(value) =>
-              setPreferences({ ...preferences, tabSize: Number(value) })
-            }
-          >
-            <SelectTrigger id="editor-tab-size" className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {EDITOR_TAB_SIZES.map((size) => (
-                <SelectItem key={size} value={String(size)}>
-                  {size} spaces
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="flex items-center justify-between rounded-lg border border-input px-4 py-3">
+        <Label htmlFor="editor-tab-size">Tab size</Label>
+        <Select
+          value={String(preferences.tabSize)}
+          onValueChange={(value) =>
+            setPreferences({ ...preferences, tabSize: Number(value) })
+          }
+        >
+          <SelectTrigger id="editor-tab-size" className="w-32">
+            <SelectValue>{(value: string) => `${value} spaces`}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {EDITOR_TAB_SIZES.map((size) => (
+              <SelectItem key={size} value={String(size)}>
+                {size} spaces
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-        <div className="flex flex-col gap-2 sm:col-span-2">
-          <Label htmlFor="editor-theme">Theme</Label>
-          <Select
-            value={preferences.theme}
-            onValueChange={(value) => {
-              if (value && isEditorTheme(value)) {
-                setPreferences({ ...preferences, theme: value });
-              }
-            }}
-          >
-            <SelectTrigger id="editor-theme" className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {EDITOR_THEMES.map((theme) => (
-                <SelectItem key={theme} value={theme}>
-                  {THEME_LABELS[theme]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="flex items-center justify-between rounded-lg border border-input px-4 py-3">
+        <Label htmlFor="editor-theme">Theme</Label>
+        <Select
+          value={preferences.theme}
+          onValueChange={(value) => {
+            if (value && isEditorTheme(value)) {
+              setPreferences({ ...preferences, theme: value });
+            }
+          }}
+        >
+          <SelectTrigger id="editor-theme" className="w-40">
+            <SelectValue>
+              {(value: string) => (isEditorTheme(value) ? THEME_LABELS[value] : value)}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {EDITOR_THEMES.map((theme) => (
+              <SelectItem key={theme} value={theme}>
+                {THEME_LABELS[theme]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex items-center justify-between rounded-lg border border-input px-4 py-3">

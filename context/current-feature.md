@@ -1,12 +1,27 @@
-# Current Feature
-
-<!-- No active feature. Run /feature load to start one. -->
+# Current Feature: Stripe Integration Phase 2 — Webhooks, Feature Gating & UI
 
 ## Status
 
-Not Started
+Implemented — pending Stripe CLI checklist + review
 
 ## Goals
+
+- Webhook route (`src/app/api/webhooks/stripe/route.ts`) verifying Stripe's signature against the raw request body and persisting subscription state via Phase 1's `upsertSubscriptionFromWebhook`, handling `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, and `invoice.payment_failed`
+- `createCheckoutSession`/`createPortalSession` Server Actions in `src/actions/billing.ts` (`{success, data?/url?, error?}` shape)
+- A "Billing" card on `/settings` (`src/components/settings/BillingSettings.tsx`) showing current plan/renewal date with Upgrade (free) / Manage subscription (Pro) actions, wired into `src/app/(app)/settings/page.tsx` via `getBillingInfo`
+- Real free-tier enforcement: item count (50), collection count (3), and file/image upload (Pro-only) in `createItem`/`createCollection`/`POST /api/upload` — shipped soft/disabled per the dev-mode note until the team confirms enforcement posture
+- Complete Stripe Dashboard webhook + Customer Portal setup (local `stripe listen`, deployed webhook endpoint, Customer Portal config, `NEXT_PUBLIC_APP_URL` confirmation)
+- Unit tests: `src/actions/billing.test.ts` (no-session, no-`stripeCustomerId` portal error, happy-path with mocked `@/lib/stripe`) + extended limit-check tests in `items.test.ts`/`collections.test.ts`
+
+## Notes
+
+- Requires Phase 1 merged first (schema, `src/lib/stripe.ts`, `src/lib/db/billing.ts`, `isPro`-resync JWT fix, `src/lib/plan-limits.ts`) — already merged per history.
+- Full spec: `context/features/stripe-phase-2-spec.md`. Research doc: `docs/stripe-integration-plan.md`.
+- Requires the Stripe CLI for local webhook testing (`stripe listen`/`stripe trigger`) — the Testing Checklist is manual/CLI-driven, not Playwright-driven.
+- Webhook route is the one legitimate API-route exception in this integration (no `auth()` session, must read raw body for signature verification) — everything else (checkout/portal) is Server Actions per `coding-standards.md`.
+- Writes must be idempotent (`upsertSubscriptionFromWebhook` upserts) since Stripe can redeliver events.
+- Implementation order per spec: (1) webhook route + DB wiring, verified via `stripe trigger` before building UI; (2) checkout/portal actions + BillingSettings UI; (3) gating in create paths, shipped soft/disabled; (4) tests alongside steps 2–3.
+- Webhook route itself and `src/lib/db/billing.ts` changes stay out of Vitest scope (verified manually via Stripe CLI checklist instead).
 
 <!-- Populated by /feature load -->
 

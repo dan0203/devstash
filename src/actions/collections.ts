@@ -8,8 +8,10 @@ import {
   updateCollection as updateCollectionRecord,
   deleteCollection as deleteCollectionRecord,
   toggleCollectionFavorite as toggleCollectionFavoriteRecord,
+  getCollectionStats,
   type Collection,
 } from "@/lib/db/collections";
+import { FREE_TIER_LIMITS, isOverCollectionLimit, isPlanLimitsEnforced } from "@/lib/plan-limits";
 
 const createCollectionSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
@@ -35,6 +37,16 @@ export async function createCollection(
   const parsed = createCollectionSchema.safeParse(input);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0].message };
+  }
+
+  if (isPlanLimitsEnforced()) {
+    const stats = await getCollectionStats(session.user.id);
+    if (isOverCollectionLimit(session.user.isPro ?? false, stats.total)) {
+      return {
+        success: false,
+        error: `Free plan limit reached (${FREE_TIER_LIMITS.collections} collections). Upgrade to Pro for unlimited collections.`,
+      };
+    }
   }
 
   const created = await createCollectionRecord(session.user.id, {

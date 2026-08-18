@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // vi.mock factories are hoisted above imports/const declarations, so the
 // mocks they reference must be created via vi.hoisted().
@@ -8,12 +8,14 @@ const {
   mockUpdateCollection,
   mockDeleteCollection,
   mockToggleCollectionFavorite,
+  mockGetCollectionStats,
 } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
   mockCreateCollection: vi.fn(),
   mockUpdateCollection: vi.fn(),
   mockDeleteCollection: vi.fn(),
   mockToggleCollectionFavorite: vi.fn(),
+  mockGetCollectionStats: vi.fn(),
 }));
 
 vi.mock(import("@/auth"), () => ({
@@ -25,6 +27,7 @@ vi.mock(import("@/lib/db/collections"), () => ({
   updateCollection: mockUpdateCollection,
   deleteCollection: mockDeleteCollection,
   toggleCollectionFavorite: mockToggleCollectionFavorite,
+  getCollectionStats: mockGetCollectionStats,
 }) as never);
 
 import {
@@ -102,6 +105,46 @@ describe("createCollection", () => {
     });
     expect(result.success).toBe(true);
     expect(result.data?.name).toBe("AI Workflows");
+  });
+
+  describe("with ENFORCE_PLAN_LIMITS=true", () => {
+    const originalEnforce = process.env.ENFORCE_PLAN_LIMITS;
+
+    beforeEach(() => {
+      process.env.ENFORCE_PLAN_LIMITS = "true";
+    });
+
+    afterEach(() => {
+      process.env.ENFORCE_PLAN_LIMITS = originalEnforce;
+    });
+
+    it("rejects a free user at the collection limit", async () => {
+      mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: false } });
+      mockGetCollectionStats.mockResolvedValue({ total: 3, favorites: 0 });
+
+      const result = await createCollection(validCreateInput);
+
+      expect(result).toEqual({
+        success: false,
+        error: "Free plan limit reached (3 collections). Upgrade to Pro for unlimited collections.",
+      });
+      expect(mockCreateCollection).not.toHaveBeenCalled();
+    });
+
+    it("never blocks a pro user regardless of collection count", async () => {
+      mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
+      mockGetCollectionStats.mockResolvedValue({ total: 10, favorites: 0 });
+      mockCreateCollection.mockResolvedValue({
+        id: "col-1",
+        name: "React Patterns",
+        description: null,
+      });
+
+      const result = await createCollection(validCreateInput);
+
+      expect(result.success).toBe(true);
+      expect(mockCreateCollection).toHaveBeenCalled();
+    });
   });
 });
 

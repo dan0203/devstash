@@ -9,9 +9,11 @@ import {
   deleteItem as deleteItemRecord,
   toggleItemFavorite as toggleItemFavoriteRecord,
   toggleItemPin as toggleItemPinRecord,
+  getItemStats,
   type ItemDetail,
 } from "@/lib/db/items";
 import { getItemTypeByName } from "@/lib/db/item-types";
+import { FREE_TIER_LIMITS, isOverItemLimit, isPlanLimitsEnforced } from "@/lib/plan-limits";
 
 const CREATABLE_ITEM_TYPES = [
   "snippet",
@@ -24,37 +26,43 @@ const CREATABLE_ITEM_TYPES = [
 ] as const;
 const FILE_ITEM_TYPES = new Set(["file", "image"]);
 
-const createItemSchema = z
-  .object({
-    itemType: z.enum(CREATABLE_ITEM_TYPES),
-    title: z.string().trim().min(1, "Title is required"),
-    description: z.string().trim(),
-    content: z.string(),
-    language: z.string().trim(),
-    url: z.string().trim(),
-    fileUrl: z.string().trim(),
-    fileName: z.string().trim(),
-    fileSize: z.number().nullable(),
-    tags: z.array(z.string().trim().min(1)),
-    collectionIds: z.array(z.string()),
-  })
-  .refine((data) => data.itemType !== "link" || z.string().url().safeParse(data.url).success, {
-    message: "Please enter a valid URL",
-    path: ["url"],
-  })
-  .refine((data) => !FILE_ITEM_TYPES.has(data.itemType) || data.fileUrl.length > 0, {
-    message: "Please upload a file",
-    path: ["fileUrl"],
-  })
-  .refine(
-    (data) =>
-      !FILE_ITEM_TYPES.has(data.itemType) ||
-      !process.env.R2_PUBLIC_URL ||
-      data.fileUrl.startsWith(process.env.R2_PUBLIC_URL),
-    { message: "Invalid file reference", path: ["fileUrl"] }
-  );
+function buildCreateItemSchema(isPro: boolean) {
+  return z
+    .object({
+      itemType: z.enum(CREATABLE_ITEM_TYPES),
+      title: z.string().trim().min(1, "Title is required"),
+      description: z.string().trim(),
+      content: z.string(),
+      language: z.string().trim(),
+      url: z.string().trim(),
+      fileUrl: z.string().trim(),
+      fileName: z.string().trim(),
+      fileSize: z.number().nullable(),
+      tags: z.array(z.string().trim().min(1)),
+      collectionIds: z.array(z.string()),
+    })
+    .refine((data) => data.itemType !== "link" || z.string().url().safeParse(data.url).success, {
+      message: "Please enter a valid URL",
+      path: ["url"],
+    })
+    .refine((data) => !FILE_ITEM_TYPES.has(data.itemType) || data.fileUrl.length > 0, {
+      message: "Please upload a file",
+      path: ["fileUrl"],
+    })
+    .refine(
+      (data) =>
+        !FILE_ITEM_TYPES.has(data.itemType) ||
+        !process.env.R2_PUBLIC_URL ||
+        data.fileUrl.startsWith(process.env.R2_PUBLIC_URL),
+      { message: "Invalid file reference", path: ["fileUrl"] }
+    )
+    .refine(
+      (data) => !isPlanLimitsEnforced() || !FILE_ITEM_TYPES.has(data.itemType) || isPro,
+      { message: "File and image uploads require a Pro plan", path: ["itemType"] }
+    );
+}
 
-export type CreateItemInput = z.infer<typeof createItemSchema>;
+export type CreateItemInput = z.infer<ReturnType<typeof buildCreateItemSchema>>;
 
 export interface CreateItemState {
   success: boolean;
@@ -68,9 +76,20 @@ export async function createItem(input: CreateItemInput): Promise<CreateItemStat
     return { success: false, error: "Not signed in" };
   }
 
-  const parsed = createItemSchema.safeParse(input);
+  const isPro = session.user.isPro ?? false;
+  const parsed = buildCreateItemSchema(isPro).safeParse(input);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0].message };
+  }
+
+  if (isPlanLimitsEnforced()) {
+    const stats = await getItemStats(session.user.id);
+    if (isOverItemLimit(isPro, stats.total)) {
+      return {
+        success: false,
+        error: `Free plan limit reached (${FREE_TIER_LIMITS.items} items). Upgrade to Pro for unlimited items.`,
+      };
+    }
   }
 
   const itemType = await getItemTypeByName(parsed.data.itemType);
