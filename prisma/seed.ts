@@ -67,7 +67,6 @@ async function main() {
   const snippetTypeId = itemTypes.get("snippet")!;
   const promptTypeId = itemTypes.get("prompt")!;
   const commandTypeId = itemTypes.get("command")!;
-  const linkTypeId = itemTypes.get("link")!;
 
   async function createCollection(name: string, description: string) {
     return prisma.collection.create({
@@ -197,50 +196,6 @@ export function cn(...inputs: ClassValue[]) {
       "Refactor the following code for readability without changing its behavior. Keep the diff minimal, preserve existing naming conventions, and explain each non-trivial change in one line.",
   });
 
-  // ── DevOps ────────────────────────────────────────────
-  const devOps = await createCollection(
-    "DevOps",
-    "Infrastructure and deployment resources",
-  );
-
-  await createItem(devOps.id, snippetTypeId, {
-    title: "Node.js production Dockerfile",
-    description: "Multi-stage Dockerfile for a Next.js production build.",
-    language: "dockerfile",
-    content: `FROM node:22-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-FROM node:22-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-EXPOSE 3000
-CMD ["npm", "start"]`,
-  });
-
-  await createItem(devOps.id, commandTypeId, {
-    title: "Deploy to production",
-    description: "Build, run migrations, and restart the app service.",
-    language: "bash",
-    content: `npm run build && npx prisma migrate deploy && pm2 restart app`,
-  });
-
-  await createItem(devOps.id, linkTypeId, {
-    title: "Docker Compose documentation",
-    url: "https://docs.docker.com/compose/",
-  });
-
-  await createItem(devOps.id, linkTypeId, {
-    title: "GitHub Actions documentation",
-    url: "https://docs.github.com/en/actions",
-  });
-
   // ── Terminal Commands ─────────────────────────────────
   const terminalCommands = await createCollection(
     "Terminal Commands",
@@ -273,32 +228,6 @@ CMD ["npm", "start"]`,
     description: "Nuke node_modules and lockfile artifacts, then reinstall.",
     language: "bash",
     content: `rm -rf node_modules package-lock.json && npm cache clean --force && npm install`,
-  });
-
-  // ── Design Resources ──────────────────────────────────
-  const designResources = await createCollection(
-    "Design Resources",
-    "UI/UX resources and references",
-  );
-
-  await createItem(designResources.id, linkTypeId, {
-    title: "Tailwind CSS documentation",
-    url: "https://tailwindcss.com/docs",
-  });
-
-  await createItem(designResources.id, linkTypeId, {
-    title: "shadcn/ui components",
-    url: "https://ui.shadcn.com",
-  });
-
-  await createItem(designResources.id, linkTypeId, {
-    title: "Radix UI primitives",
-    url: "https://www.radix-ui.com/primitives",
-  });
-
-  await createItem(designResources.id, linkTypeId, {
-    title: "Lucide icon library",
-    url: "https://lucide.dev/icons",
   });
 
   console.log(`Seed complete for user ${user.email}`);
