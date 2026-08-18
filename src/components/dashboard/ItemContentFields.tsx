@@ -1,8 +1,20 @@
-import { CONTENT_TYPES, LANGUAGE_TYPES, URL_TYPES } from "@/components/dashboard/item-content-types";
+import {
+  CODE_LANGUAGES,
+  CONTENT_TYPES,
+  LANGUAGE_TYPES,
+  URL_TYPES,
+} from "@/components/dashboard/item-content-types";
 import { CodeEditor } from "@/components/dashboard/CodeEditor";
 import { MarkdownEditor } from "@/components/dashboard/MarkdownEditor";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ItemContentFieldsProps {
   itemTypeName: string;
@@ -37,6 +49,27 @@ export function ItemContentFields({
 }: ItemContentFieldsProps) {
   return (
     <>
+      {LANGUAGE_TYPES.has(itemTypeName) && (
+        <div className={fieldClassName}>
+          <Label htmlFor={`${idPrefix}-language`}>Language</Label>
+          <Select value={language} onValueChange={(value) => onLanguageChange(value ?? "")}>
+            <SelectTrigger id={`${idPrefix}-language`} className="w-full">
+              <SelectValue placeholder="Select a language">
+                {(value: string) =>
+                  CODE_LANGUAGES.find((lang) => lang.value === value)?.label ?? value
+                }
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {CODE_LANGUAGES.map((lang) => (
+                <SelectItem key={lang.value} value={lang.value}>
+                  {lang.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       {CONTENT_TYPES.has(itemTypeName) && (
         <div className={fieldClassName}>
           <Label htmlFor={`${idPrefix}-content`}>Content</Label>
@@ -45,16 +78,6 @@ export function ItemContentFields({
           ) : (
             <MarkdownEditor value={content} onChange={onContentChange} />
           )}
-        </div>
-      )}
-      {LANGUAGE_TYPES.has(itemTypeName) && (
-        <div className={fieldClassName}>
-          <Label htmlFor={`${idPrefix}-language`}>Language</Label>
-          <Input
-            id={`${idPrefix}-language`}
-            value={language}
-            onChange={(e) => onLanguageChange(e.target.value)}
-          />
         </div>
       )}
       {URL_TYPES.has(itemTypeName) && (
