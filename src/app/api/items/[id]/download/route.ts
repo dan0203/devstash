@@ -22,11 +22,14 @@ export async function GET(_request: Request, ctx: RouteContext<"/api/items/[id]/
   }
 
   const stream = await object.Body.transformToWebStream();
+  // Strip characters that could break out of the quoted filename param and
+  // inject extra Content-Disposition directives.
+  const safeFileName = (item.fileName ?? "download").replace(/["\r\n]/g, "");
 
   return new NextResponse(stream, {
     headers: {
       "Content-Type": object.ContentType ?? "application/octet-stream",
-      "Content-Disposition": `attachment; filename="${item.fileName ?? "download"}"`,
+      "Content-Disposition": `attachment; filename="${safeFileName}"`,
       ...(object.ContentLength ? { "Content-Length": String(object.ContentLength) } : {}),
     },
   });

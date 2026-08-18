@@ -1,8 +1,6 @@
 import { type Dispatch, type SetStateAction } from "react";
 
-import { CONTENT_TYPES, LANGUAGE_TYPES, URL_TYPES } from "@/components/dashboard/item-content-types";
-import { CodeEditor } from "@/components/dashboard/CodeEditor";
-import { MarkdownEditor } from "@/components/dashboard/MarkdownEditor";
+import { ItemContentFields } from "@/components/dashboard/ItemContentFields";
 import { CollectionSelect } from "@/components/dashboard/CollectionSelect";
 import { type CollectionOption } from "@/lib/db/collections";
 import { Input } from "@/components/ui/input";
@@ -61,28 +59,16 @@ export function ItemDrawerEditForm({
           rows={2}
         />
       </div>
-      {CONTENT_TYPES.has(itemTypeName) && (
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="item-edit-content">Content</Label>
-          {LANGUAGE_TYPES.has(itemTypeName) ? (
-            <CodeEditor value={content} onChange={setContent} language={language} />
-          ) : (
-            <MarkdownEditor value={content} onChange={setContent} />
-          )}
-        </div>
-      )}
-      {LANGUAGE_TYPES.has(itemTypeName) && (
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="item-edit-language">Language</Label>
-          <Input id="item-edit-language" value={language} onChange={(e) => setLanguage(e.target.value)} />
-        </div>
-      )}
-      {URL_TYPES.has(itemTypeName) && (
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="item-edit-url">URL</Label>
-          <Input id="item-edit-url" value={url} onChange={(e) => setUrl(e.target.value)} />
-        </div>
-      )}
+      <ItemContentFields
+        itemTypeName={itemTypeName}
+        idPrefix="item-edit"
+        content={content}
+        onContentChange={setContent}
+        url={url}
+        onUrlChange={setUrl}
+        language={language}
+        onLanguageChange={setLanguage}
+      />
       <div className="flex flex-col gap-2">
         <Label>Collections</Label>
         <CollectionSelect

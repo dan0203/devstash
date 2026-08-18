@@ -9,8 +9,7 @@ import { createItem, type CreateItemInput } from "@/actions/items";
 import { type ItemTypeWithCount } from "@/lib/db/items";
 import { type CollectionOption } from "@/lib/db/collections";
 import { itemTypeIcons } from "@/lib/icon-map";
-import { CodeEditor } from "@/components/dashboard/CodeEditor";
-import { MarkdownEditor } from "@/components/dashboard/MarkdownEditor";
+import { ItemContentFields } from "@/components/dashboard/ItemContentFields";
 import { FileUpload, type UploadedFile } from "@/components/dashboard/FileUpload";
 import { CollectionSelect } from "@/components/dashboard/CollectionSelect";
 import { Button } from "@/components/ui/button";
@@ -28,8 +27,6 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
-const CONTENT_TYPES = new Set(["snippet", "prompt", "command", "note"]);
-const LANGUAGE_TYPES = new Set(["snippet", "command"]);
 const FILE_TYPES = new Set(["file", "image"]);
 
 interface NewItemDialogProps {
@@ -168,22 +165,19 @@ export function NewItemDialog({ itemTypes, collections }: NewItemDialogProps) {
             />
           </div>
 
-          {activeType && CONTENT_TYPES.has(activeType.value) && (
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="new-item-content">Content</Label>
-              {LANGUAGE_TYPES.has(activeType.value) ? (
-                <CodeEditor
-                  value={form.content}
-                  onChange={(content) => setForm((f) => ({ ...f, content }))}
-                  language={form.language}
-                />
-              ) : (
-                <MarkdownEditor
-                  value={form.content}
-                  onChange={(content) => setForm((f) => ({ ...f, content }))}
-                />
-              )}
-            </div>
+          {activeType && (
+            <ItemContentFields
+              itemTypeName={activeType.value}
+              idPrefix="new-item"
+              fieldClassName="flex flex-col gap-1.5"
+              content={form.content}
+              onContentChange={(content) => setForm((f) => ({ ...f, content }))}
+              url={form.url}
+              onUrlChange={(url) => setForm((f) => ({ ...f, url }))}
+              language={form.language}
+              onLanguageChange={(language) => setForm((f) => ({ ...f, language }))}
+              urlRequired
+            />
           )}
 
           {activeType && FILE_TYPES.has(activeType.value) && (
@@ -193,30 +187,6 @@ export function NewItemDialog({ itemTypes, collections }: NewItemDialogProps) {
                 itemType={activeType.value as "file" | "image"}
                 value={form.file}
                 onChange={(file) => setForm((f) => ({ ...f, file }))}
-              />
-            </div>
-          )}
-
-          {activeType && LANGUAGE_TYPES.has(activeType.value) && (
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="new-item-language">Language</Label>
-              <Input
-                id="new-item-language"
-                value={form.language}
-                onChange={(e) => setForm((f) => ({ ...f, language: e.target.value }))}
-              />
-            </div>
-          )}
-
-          {activeType?.value === "link" && (
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="new-item-url">URL</Label>
-              <Input
-                id="new-item-url"
-                value={form.url}
-                onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
-                placeholder="https://"
-                required
               />
             </div>
           )}

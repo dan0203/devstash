@@ -10,6 +10,7 @@ import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
 import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
 import { useItemDrawerData } from "@/components/dashboard/use-item-drawer-data";
+import { useItemEditForm } from "@/components/dashboard/use-item-edit-form";
 import { ItemDrawerView } from "@/components/dashboard/ItemDrawerView";
 import { ItemDrawerEditForm } from "@/components/dashboard/ItemDrawerEditForm";
 import { ItemDrawerActions } from "@/components/dashboard/ItemDrawerActions";
@@ -33,13 +34,7 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [content, setContent] = useState("");
-  const [url, setUrl] = useState("");
-  const [language, setLanguage] = useState("");
-  const [tagsInput, setTagsInput] = useState("");
-  const [collectionIds, setCollectionIds] = useState<string[]>([]);
+  const editForm = useItemEditForm();
 
   const handleCopy = () => {
     if (!item) return;
@@ -51,13 +46,7 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
 
   const handleEdit = () => {
     if (!item) return;
-    setTitle(item.title);
-    setDescription(item.description ?? "");
-    setContent(item.content ?? "");
-    setUrl(item.url ?? "");
-    setLanguage(item.language ?? "");
-    setTagsInput(item.tags.join(", "));
-    setCollectionIds(item.collections.map((collection) => collection.id));
+    editForm.loadFrom(item);
     setIsEditing(true);
   };
 
@@ -66,23 +55,10 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
   };
 
   const handleSave = async () => {
-    if (!item || !title.trim()) return;
+    if (!item || !editForm.title.trim()) return;
 
     setSaving(true);
-    const tags = tagsInput
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean);
-
-    const result = await updateItem(item.id, {
-      title,
-      description: description.trim() ? description : null,
-      content: content.trim() ? content : null,
-      url: url.trim() ? url : null,
-      language: language.trim() ? language : null,
-      tags,
-      collectionIds,
-    });
+    const result = await updateItem(item.id, editForm.toUpdateInput());
     setSaving(false);
 
     if (result.success && result.data) {
@@ -191,21 +167,8 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
               {isEditing ? (
                 <ItemDrawerEditForm
                   itemTypeName={item.itemType.name}
-                  title={title}
-                  setTitle={setTitle}
-                  description={description}
-                  setDescription={setDescription}
-                  content={content}
-                  setContent={setContent}
-                  url={url}
-                  setUrl={setUrl}
-                  language={language}
-                  setLanguage={setLanguage}
-                  tagsInput={tagsInput}
-                  setTagsInput={setTagsInput}
                   collections={collections}
-                  collectionIds={collectionIds}
-                  setCollectionIds={setCollectionIds}
+                  {...editForm}
                 />
               ) : (
                 <ItemDrawerView item={item} />
@@ -251,7 +214,7 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
                 <Button variant="outline" size="sm" onClick={handleCancel} disabled={saving}>
                   Cancel
                 </Button>
-                <Button size="sm" onClick={handleSave} disabled={saving || !title.trim()}>
+                <Button size="sm" onClick={handleSave} disabled={saving || !editForm.title.trim()}>
                   {saving ? "Saving..." : "Save"}
                 </Button>
               </SheetFooter>

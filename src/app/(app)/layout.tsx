@@ -10,12 +10,11 @@ import { ItemDrawer } from "@/components/dashboard/ItemDrawer";
 import { CommandPaletteProvider } from "@/components/dashboard/command-palette-context";
 import { CommandPalette } from "@/components/dashboard/CommandPalette";
 import { EditorPreferencesProvider } from "@/components/dashboard/editor-preferences-context";
-import { getItemTypesWithCounts, getAllItemsForSearch } from "@/lib/db/items";
+import { getItemTypesWithCounts } from "@/lib/db/items";
 import {
   getFavoriteCollections,
   getSidebarRecentCollections,
   getUserCollections,
-  getAllCollections,
 } from "@/lib/db/collections";
 import { getEditorPreferences } from "@/lib/db/user";
 
@@ -29,28 +28,14 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   }
   const user = session.user;
 
-  const [
-    itemTypes,
-    favoriteCollections,
-    recentCollections,
-    collections,
-    searchItems,
-    allCollections,
-    editorPreferences,
-  ] = await Promise.all([
-    getItemTypesWithCounts(user.id),
-    getFavoriteCollections(user.id),
-    getSidebarRecentCollections(user.id, 5),
-    getUserCollections(user.id),
-    getAllItemsForSearch(user.id),
-    getAllCollections(user.id),
-    getEditorPreferences(user.id),
-  ]);
-  const searchCollections = allCollections.map((collection) => ({
-    id: collection.id,
-    name: collection.name,
-    itemCount: collection.itemCount,
-  }));
+  const [itemTypes, favoriteCollections, recentCollections, collections, editorPreferences] =
+    await Promise.all([
+      getItemTypesWithCounts(user.id),
+      getFavoriteCollections(user.id),
+      getSidebarRecentCollections(user.id, 5),
+      getUserCollections(user.id),
+      getEditorPreferences(user.id),
+    ]);
 
   return (
     <SidebarProvider>
@@ -76,7 +61,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
               </div>
             </div>
             <ItemDrawer collections={collections} />
-            <CommandPalette items={searchItems} collections={searchCollections} />
+            <CommandPalette />
           </EditorPreferencesProvider>
         </CommandPaletteProvider>
       </ItemDrawerProvider>

@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { defaultFilter } from "cmdk";
 import { Folder } from "lucide-react";
 
-import { type SearchItem } from "@/lib/db/items";
 import { type CollectionOption } from "@/lib/db/collections";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
 import { useCommandPalette } from "@/components/dashboard/command-palette-context";
+import { useCommandPaletteData } from "@/components/dashboard/use-command-palette-data";
 import {
   Command,
   CommandDialog,
@@ -35,15 +35,11 @@ function filterWithTypoTolerance(value: string, search: string) {
   return score >= MIN_MATCH_SCORE ? score : 0;
 }
 
-interface CommandPaletteProps {
-  items: SearchItem[];
-  collections: SearchCollection[];
-}
-
-export function CommandPalette({ items, collections }: CommandPaletteProps) {
+export function CommandPalette() {
   const { open, setOpen } = useCommandPalette();
   const { openDrawer } = useItemDrawer();
   const router = useRouter();
+  const { items, collections, loading } = useCommandPaletteData(open);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -76,7 +72,11 @@ export function CommandPalette({ items, collections }: CommandPaletteProps) {
       <Command filter={filterWithTypoTolerance}>
         <CommandInput placeholder="Search items and collections..." />
         <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
+          {loading ? (
+            <div className="py-6 text-center text-sm text-muted-foreground">Searching...</div>
+          ) : (
+            <CommandEmpty>No results found.</CommandEmpty>
+          )}
           <CommandGroup heading="Items">
             {items.map((item) => {
               const Icon = itemTypeIcons[item.itemType.icon];
