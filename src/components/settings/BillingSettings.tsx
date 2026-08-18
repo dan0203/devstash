@@ -61,7 +61,16 @@ export function BillingSettings({
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2 py-2">
           <span className="text-sm text-muted-foreground">Current plan</span>
-          <Badge variant={billingInfo.isPro ? "default" : "secondary"}>{planLabel}</Badge>
+          <Badge
+            variant={billingInfo.isPro ? "default" : "secondary"}
+            className={
+              billingInfo.isPro
+                ? "border-transparent bg-yellow-400 text-yellow-950 hover:bg-yellow-400"
+                : undefined
+            }
+          >
+            {planLabel}
+          </Badge>
         </div>
         <div className="flex flex-col gap-2">
           <span className="font-medium">
