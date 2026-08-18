@@ -8,6 +8,9 @@ import { ItemCard } from "@/components/dashboard/ItemCard";
 import { ImageThumbnailCard } from "@/components/dashboard/ImageThumbnailCard";
 import { FileListRow } from "@/components/dashboard/FileListRow";
 import { PaginationControls } from "@/components/dashboard/PaginationControls";
+import { ProUpgradePrompt } from "@/components/dashboard/ProUpgradePrompt";
+
+const proOnlyTypeNames = new Set(["file", "image"]);
 
 export default async function ItemTypePage(props: PageProps<"/items/[type]">) {
   const session = await auth();
@@ -24,6 +27,19 @@ export default async function ItemTypePage(props: PageProps<"/items/[type]">) {
     notFound();
   }
 
+  const typeName = formatItemTypeName(itemType.name);
+
+  if (proOnlyTypeNames.has(itemType.name) && !session.user.isPro) {
+    return (
+      <main className="min-h-0 flex-1 overflow-y-auto p-6">
+        <div className="mx-auto flex max-w-5xl flex-col gap-6">
+          <h1 className="text-lg font-semibold">{typeName}</h1>
+          <ProUpgradePrompt typeName={typeName} />
+        </div>
+      </main>
+    );
+  }
+
   const { page: pageParam } = await props.searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
 
@@ -34,7 +50,6 @@ export default async function ItemTypePage(props: PageProps<"/items/[type]">) {
     ITEMS_PER_PAGE
   );
   const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
-  const typeName = formatItemTypeName(itemType.name);
   const isImageGallery = itemType.name === "image";
   const isFileList = itemType.name === "file";
 
