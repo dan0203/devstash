@@ -58,7 +58,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         <CommandPaletteProvider>
           <EditorPreferencesProvider initialPreferences={editorPreferences}>
             <div className="flex h-dvh flex-col">
-              <TopBar itemTypes={itemTypes} collections={collections} />
+              <TopBar itemTypes={itemTypes} collections={collections} isPro={user.isPro} />
               <div className="flex min-h-0 flex-1">
                 <Sidebar
                   user={user}

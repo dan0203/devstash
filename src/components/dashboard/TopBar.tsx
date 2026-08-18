@@ -24,9 +24,10 @@ const creatableTypeSlugs = new Set([
 interface TopBarProps {
   itemTypes: ItemTypeWithCount[];
   collections: CollectionOption[];
+  isPro: boolean;
 }
 
-export function TopBar({ itemTypes, collections }: TopBarProps) {
+export function TopBar({ itemTypes, collections, isPro }: TopBarProps) {
   const { setMobileOpen } = useSidebar();
   const { setOpen: setCommandPaletteOpen } = useCommandPalette();
   const creatableTypes = itemTypes.filter((type) => creatableTypeSlugs.has(type.slug));
@@ -79,6 +80,11 @@ export function TopBar({ itemTypes, collections }: TopBarProps) {
         <Button variant="ghost" size="icon-sm" aria-label="Favorites" nativeButton={false} render={<Link href="/favorites" />}>
           <Star className="size-4" />
         </Button>
+        {!isPro && (
+          <Button variant="ghost" nativeButton={false} render={<Link href="/upgrade" />}>
+            Upgrade
+          </Button>
+        )}
         <NewCollectionDialog />
         <NewItemDialog itemTypes={creatableTypes} collections={collections} />
       </div>

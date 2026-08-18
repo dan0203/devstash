@@ -11,7 +11,8 @@ export const proxy = auth((req) => {
     req.nextUrl.pathname.startsWith("/dashboard") ||
     req.nextUrl.pathname.startsWith("/profile") ||
     req.nextUrl.pathname.startsWith("/settings") ||
-    req.nextUrl.pathname.startsWith("/favorites");
+    req.nextUrl.pathname.startsWith("/favorites") ||
+    req.nextUrl.pathname.startsWith("/upgrade");
 
   if (isProtectedRoute && !isLoggedIn) {
     const signInUrl = new URL("/sign-in", req.nextUrl.origin);
@@ -23,5 +24,11 @@ export const proxy = auth((req) => {
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*", "/settings/:path*", "/favorites/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/profile/:path*",
+    "/settings/:path*",
+    "/favorites/:path*",
+    "/upgrade/:path*",
+  ],
 };
