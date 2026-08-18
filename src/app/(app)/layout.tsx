@@ -60,7 +60,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
                 {children}
               </div>
             </div>
-            <ItemDrawer collections={collections} />
+            <ItemDrawer collections={collections} isPro={user.isPro} />
             <CommandPalette />
           </EditorPreferencesProvider>
         </CommandPaletteProvider>

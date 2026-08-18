@@ -29,6 +29,7 @@ export const rateLimiters = {
   resendVerification: createLimiter("resend-verification", 3, "15 m"),
   changePassword: createLimiter("change-password", 5, "15 m"),
   upload: createLimiter("upload", 20, "1 h"),
+  aiSuggestTags: createLimiter("ai-suggest-tags", 20, "1 h"),
 };
 
 export interface RateLimitResult {

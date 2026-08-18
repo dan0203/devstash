@@ -24,9 +24,10 @@ import { Separator } from "@/components/ui/separator";
 
 interface ItemDrawerProps {
   collections: CollectionOption[];
+  isPro: boolean;
 }
 
-export function ItemDrawer({ collections }: ItemDrawerProps) {
+export function ItemDrawer({ collections, isPro }: ItemDrawerProps) {
   const router = useRouter();
   const { openItemId, closeDrawer } = useItemDrawer();
   const { item, setItem, failed } = useItemDrawerData(openItemId);
@@ -168,6 +169,7 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
                 <ItemDrawerEditForm
                   itemTypeName={item.itemType.name}
                   collections={collections}
+                  isPro={isPro}
                   {...editForm}
                 />
               ) : (

@@ -12,6 +12,9 @@ import { itemTypeIcons } from "@/lib/icon-map";
 import { ItemContentFields } from "@/components/dashboard/ItemContentFields";
 import { FileUpload, type UploadedFile } from "@/components/dashboard/FileUpload";
 import { CollectionSelect } from "@/components/dashboard/CollectionSelect";
+import { SuggestTagsTrigger } from "@/components/dashboard/SuggestTagsTrigger";
+import { SuggestedTagsList } from "@/components/dashboard/SuggestedTagsList";
+import { useSuggestTags } from "@/components/dashboard/use-suggest-tags";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +35,7 @@ const FILE_TYPES = new Set(["file", "image"]);
 interface NewItemDialogProps {
   itemTypes: ItemTypeWithCount[];
   collections: CollectionOption[];
+  isPro: boolean;
 }
 
 const emptyForm = {
@@ -45,7 +49,7 @@ const emptyForm = {
   collectionIds: [] as string[],
 };
 
-export function NewItemDialog({ itemTypes, collections }: NewItemDialogProps) {
+export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [selectedType, setSelectedType] = useState(itemTypes[0]?.value ?? "");
@@ -55,10 +59,30 @@ export function NewItemDialog({ itemTypes, collections }: NewItemDialogProps) {
 
   const activeType = itemTypes.find((type) => type.value === selectedType) ?? itemTypes[0];
 
+  const existingTags = form.tagsInput
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+  const suggestTags = useSuggestTags({
+    title: form.title,
+    content: form.content,
+    existingTags,
+    onAcceptTag: (tag) =>
+      setForm((f) => {
+        const existing = f.tagsInput
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
+        if (existing.some((t) => t.toLowerCase() === tag.toLowerCase())) return f;
+        return { ...f, tagsInput: [...existing, tag].join(", ") };
+      }),
+  });
+
   function reset() {
     setSelectedType(itemTypes[0]?.value ?? "");
     setForm(emptyForm);
     setError(null);
+    suggestTags.reset();
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -201,12 +225,22 @@ export function NewItemDialog({ itemTypes, collections }: NewItemDialogProps) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="new-item-tags">Tags</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="new-item-tags">Tags</Label>
+              {isPro && (
+                <SuggestTagsTrigger loading={suggestTags.loading} onClick={suggestTags.handleSuggest} />
+              )}
+            </div>
             <Input
               id="new-item-tags"
               value={form.tagsInput}
               onChange={(e) => setForm((f) => ({ ...f, tagsInput: e.target.value }))}
               placeholder="react, hooks, performance"
+            />
+            <SuggestedTagsList
+              tags={suggestTags.suggestions}
+              onAccept={suggestTags.handleAccept}
+              onReject={suggestTags.handleReject}
             />
           </div>
 

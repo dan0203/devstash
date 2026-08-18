@@ -2,6 +2,9 @@ import { type Dispatch, type SetStateAction } from "react";
 
 import { ItemContentFields } from "@/components/dashboard/ItemContentFields";
 import { CollectionSelect } from "@/components/dashboard/CollectionSelect";
+import { SuggestTagsTrigger } from "@/components/dashboard/SuggestTagsTrigger";
+import { SuggestedTagsList } from "@/components/dashboard/SuggestedTagsList";
+import { useSuggestTags } from "@/components/dashboard/use-suggest-tags";
 import { type CollectionOption } from "@/lib/db/collections";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +27,7 @@ interface ItemDrawerEditFormProps {
   collections: CollectionOption[];
   collectionIds: string[];
   setCollectionIds: Dispatch<SetStateAction<string[]>>;
+  isPro: boolean;
 }
 
 export function ItemDrawerEditForm({
@@ -43,7 +47,27 @@ export function ItemDrawerEditForm({
   collections,
   collectionIds,
   setCollectionIds,
+  isPro,
 }: ItemDrawerEditFormProps) {
+  const existingTags = tagsInput
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+  const suggestTags = useSuggestTags({
+    title,
+    content,
+    existingTags,
+    onAcceptTag: (tag) =>
+      setTagsInput((current) => {
+        const existing = current
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
+        if (existing.some((t) => t.toLowerCase() === tag.toLowerCase())) return current;
+        return [...existing, tag].join(", ");
+      }),
+  });
+
   return (
     <>
       <div className="flex flex-col gap-2">
@@ -78,12 +102,22 @@ export function ItemDrawerEditForm({
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="item-edit-tags">Tags</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="item-edit-tags">Tags</Label>
+          {isPro && (
+            <SuggestTagsTrigger loading={suggestTags.loading} onClick={suggestTags.handleSuggest} />
+          )}
+        </div>
         <Input
           id="item-edit-tags"
           value={tagsInput}
           onChange={(e) => setTagsInput(e.target.value)}
           placeholder="react, hooks, performance"
+        />
+        <SuggestedTagsList
+          tags={suggestTags.suggestions}
+          onAccept={suggestTags.handleAccept}
+          onReject={suggestTags.handleReject}
         />
       </div>
     </>
