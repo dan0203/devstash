@@ -15,6 +15,9 @@ import { CollectionSelect } from "@/components/dashboard/CollectionSelect";
 import { SuggestTagsTrigger } from "@/components/dashboard/SuggestTagsTrigger";
 import { SuggestedTagsList } from "@/components/dashboard/SuggestedTagsList";
 import { useSuggestTags } from "@/components/dashboard/use-suggest-tags";
+import { SuggestDescriptionTrigger } from "@/components/dashboard/SuggestDescriptionTrigger";
+import { useSuggestDescription } from "@/components/dashboard/use-suggest-description";
+import { CONTENT_TYPES, URL_TYPES, LANGUAGE_TYPES } from "@/components/dashboard/item-content-types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -76,6 +79,14 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
         if (existing.some((t) => t.toLowerCase() === tag.toLowerCase())) return f;
         return { ...f, tagsInput: [...existing, tag].join(", ") };
       }),
+  });
+  const suggestDescription = useSuggestDescription({
+    title: form.title,
+    content: activeType && CONTENT_TYPES.has(activeType.value) ? form.content : "",
+    url: activeType && URL_TYPES.has(activeType.value) ? form.url : "",
+    language: activeType && LANGUAGE_TYPES.has(activeType.value) ? form.language : "",
+    itemType: activeType?.value ?? "",
+    onGenerated: (description) => setForm((f) => ({ ...f, description })),
   });
 
   function reset() {
@@ -180,7 +191,15 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="new-item-description">Description</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="new-item-description">Description</Label>
+              {isPro && (
+                <SuggestDescriptionTrigger
+                  loading={suggestDescription.loading}
+                  onClick={suggestDescription.handleSuggest}
+                />
+              )}
+            </div>
             <Textarea
               id="new-item-description"
               value={form.description}

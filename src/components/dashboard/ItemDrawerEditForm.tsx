@@ -5,6 +5,8 @@ import { CollectionSelect } from "@/components/dashboard/CollectionSelect";
 import { SuggestTagsTrigger } from "@/components/dashboard/SuggestTagsTrigger";
 import { SuggestedTagsList } from "@/components/dashboard/SuggestedTagsList";
 import { useSuggestTags } from "@/components/dashboard/use-suggest-tags";
+import { SuggestDescriptionTrigger } from "@/components/dashboard/SuggestDescriptionTrigger";
+import { useSuggestDescription } from "@/components/dashboard/use-suggest-description";
 import { type CollectionOption } from "@/lib/db/collections";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -67,6 +69,14 @@ export function ItemDrawerEditForm({
         return [...existing, tag].join(", ");
       }),
   });
+  const suggestDescription = useSuggestDescription({
+    title,
+    content,
+    url,
+    language,
+    itemType: itemTypeName,
+    onGenerated: setDescription,
+  });
 
   return (
     <>
@@ -75,7 +85,15 @@ export function ItemDrawerEditForm({
         <Input id="item-edit-title" value={title} onChange={(e) => setTitle(e.target.value)} />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="item-edit-description">Description</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="item-edit-description">Description</Label>
+          {isPro && (
+            <SuggestDescriptionTrigger
+              loading={suggestDescription.loading}
+              onClick={suggestDescription.handleSuggest}
+            />
+          )}
+        </div>
         <Textarea
           id="item-edit-description"
           value={description}
