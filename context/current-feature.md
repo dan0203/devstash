@@ -1,20 +1,33 @@
-# Current Feature
+# Current Feature: Component Folder Reorg Phase 3 (Dedupe Extractions)
 
 <!-- Feature Name And Short Description -->
+
+Phase 3 of the 4-phase components/architecture cleanup (Phase 1: folder reorg, Phase 2: component splits — both complete). This phase extracts duplicated logic identified by the `refactor-scanner`/`code-scanner` passes into shared utilities/hooks.
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-Not Started
+In Progress
 
 ## Goals
 
 <!-- Goals & Requirements -->
 
+- Add a `postJson` fetch helper (`src/lib/api-client.ts`) to replace the identical fetch/JSON boilerplate duplicated across `ForgotPasswordForm.tsx`, `ResetPasswordForm.tsx`, `RegisterForm.tsx`, `ChangePasswordDialog.tsx`, and `SignInForm.tsx`'s resend-verification call.
+- Add a `useNavigateCardProps` hook (mirroring the existing `shared/hooks/use-drawer-card-props.ts` pattern) to replace the hand-rolled `role="link"`/keydown navigation pattern duplicated in `collections/CollectionCard.tsx` and `favorites/FavoriteCollectionRow.tsx`.
+- Merge `ai/ExplainCodeTrigger.tsx` and `ai/OptimizePromptTrigger.tsx` into one shared `AiActionTrigger.tsx`.
+- Evaluate case-by-case (extract only if it clearly reduces duplication without over-abstracting): a `useToggleFavorite` hook, a `CollectionActionDialogs` wrapper, a `useAiSuggestion` loading/error wrapper.
+- Explicitly out of scope: a shared `useDialogSubmit` hook across the three item/collection dialogs — prior scan flagged this as not recommended yet.
+
 ## Notes
 
 <!-- Any Extra Notes -->
+
+- Pure refactor/dedupe phase — no behavior change expected. Verify via Playwright that affected flows (password reset/register/resend-verification forms, collection card navigation, AI explain/optimize triggers, favorite toggles) still work identically.
+- Follows the same file-organization conventions established in Phase 1 (per-feature folders under `src/components/`, `hooks/` subpaths).
+- No new unit tests expected unless a touched file happens to fall in `src/actions/**` or `src/lib/**` (excluding `src/lib/db/**`) scope — most of this phase touches `src/components/**` client components, which are out of Vitest's scope per `context/ai-interaction.md`.
+- Full backlog detail (and Phase 4, still pending after this) is recorded in `current-feature.md`'s History entry for "Component Folder Reorg (Phase 1 of 4)".
 
 ## History
 

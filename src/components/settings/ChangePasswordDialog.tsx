@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { postJson } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,12 +61,10 @@ export function ChangePasswordDialog() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/auth/change-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsed.data),
-      });
-      const body = await res.json();
+      const body = await postJson<{ success: boolean; error?: string }>(
+        "/api/auth/change-password",
+        parsed.data
+      );
 
       if (!body.success) {
         setError(body.error ?? "Something went wrong");

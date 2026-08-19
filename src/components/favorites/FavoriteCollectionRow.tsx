@@ -1,27 +1,18 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Folder } from "lucide-react";
 
 import { type CollectionWithStats } from "@/lib/db/collections";
 import { formatRelativeTime } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
+import { useNavigateCardProps } from "@/components/shared/hooks/use-navigate-card-props";
 
 export function FavoriteCollectionRow({ collection }: { collection: CollectionWithStats }) {
-  const router = useRouter();
-  const href = `/collections/${collection.id}`;
+  const navigateProps = useNavigateCardProps(`/collections/${collection.id}`);
 
   return (
     <div
-      role="link"
-      tabIndex={0}
-      onClick={() => router.push(href)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          router.push(href);
-        }
-      }}
+      {...navigateProps}
       className="flex cursor-pointer items-center gap-3 px-1 py-2 transition-colors hover:bg-accent/50"
     >
       <Folder className="size-3.5 shrink-0" style={{ color: collection.color }} />

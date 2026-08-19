@@ -1,9 +1,7 @@
 "use client";
 
 import type { MouseEvent } from "react";
-import { useRouter } from "next/navigation";
 import { Star } from "lucide-react";
-import { toast } from "sonner";
 
 import { toggleCollectionFavorite } from "@/actions/collections";
 import { type CollectionWithStats } from "@/lib/db/collections";
@@ -12,32 +10,20 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { CollectionCardMenu } from "@/components/collections/CollectionCardMenu";
+import { useNavigateCardProps } from "@/components/shared/hooks/use-navigate-card-props";
+import { useToggleFavorite } from "@/components/shared/hooks/use-toggle-favorite";
 
 export function CollectionCard({ collection }: { collection: CollectionWithStats }) {
-  const router = useRouter();
   const href = `/collections/${collection.id}`;
+  const navigateProps = useNavigateCardProps(href);
+  const toggleFavorite = useToggleFavorite(toggleCollectionFavorite);
 
-  const handleToggleFavorite = async () => {
-    const result = await toggleCollectionFavorite(collection.id);
-    if (result.success) {
-      router.refresh();
-    } else {
-      toast.error(result.error ?? "Failed to update favorite");
-    }
-  };
+  const handleToggleFavorite = () => toggleFavorite(collection.id);
 
   return (
     <Card
       size="sm"
-      role="link"
-      tabIndex={0}
-      onClick={() => router.push(href)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          router.push(href);
-        }
-      }}
+      {...navigateProps}
       className={cn(
         "cursor-pointer gap-1.5 border-l-2 p-4 transition-colors hover:bg-accent/50",
         collection.isFavorite && "border-l-4"

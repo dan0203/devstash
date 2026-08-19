@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { OptimizePromptTrigger } from "@/components/ai/OptimizePromptTrigger";
+import { AiActionTrigger } from "@/components/ai/AiActionTrigger";
 import { useOptimizePrompt } from "@/components/ai/hooks/use-optimize-prompt";
 
 interface MarkdownEditorOptimizeOptions {
@@ -80,10 +80,13 @@ export function MarkdownEditor({
           )}
           <div className="flex items-center gap-2">
             {optimize && !optimizeState.optimized && (
-              <OptimizePromptTrigger
+              <AiActionTrigger
                 isPro={optimize.isPro}
                 loading={optimizeState.loading}
                 onClick={optimizeState.handleOptimize}
+                label="Optimize"
+                loadingLabel="Optimizing..."
+                ariaLabel="Optimize prompt"
               />
             )}
             <Button
