@@ -1,3 +1,5 @@
+import bcrypt from "bcryptjs";
+
 import type { InputJsonValue } from "@/generated/prisma/internal/prismaNamespace";
 import { prisma } from "@/lib/prisma";
 import {
@@ -30,6 +32,17 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     hasPassword: user.password !== null,
     createdAt: user.createdAt,
   };
+}
+
+export async function updateUserPassword(
+  where: { id: string } | { email: string },
+  newPassword: string
+): Promise<void> {
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await prisma.user.update({
+    where,
+    data: { password: passwordHash, passwordChangedAt: new Date() },
+  });
 }
 
 function parseEditorPreferences(raw: unknown): EditorPreferences {

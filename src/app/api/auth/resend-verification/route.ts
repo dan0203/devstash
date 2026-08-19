@@ -7,30 +7,21 @@ import {
   isEmailVerificationEnabled,
   sendVerificationEmail,
 } from "@/lib/verification-email";
-import { checkRateLimit, getClientIp, rateLimiters, rateLimitResponse } from "@/lib/rate-limit";
+import { enforceRateLimit, getClientIp, rateLimiters } from "@/lib/rate-limit";
+import { parseJsonBody } from "@/lib/api-request";
 
 const resendSchema = z.object({
   email: z.string().email(),
 });
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  const parsed = resendSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return NextResponse.json(
-      { success: false, error: parsed.error.issues[0].message },
-      { status: 400 }
-    );
-  }
-
+  const parsed = await parseJsonBody(request, resendSchema);
+  if ("response" in parsed) return parsed.response;
   const { email } = parsed.data;
 
   const ip = getClientIp(request);
-  const rateLimit = await checkRateLimit(rateLimiters.resendVerification, `${ip}:${email}`);
-  if (!rateLimit.success) {
-    return rateLimitResponse(rateLimit.reset);
-  }
+  const rateLimited = await enforceRateLimit(rateLimiters.resendVerification, `${ip}:${email}`);
+  if (rateLimited) return rateLimited;
 
   if (!isEmailVerificationEnabled()) {
     return NextResponse.json({ success: true });

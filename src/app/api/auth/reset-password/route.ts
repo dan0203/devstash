@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
+import { updateUserPassword } from "@/lib/db/user";
 import { consumePasswordResetToken } from "@/lib/password-reset";
-import { checkRateLimit, getClientIp, rateLimiters, rateLimitResponse } from "@/lib/rate-limit";
+import { enforceRateLimit, getClientIp, rateLimiters } from "@/lib/rate-limit";
+import { parseJsonBody } from "@/lib/api-request";
+import { passwordsMatchRefinement } from "@/lib/validation";
 
 const resetPasswordSchema = z
   .object({
@@ -12,29 +14,16 @@ const resetPasswordSchema = z
     password: z.string().min(8),
     confirmPassword: z.string().min(8),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+  .refine(...passwordsMatchRefinement("password", "confirmPassword"));
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  const parsed = resetPasswordSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return NextResponse.json(
-      { success: false, error: parsed.error.issues[0].message },
-      { status: 400 }
-    );
-  }
-
+  const parsed = await parseJsonBody(request, resetPasswordSchema);
+  if ("response" in parsed) return parsed.response;
   const { token, password } = parsed.data;
 
   const ip = getClientIp(request);
-  const rateLimit = await checkRateLimit(rateLimiters.resetPassword, ip);
-  if (!rateLimit.success) {
-    return rateLimitResponse(rateLimit.reset);
-  }
+  const rateLimited = await enforceRateLimit(rateLimiters.resetPassword, ip);
+  if (rateLimited) return rateLimited;
 
   const email = await consumePasswordResetToken(token);
   if (!email) {
@@ -55,11 +44,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const passwordHash = await bcrypt.hash(password, 12);
-  await prisma.user.update({
-    where: { email },
-    data: { password: passwordHash, passwordChangedAt: new Date() },
-  });
+  await updateUserPassword({ email }, password);
 
   return NextResponse.json({ success: true });
 }

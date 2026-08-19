@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server";
 
-import { auth } from "@/auth";
+import { requireApiSession } from "@/lib/auth-utils";
 import { getItemDetail } from "@/lib/db/items";
 import { getR2Object, r2KeyFromUrl } from "@/lib/r2";
 
 export async function GET(_request: Request, ctx: RouteContext<"/api/items/[id]/download">) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ success: false, error: "Not signed in" }, { status: 401 });
-  }
+  const session = await requireApiSession();
+  if (!session.ok) return session.response;
 
   const { id } = await ctx.params;
-  const item = await getItemDetail(session.user.id, id);
+  const item = await getItemDetail(session.userId, id);
   if (!item || item.contentType !== "file" || !item.fileUrl) {
     return NextResponse.json({ success: false, error: "File not found" }, { status: 404 });
   }

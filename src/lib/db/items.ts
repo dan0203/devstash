@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { formatItemTypeName, getSystemItemTypesOrdered, pluralize } from "@/lib/db/item-types";
 import { deleteFromR2, r2KeyFromUrl } from "@/lib/r2";
+import { findOwnedItem, getItemCountsByTypeId, toggleBooleanColumn } from "@/lib/db/query-helpers";
 
 export interface ItemWithType {
   id: string;
@@ -193,10 +194,7 @@ export async function updateItem(
   itemId: string,
   data: UpdateItemData
 ): Promise<ItemDetail | null> {
-  const existing = await prisma.item.findFirst({
-    where: { id: itemId, userId },
-    select: { id: true },
-  });
+  const existing = await findOwnedItem(userId, itemId, { id: true });
   if (!existing) return null;
 
   const collectionIds = await ownedCollectionIds(userId, data.collectionIds);
@@ -278,46 +276,24 @@ export async function createItem(
 }
 
 export async function toggleItemFavorite(userId: string, itemId: string): Promise<boolean | null> {
-  const existing = await prisma.item.findFirst({
-    where: { id: itemId, userId },
-    select: { isFavorite: true },
-  });
+  const existing = await findOwnedItem(userId, itemId, { isFavorite: true });
   if (!existing) return null;
 
-  // Raw SQL so this doesn't bump `updatedAt` (Prisma Client's mutation
-  // resolver sets @updatedAt on every .update() call) — favoriting shouldn't
-  // reorder "recent items" lists or shift a collection's last-updated item.
-  const [updated] = await prisma.$queryRaw<{ isFavorite: boolean }[]>`
-    UPDATE "Item" SET "isFavorite" = ${!existing.isFavorite}
-    WHERE "id" = ${itemId}
-    RETURNING "isFavorite"
-  `;
-
-  return updated.isFavorite;
+  return toggleBooleanColumn("Item", "isFavorite", itemId, existing.isFavorite);
 }
 
 export async function toggleItemPin(userId: string, itemId: string): Promise<boolean | null> {
-  const existing = await prisma.item.findFirst({
-    where: { id: itemId, userId },
-    select: { isPinned: true },
-  });
+  const existing = await findOwnedItem(userId, itemId, { isPinned: true });
   if (!existing) return null;
 
-  // Raw SQL so this doesn't bump `updatedAt`, matching `toggleItemFavorite` —
-  // pinning shouldn't reorder "recent items" lists by itself.
-  const [updated] = await prisma.$queryRaw<{ isPinned: boolean }[]>`
-    UPDATE "Item" SET "isPinned" = ${!existing.isPinned}
-    WHERE "id" = ${itemId}
-    RETURNING "isPinned"
-  `;
-
-  return updated.isPinned;
+  return toggleBooleanColumn("Item", "isPinned", itemId, existing.isPinned);
 }
 
 export async function deleteItem(userId: string, itemId: string): Promise<boolean> {
-  const existing = await prisma.item.findFirst({
-    where: { id: itemId, userId },
-    select: { id: true, contentType: true, fileUrl: true },
+  const existing = await findOwnedItem(userId, itemId, {
+    id: true,
+    contentType: true,
+    fileUrl: true,
   });
   if (!existing) return false;
 
@@ -422,13 +398,7 @@ export async function getItemStats(userId: string): Promise<ItemStats> {
 
 export async function getItemTypesWithCounts(userId: string): Promise<ItemTypeWithCount[]> {
   const itemTypes = await getSystemItemTypesOrdered();
-
-  const counts = await prisma.item.groupBy({
-    by: ["itemTypeId"],
-    where: { userId },
-    _count: { itemTypeId: true },
-  });
-  const countByTypeId = new Map(counts.map((c) => [c.itemTypeId, c._count.itemTypeId]));
+  const countByTypeId = await getItemCountsByTypeId(userId);
 
   return itemTypes.map((itemType) => ({
     id: itemType.id,

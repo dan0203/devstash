@@ -77,3 +77,12 @@ export function rateLimitResponse(reset: number) {
     { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } }
   );
 }
+
+/** Checks a rate limiter and returns a 429 NextResponse if exceeded, or null to proceed. */
+export async function enforceRateLimit(
+  limiter: Ratelimit | null,
+  key: string
+): Promise<NextResponse | null> {
+  const result = await checkRateLimit(limiter, key);
+  return result.success ? null : rateLimitResponse(result.reset);
+}

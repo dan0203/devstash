@@ -1,20 +1,46 @@
-# Current Feature
+# Current Feature: Refactor-Scanner Dedupe (lib/db, lib, api)
 
 <!-- Feature Name And Short Description -->
+
+Apply the extraction candidates found by three refactor-scanner passes over `src/lib/db/`, `src/lib/` (top-level), and `src/app/api/`, run right after the earlier `src/actions/**`/`src/components/**` dedupe passes. Excludes the client-singleton "fail open at import" posture in `stripe.ts`/`openai.ts`/`r2.ts`/`rate-limit.ts` (judged not worth unifying — genuine per-SDK differences).
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-Not Started
+In Progress
 
 ## Goals
 
 <!-- Goals & Requirements -->
 
+**`src/lib/db/` (Prisma query wrappers):**
+- Extract `toggleBooleanField` (or equivalent shared helper) to replace the duplicated ownership-check + raw-`$queryRaw` UPDATE (bypassing `@updatedAt`) + return-boolean logic in `toggleItemFavorite`/`toggleItemPin` (`src/lib/db/items.ts`) and `toggleCollectionFavorite` (`src/lib/db/collections.ts`).
+- Extract `aggregateTypeCounts` to replace the duplicated per-type `Map`-count-and-sort loop in `getCollectionsWithStats` and `getCollectionDetail` (`src/lib/db/collections.ts`).
+- Extract `getItemCountsByTypeId` to replace the duplicated `groupBy` + `Map` construction in `getItemTypesWithCounts` (`src/lib/db/items.ts`) and `getProfileStats` (`src/lib/db/profile.ts`).
+- Extract `findOwnedItem`/`findOwnedCollection` ownership-lookup helpers (bundle alongside the `toggleBooleanField` extraction, which needs the same lookup) to replace the repeated `findFirst({id, userId}, select: {...})` pattern across `items.ts`/`collections.ts`.
+
+**`src/lib/` (top-level utilities):**
+- Extract `createSingleUseToken` to replace the duplicated token-issuance sequence (TTL constant, `crypto.randomBytes`, delete-then-create) in `verification-email.ts`'s `createVerificationToken` and `password-reset.ts`'s `createPasswordResetToken`.
+- Extract `sendTransactionalEmail` to replace the duplicated `FROM_ADDRESS` constant + `resend.emails.send()` + `{data,error}` check/throw in `verification-email.ts`'s `sendVerificationEmail` and `password-reset.ts`'s `sendPasswordResetEmail`.
+- Extract `resolveAppUrl` to replace the duplicated `process.env.NEXT_PUBLIC_APP_URL ?? origin` fallback in `verification-email.ts` and `password-reset.ts` — also check whether `src/app/api/auth/verify-email/route.ts`'s known third occurrence of this same fallback can reuse it.
+- Do NOT touch the client-singleton "fail open at import" pattern in `stripe.ts`/`openai.ts`/`r2.ts`/`rate-limit.ts` — explicitly out of scope per user instruction.
+
+**`src/app/api/`:**
+- Extract `requireApiSession` (building on the existing `requireSession()` in `src/lib/auth-utils.ts`, wrapped in a `NextResponse` 401) to replace the duplicated `auth()` + null-check + 401 response in `items/[id]/route.ts`, `items/[id]/download/route.ts`, `search/route.ts`, `auth/change-password/route.ts`, `upload/route.ts`.
+- Extract `parseJsonBody` (building on the existing `parseOrError()` in `src/lib/validation.ts`, wrapped in a `NextResponse` 400) to replace the duplicated `request.json()` + Zod `safeParse` + 400 response in `auth/register`, `auth/forgot-password`, `auth/reset-password`, `auth/resend-verification`, `auth/change-password` routes.
+- Extract `updateUserPassword` (in `src/lib/db/user.ts`) to replace the duplicated bcrypt-hash(12) + `prisma.user.update({password, passwordChangedAt})` in `auth/reset-password/route.ts` and `auth/change-password/route.ts`.
+- Extract a shared password-confirmation Zod refine helper (e.g. `passwordsMatch`) — apply it across all 6 occurrences: the 3 API routes (`register`, `reset-password`, `change-password`) AND the 3 client forms (`RegisterForm.tsx`, `ResetPasswordForm.tsx`, `ChangePasswordDialog.tsx`) that independently duplicate the same `.refine(...)` predicate/message.
+- Extract a small `enforceRateLimit(limiter, key)` helper to collapse the repeated `checkRateLimit` + `rateLimitResponse` two-line pattern across `register`, `forgot-password`, `reset-password`, `resend-verification`, `change-password`, `upload` routes.
+
 ## Notes
 
 <!-- Any Extra Notes -->
+
+- Source: three parallel `refactor-scanner` agent passes over `src/lib/db/`, `src/lib/`, and `src/app/api/`, run 2026-08-19 as a follow-up to the earlier `fix/actions-dedupe-boilerplate` and component-folder-reorg dedupe work.
+- Pure refactor — no behavior change expected anywhere in this feature. Existing Vitest suite (`src/actions/**`, `src/lib/**` excluding `src/lib/db/**`) should catch regressions in the extracted `src/lib/` and `src/app/api/` helpers; `src/lib/db/**` changes stay outside Vitest's scope per `ai-interaction.md`, so verify those via `npm run build`/`npm run lint` plus a live Playwright pass on the affected flows (favorite/pin toggles, collection stats, item-type counts, profile stats).
+- The `toggleBooleanField` extraction requires `$queryRawUnsafe` with string-interpolated table/field names since tagged-template `$queryRaw` can't parameterize identifiers — `table`/`field` are always internal string-literal constants at call sites, never user input, so this is safe as designed but worth a one-line comment noting the trade-off.
+- The password-confirmation refine extraction is the largest-scope item (spans both `src/app/api/` and `src/components/**` client forms) — consider whether it's cleaner to share one Zod schema between client and server rather than just a refine-factory.
 
 ## History
 
