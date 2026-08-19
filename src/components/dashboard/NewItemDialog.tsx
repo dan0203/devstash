@@ -220,6 +220,7 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
               language={form.language}
               onLanguageChange={(language) => setForm((f) => ({ ...f, language }))}
               urlRequired
+              isPro={isPro}
             />
           )}
 

@@ -18,7 +18,7 @@ vi.mock(import("@/lib/openai"), () => ({
   isAiEnabled: mockIsAiEnabled,
 }) as never);
 
-import { explainCode, generateAutoTags, generateDescription } from "./ai";
+import { explainCode, generateAutoTags, generateDescription, optimizePrompt } from "./ai";
 
 const validInput = {
   title: "Docker full prune",
@@ -351,6 +351,107 @@ describe("explainCode", () => {
     expect(result).toEqual({
       success: false,
       error: "Couldn't generate an explanation. Try again.",
+    });
+  });
+});
+
+describe("optimizePrompt", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockIsAiEnabled.mockReturnValue(true);
+  });
+
+  const validOptimizeInput = {
+    content: "Write a function that does something.",
+  };
+
+  it("returns an error when there is no signed-in session", async () => {
+    mockAuth.mockResolvedValue(null);
+
+    const result = await optimizePrompt(validOptimizeInput);
+
+    expect(result).toEqual({ success: false, error: "Not signed in" });
+    expect(mockResponsesCreate).not.toHaveBeenCalled();
+  });
+
+  it("returns an error when the signed-in user is not Pro", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: false } });
+
+    const result = await optimizePrompt(validOptimizeInput);
+
+    expect(result).toEqual({ success: false, error: "AI features require a Pro plan" });
+    expect(mockResponsesCreate).not.toHaveBeenCalled();
+  });
+
+  it("returns an error when AI features aren't configured", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
+    mockIsAiEnabled.mockReturnValue(false);
+
+    const result = await optimizePrompt(validOptimizeInput);
+
+    expect(result).toEqual({ success: false, error: "AI features are not configured" });
+    expect(mockResponsesCreate).not.toHaveBeenCalled();
+  });
+
+  it("returns a validation error for empty content without calling OpenAI", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
+
+    const result = await optimizePrompt({ content: "  " });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBeTruthy();
+    expect(mockResponsesCreate).not.toHaveBeenCalled();
+  });
+
+  it("parses a {optimizedPrompt: ...} response", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
+    mockResponsesCreate.mockResolvedValue({
+      output_text: JSON.stringify({ optimizedPrompt: "Write a function that reverses a string." }),
+    });
+
+    const result = await optimizePrompt(validOptimizeInput);
+
+    expect(result).toEqual({
+      success: true,
+      optimizedContent: "Write a function that reverses a string.",
+    });
+  });
+
+  it("truncates content to 2000 chars before calling OpenAI", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
+    mockResponsesCreate.mockResolvedValue({
+      output_text: JSON.stringify({ optimizedPrompt: "optimized" }),
+    });
+    const longContent = "a".repeat(5000);
+
+    await optimizePrompt({ content: longContent });
+
+    const call = mockResponsesCreate.mock.calls[0][0];
+    expect(call.input).toContain("a".repeat(2000));
+    expect(call.input).not.toContain("a".repeat(2001));
+  });
+
+  it("returns a generic error when the OpenAI call throws", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
+    mockResponsesCreate.mockRejectedValue(new Error("network error"));
+
+    const result = await optimizePrompt(validOptimizeInput);
+
+    expect(result).toEqual({
+      success: false,
+      error: "Couldn't optimize this prompt. Try again.",
+    });
+  });
+
+  it("returns a generic error when the response can't be parsed as an optimized prompt", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
+    mockResponsesCreate.mockResolvedValue({ output_text: "not json" });
+
+    const result = await optimizePrompt(validOptimizeInput);
+
+    expect(result).toEqual({
+      success: false,
+      error: "Couldn't optimize this prompt. Try again.",
     });
   });
 });

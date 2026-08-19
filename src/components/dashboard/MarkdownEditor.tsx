@@ -9,12 +9,20 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { OptimizePromptTrigger } from "@/components/dashboard/OptimizePromptTrigger";
+import { useOptimizePrompt } from "@/components/dashboard/use-optimize-prompt";
+
+interface MarkdownEditorOptimizeOptions {
+  isPro: boolean;
+}
 
 interface MarkdownEditorProps {
   value: string;
   onChange?: (value: string) => void;
   readOnly?: boolean;
   className?: string;
+  /** Enables the "Optimize" trigger + accept/reject proposal — prompt-type editing only. */
+  optimize?: MarkdownEditorOptimizeOptions;
 }
 
 const tabTriggerClassName =
@@ -25,9 +33,12 @@ export function MarkdownEditor({
   onChange,
   readOnly = false,
   className,
+  optimize,
 }: MarkdownEditorProps) {
   const [tab, setTab] = useState(readOnly ? "preview" : "write");
   const [copied, setCopied] = useState(false);
+
+  const optimizeState = useOptimizePrompt({ content: value });
 
   const handleCopy = async () => {
     if (!value) return;
@@ -35,6 +46,13 @@ export function MarkdownEditor({
     setCopied(true);
     toast.success("Copied to clipboard");
     setTimeout(() => setCopied(false), 1500);
+  };
+
+  const handleAcceptOptimized = () => {
+    if (!optimizeState.optimized) return;
+    onChange?.(optimizeState.optimized);
+    optimizeState.reset();
+    toast.success("Prompt updated");
   };
 
   return (
@@ -60,16 +78,25 @@ export function MarkdownEditor({
               </TabsTrigger>
             </TabsList>
           )}
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            aria-label="Copy markdown"
-            className="text-neutral-400 hover:bg-white/10 hover:text-neutral-100"
-            onClick={handleCopy}
-          >
-            {copied ? <Check className="text-green-400" /> : <Copy />}
-          </Button>
+          <div className="flex items-center gap-2">
+            {optimize && !optimizeState.optimized && (
+              <OptimizePromptTrigger
+                isPro={optimize.isPro}
+                loading={optimizeState.loading}
+                onClick={optimizeState.handleOptimize}
+              />
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label="Copy markdown"
+              className="text-neutral-400 hover:bg-white/10 hover:text-neutral-100"
+              onClick={handleCopy}
+            >
+              {copied ? <Check className="text-green-400" /> : <Copy />}
+            </Button>
+          </div>
         </div>
 
         {!readOnly && (
@@ -93,6 +120,33 @@ export function MarkdownEditor({
           </div>
         </TabsContent>
       </Tabs>
+
+      {optimize && optimizeState.optimized && (
+        <div className="flex flex-col gap-2 border-t border-white/10 bg-[#242424] p-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] tracking-wide text-neutral-400 uppercase">
+              Optimized suggestion
+            </span>
+            <div className="flex items-center gap-2">
+              <Button type="button" size="sm" className="h-auto px-2 py-1 text-xs" onClick={handleAcceptOptimized}>
+                Use this prompt
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-auto px-2 py-1 text-xs text-neutral-400 hover:bg-white/10 hover:text-neutral-100"
+                onClick={optimizeState.reset}
+              >
+                Discard
+              </Button>
+            </div>
+          </div>
+          <div className="markdown-preview themed-scrollbar max-h-[300px] overflow-y-auto rounded-md border border-white/10 bg-[#1e1e1e] p-3">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{optimizeState.optimized}</ReactMarkdown>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

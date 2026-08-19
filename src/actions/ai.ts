@@ -212,6 +212,82 @@ export async function explainCode(input: ExplainCodeInput): Promise<ExplainCodeS
   }
 }
 
+const optimizePromptSchema = z.object({
+  content: z.string().trim().min(1, "Content is required"),
+});
+
+export type OptimizePromptInput = z.infer<typeof optimizePromptSchema>;
+
+export interface OptimizePromptState {
+  success: boolean;
+  optimizedContent?: string;
+  error?: string;
+}
+
+const GENERIC_OPTIMIZE_ERROR = "Couldn't optimize this prompt. Try again.";
+
+function parseOptimizedPromptFromResponse(outputText: string): string | null {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(outputText);
+  } catch {
+    return null;
+  }
+
+  const optimizedPrompt = (raw as { optimizedPrompt?: unknown })?.optimizedPrompt;
+  if (typeof optimizedPrompt !== "string") return null;
+
+  const trimmed = optimizedPrompt.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+export async function optimizePrompt(input: OptimizePromptInput): Promise<OptimizePromptState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Not signed in" };
+  }
+
+  if (!session.user.isPro) {
+    return { success: false, error: "AI features require a Pro plan" };
+  }
+
+  if (!isAiEnabled()) {
+    return { success: false, error: "AI features are not configured" };
+  }
+
+  const parsed = optimizePromptSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0].message };
+  }
+
+  const rl = await checkRateLimit(rateLimiters.aiOptimizePrompt, session.user.id);
+  if (!rl.success) {
+    return { success: false, error: rateLimitErrorMessage(rl.reset) };
+  }
+
+  const truncatedContent = parsed.data.content.trim().slice(0, CONTENT_TRUNCATE_LENGTH);
+
+  try {
+    const response = await openai.responses.create({
+      model: AI_MODEL,
+      instructions:
+        'You are a prompt engineering assistant for a developer knowledge base. Given a prompt intended for use with an AI assistant, refine it for clarity, specificity, and effectiveness while fully preserving its original intent and goal. If the prompt is already clear and effective, return it unchanged. Respond with strict JSON only, in the shape {"optimizedPrompt": "..."}, and nothing else.',
+      input: `Optimize this prompt and respond in JSON.\n\nPrompt:\n${truncatedContent}`,
+      text: { format: { type: "json_object" } },
+    });
+
+    const optimizedContent = parseOptimizedPromptFromResponse(response.output_text ?? "");
+    if (!optimizedContent) {
+      return { success: false, error: GENERIC_OPTIMIZE_ERROR };
+    }
+
+    return { success: true, optimizedContent };
+  } catch (error) {
+    console.error("optimizePrompt failed", error);
+    return { success: false, error: GENERIC_OPTIMIZE_ERROR };
+  }
+}
+
 export async function generateDescription(
   input: GenerateDescriptionInput
 ): Promise<GenerateDescriptionState> {

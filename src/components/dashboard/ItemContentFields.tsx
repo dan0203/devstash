@@ -27,6 +27,7 @@ interface ItemContentFieldsProps {
   onLanguageChange: (language: string) => void;
   fieldClassName?: string;
   urlRequired?: boolean;
+  isPro?: boolean;
 }
 
 /**
@@ -46,6 +47,7 @@ export function ItemContentFields({
   onLanguageChange,
   fieldClassName = "flex flex-col gap-2",
   urlRequired,
+  isPro = false,
 }: ItemContentFieldsProps) {
   return (
     <>
@@ -76,7 +78,11 @@ export function ItemContentFields({
           {LANGUAGE_TYPES.has(itemTypeName) ? (
             <CodeEditor value={content} onChange={onContentChange} language={language} />
           ) : (
-            <MarkdownEditor value={content} onChange={onContentChange} />
+            <MarkdownEditor
+              value={content}
+              onChange={onContentChange}
+              optimize={itemTypeName === "prompt" ? { isPro } : undefined}
+            />
           )}
         </div>
       )}

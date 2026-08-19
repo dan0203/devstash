@@ -110,6 +110,7 @@ export function ItemDrawerEditForm({
         onUrlChange={setUrl}
         language={language}
         onLanguageChange={setLanguage}
+        isPro={isPro}
       />
       <div className="flex flex-col gap-2">
         <Label>Collections</Label>
