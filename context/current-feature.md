@@ -1,37 +1,26 @@
-# Current Feature: Component Folder Reorg Phase 3 (Dedupe Extractions)
+# Current Feature
 
 <!-- Feature Name And Short Description -->
-
-Phase 3 of the 4-phase components/architecture cleanup (Phase 1: folder reorg, Phase 2: component splits — both complete). This phase extracts duplicated logic identified by the `refactor-scanner`/`code-scanner` passes into shared utilities/hooks.
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-In Progress
+Not Started
 
 ## Goals
 
 <!-- Goals & Requirements -->
 
-- Add a `postJson` fetch helper (`src/lib/api-client.ts`) to replace the identical fetch/JSON boilerplate duplicated across `ForgotPasswordForm.tsx`, `ResetPasswordForm.tsx`, `RegisterForm.tsx`, `ChangePasswordDialog.tsx`, and `SignInForm.tsx`'s resend-verification call.
-- Add a `useNavigateCardProps` hook (mirroring the existing `shared/hooks/use-drawer-card-props.ts` pattern) to replace the hand-rolled `role="link"`/keydown navigation pattern duplicated in `collections/CollectionCard.tsx` and `favorites/FavoriteCollectionRow.tsx`.
-- Merge `ai/ExplainCodeTrigger.tsx` and `ai/OptimizePromptTrigger.tsx` into one shared `AiActionTrigger.tsx`.
-- Evaluate case-by-case (extract only if it clearly reduces duplication without over-abstracting): a `useToggleFavorite` hook, a `CollectionActionDialogs` wrapper, a `useAiSuggestion` loading/error wrapper.
-- Explicitly out of scope: a shared `useDialogSubmit` hook across the three item/collection dialogs — prior scan flagged this as not recommended yet.
-
 ## Notes
 
 <!-- Any Extra Notes -->
 
-- Pure refactor/dedupe phase — no behavior change expected. Verify via Playwright that affected flows (password reset/register/resend-verification forms, collection card navigation, AI explain/optimize triggers, favorite toggles) still work identically.
-- Follows the same file-organization conventions established in Phase 1 (per-feature folders under `src/components/`, `hooks/` subpaths).
-- No new unit tests expected unless a touched file happens to fall in `src/actions/**` or `src/lib/**` (excluding `src/lib/db/**`) scope — most of this phase touches `src/components/**` client components, which are out of Vitest's scope per `context/ai-interaction.md`.
-- Full backlog detail (and Phase 4, still pending after this) is recorded in `current-feature.md`'s History entry for "Component Folder Reorg (Phase 1 of 4)".
-
 ## History
 
 <!-- Keep This Updated. Earliest To Latest -->
+
+- **2026-08-19** — Component Folder Reorg (Phase 3 of 4) completed on `feature/component-folder-reorg-phase-3`, closing the dedupe-extraction backlog from Phase 1's scanner passes. Added `postJson` (`src/lib/api-client.ts`) replacing identical fetch/JSON boilerplate duplicated across `ForgotPasswordForm.tsx`, `ResetPasswordForm.tsx`, `RegisterForm.tsx`, `ChangePasswordDialog.tsx`, and `SignInForm.tsx`'s resend-verification call. Added `useNavigateCardProps` (`src/components/shared/hooks/`, mirroring the existing `use-drawer-card-props.ts` pattern) replacing the hand-rolled `role="link"`/keydown navigation pattern in `CollectionCard.tsx` and `FavoriteCollectionRow.tsx`. Merged `ai/ExplainCodeTrigger.tsx` and `ai/OptimizePromptTrigger.tsx` into one `AiActionTrigger.tsx`, parameterized with `label`/`loadingLabel`/`ariaLabel` (the two originals were identical except for those three strings) — wired into `CodeEditor.tsx` and `MarkdownEditor.tsx`. Evaluated the three case-by-case candidates from the backlog: extracted `useToggleFavorite` (`shared/hooks/`, wraps a toggle server action with the shared success/refresh-or-error-toast handling, taking an optional `onSuccess` to sync local state) into `ItemCard`, `CollectionCard`, `CollectionDetailActions`, and the item drawer's `use-item-drawer-actions.ts`; extracted `CollectionActionDialogs.tsx` (bundles the Edit/Delete collection dialogs) into `CollectionDetailActions` and `CollectionCardMenu`, which had duplicated the same dialog-pair JSX; but skipped `useAiSuggestion` — unlike the favorite/dialog cases, each of the four AI hooks' (`use-explain-code`, `use-optimize-prompt`, `use-suggest-description`, `use-suggest-tags`) unique post-success logic (tag dedup, optimize no-op detection, required-field toasts) dominates its body, so a generic wrapper would need 4-5 callback params to stay correct — the same reasoning that had already ruled out `useDialogSubmit`, which stayed explicitly out of scope. Added `src/lib/api-client.test.ts` (1 test) since `api-client.ts` falls under Vitest's `src/lib/**` scope — 107 tests total, up from 106. Pure refactor, no behavior change: `npm run build` (identical route manifest), `npm run lint` (0 errors), and `npm test` (107 tests) all pass. Not verified via a live browser pass in this session (build/lint/test only) — worth a manual smoke check of the password-reset/register/resend-verification forms, collection card navigation, and AI explain/optimize triggers before treating this as fully verified. Merged to `main` via `--no-ff`, local branch deleted.
 
 - **2026-08-10** — Initial Next.js 16 (App Router) project setup via `create-next-app`, with TypeScript and Tailwind CSS v4. Placeholder home page (`src/app/page.tsx`), no backend/database/tests configured yet.
 - **2026-08-10** — Dashboard UI Phase 1 (Layout & Setup) completed on `feature/dashboard-phase-1`. ShadCN UI initialized; `/dashboard` route added with a full-width top bar (logo, centered search, "New Collection"/"New item" buttons), dark mode by default, and placeholder Sidebar/Main sections. Switched app font to Libre Franklin and dark background to an anthracite gray.
