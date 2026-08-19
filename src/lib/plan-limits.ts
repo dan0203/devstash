@@ -15,3 +15,9 @@ export function isOverItemLimit(isPro: boolean, currentCount: number): boolean {
 export function isOverCollectionLimit(isPro: boolean, currentCount: number): boolean {
   return !isPro && currentCount >= FREE_TIER_LIMITS.collections;
 }
+
+/** Formats the free-plan-limit error message, or null if the limit wasn't exceeded. */
+export function checkPlanLimit(isOverLimit: boolean, limit: number, noun: string): string | null {
+  if (!isOverLimit) return null;
+  return `Free plan limit reached (${limit} ${noun}). Upgrade to Pro for unlimited ${noun}.`;
+}

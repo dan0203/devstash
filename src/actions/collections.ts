@@ -2,7 +2,6 @@
 
 import { z } from "zod";
 
-import { auth } from "@/auth";
 import {
   createCollection as createCollectionRecord,
   updateCollection as updateCollectionRecord,
@@ -11,7 +10,9 @@ import {
   getCollectionStats,
   type Collection,
 } from "@/lib/db/collections";
-import { FREE_TIER_LIMITS, isOverCollectionLimit, isPlanLimitsEnforced } from "@/lib/plan-limits";
+import { FREE_TIER_LIMITS, checkPlanLimit, isOverCollectionLimit, isPlanLimitsEnforced } from "@/lib/plan-limits";
+import { requireSession } from "@/lib/auth-utils";
+import { parseOrError } from "@/lib/validation";
 
 const createCollectionSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
@@ -29,27 +30,29 @@ export interface CreateCollectionState {
 export async function createCollection(
   input: CreateCollectionInput
 ): Promise<CreateCollectionState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  const parsed = createCollectionSchema.safeParse(input);
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0].message };
+  const parsed = parseOrError(createCollectionSchema, input);
+  if ("error" in parsed) {
+    return { success: false, error: parsed.error };
   }
 
   if (isPlanLimitsEnforced()) {
-    const stats = await getCollectionStats(session.user.id);
-    if (isOverCollectionLimit(session.user.isPro ?? false, stats.total)) {
-      return {
-        success: false,
-        error: `Free plan limit reached (${FREE_TIER_LIMITS.collections} collections). Upgrade to Pro for unlimited collections.`,
-      };
+    const stats = await getCollectionStats(auth.userId);
+    const limitError = checkPlanLimit(
+      isOverCollectionLimit(auth.isPro, stats.total),
+      FREE_TIER_LIMITS.collections,
+      "collections"
+    );
+    if (limitError) {
+      return { success: false, error: limitError };
     }
   }
 
-  const created = await createCollectionRecord(session.user.id, {
+  const created = await createCollectionRecord(auth.userId, {
     name: parsed.data.name,
     description: parsed.data.description || null,
   });
@@ -74,17 +77,17 @@ export async function updateCollection(
   collectionId: string,
   input: UpdateCollectionInput
 ): Promise<UpdateCollectionState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  const parsed = updateCollectionSchema.safeParse(input);
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0].message };
+  const parsed = parseOrError(updateCollectionSchema, input);
+  if ("error" in parsed) {
+    return { success: false, error: parsed.error };
   }
 
-  const updated = await updateCollectionRecord(session.user.id, collectionId, {
+  const updated = await updateCollectionRecord(auth.userId, collectionId, {
     name: parsed.data.name,
     description: parsed.data.description || null,
   });
@@ -102,12 +105,12 @@ export interface DeleteCollectionState {
 }
 
 export async function deleteCollection(collectionId: string): Promise<DeleteCollectionState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  const deleted = await deleteCollectionRecord(session.user.id, collectionId);
+  const deleted = await deleteCollectionRecord(auth.userId, collectionId);
   if (!deleted) {
     return { success: false, error: "Collection not found" };
   }
@@ -122,12 +125,12 @@ export interface ToggleFavoriteState {
 }
 
 export async function toggleCollectionFavorite(collectionId: string): Promise<ToggleFavoriteState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  const isFavorite = await toggleCollectionFavoriteRecord(session.user.id, collectionId);
+  const isFavorite = await toggleCollectionFavoriteRecord(auth.userId, collectionId);
   if (isFavorite === null) {
     return { success: false, error: "Collection not found" };
   }

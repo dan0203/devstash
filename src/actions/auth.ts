@@ -2,8 +2,9 @@
 
 import { AuthError, CredentialsSignin } from "next-auth";
 
-import { auth, signIn, signOut } from "@/auth";
+import { signIn, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { requireSession } from "@/lib/auth-utils";
 
 export interface SignInActionState {
   code: string | null;
@@ -57,12 +58,12 @@ export async function signInWithGithub(
 }
 
 export async function deleteAccount(): Promise<{ success: boolean; error?: string }> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  await prisma.user.delete({ where: { id: session.user.id } });
+  await prisma.user.delete({ where: { id: auth.userId } });
 
   // signOut() redirects internally and never returns; this line is unreachable
   // at runtime but satisfies the function's return type.

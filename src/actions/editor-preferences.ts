@@ -2,10 +2,11 @@
 
 import { z } from "zod";
 
-import { auth } from "@/auth";
 import { updateEditorPreferences as updateEditorPreferencesRecord } from "@/lib/db/user";
 import { EDITOR_FONT_SIZES, EDITOR_TAB_SIZES, EDITOR_THEMES } from "@/types/editor-preferences";
 import type { EditorPreferences } from "@/types/editor-preferences";
+import { requireSession } from "@/lib/auth-utils";
+import { parseOrError } from "@/lib/validation";
 
 const updateEditorPreferencesSchema = z.object({
   fontSize: z
@@ -28,17 +29,17 @@ export interface UpdateEditorPreferencesState {
 export async function updateEditorPreferences(
   input: EditorPreferences
 ): Promise<UpdateEditorPreferencesState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  const parsed = updateEditorPreferencesSchema.safeParse(input);
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0].message };
+  const parsed = parseOrError(updateEditorPreferencesSchema, input);
+  if ("error" in parsed) {
+    return { success: false, error: parsed.error };
   }
 
-  const updated = await updateEditorPreferencesRecord(session.user.id, parsed.data);
+  const updated = await updateEditorPreferencesRecord(auth.userId, parsed.data);
 
   return { success: true, data: updated };
 }

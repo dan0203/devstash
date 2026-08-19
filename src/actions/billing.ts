@@ -1,8 +1,8 @@
 "use server";
 
-import { auth } from "@/auth";
 import { stripe, STRIPE_PRICE_IDS } from "@/lib/stripe";
 import { getStripeCustomerContext, setStripeCustomerId } from "@/lib/db/billing";
+import { requireSession } from "@/lib/auth-utils";
 
 export interface CheckoutSessionState {
   success: boolean;
@@ -11,12 +11,12 @@ export interface CheckoutSessionState {
 }
 
 export async function createCheckoutSession(plan: "monthly" | "yearly"): Promise<CheckoutSessionState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  const context = await getStripeCustomerContext(session.user.id);
+  const context = await getStripeCustomerContext(auth.userId);
   if (!context) {
     return { success: false, error: "User not found" };
   }
@@ -26,10 +26,10 @@ export async function createCheckoutSession(plan: "monthly" | "yearly"): Promise
     const customer = await stripe.customers.create({
       email: context.email ?? undefined,
       name: context.name ?? undefined,
-      metadata: { userId: session.user.id },
+      metadata: { userId: auth.userId },
     });
     customerId = customer.id;
-    await setStripeCustomerId(session.user.id, customerId);
+    await setStripeCustomerId(auth.userId, customerId);
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
@@ -55,12 +55,12 @@ export interface PortalSessionState {
 }
 
 export async function createPortalSession(): Promise<PortalSessionState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  const context = await getStripeCustomerContext(session.user.id);
+  const context = await getStripeCustomerContext(auth.userId);
   if (!context?.stripeCustomerId) {
     return { success: false, error: "No billing account found" };
   }

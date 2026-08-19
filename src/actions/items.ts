@@ -2,7 +2,6 @@
 
 import { z } from "zod";
 
-import { auth } from "@/auth";
 import {
   createItem as createItemRecord,
   updateItem as updateItemRecord,
@@ -13,7 +12,9 @@ import {
   type ItemDetail,
 } from "@/lib/db/items";
 import { getItemTypeByName } from "@/lib/db/item-types";
-import { FREE_TIER_LIMITS, isOverItemLimit, isPlanLimitsEnforced } from "@/lib/plan-limits";
+import { FREE_TIER_LIMITS, checkPlanLimit, isOverItemLimit, isPlanLimitsEnforced } from "@/lib/plan-limits";
+import { requireSession } from "@/lib/auth-utils";
+import { parseOrError } from "@/lib/validation";
 
 const CREATABLE_ITEM_TYPES = [
   "snippet",
@@ -71,24 +72,25 @@ export interface CreateItemState {
 }
 
 export async function createItem(input: CreateItemInput): Promise<CreateItemState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  const isPro = session.user.isPro ?? false;
-  const parsed = buildCreateItemSchema(isPro).safeParse(input);
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0].message };
+  const parsed = parseOrError(buildCreateItemSchema(auth.isPro), input);
+  if ("error" in parsed) {
+    return { success: false, error: parsed.error };
   }
 
   if (isPlanLimitsEnforced()) {
-    const stats = await getItemStats(session.user.id);
-    if (isOverItemLimit(isPro, stats.total)) {
-      return {
-        success: false,
-        error: `Free plan limit reached (${FREE_TIER_LIMITS.items} items). Upgrade to Pro for unlimited items.`,
-      };
+    const stats = await getItemStats(auth.userId);
+    const limitError = checkPlanLimit(
+      isOverItemLimit(auth.isPro, stats.total),
+      FREE_TIER_LIMITS.items,
+      "items"
+    );
+    if (limitError) {
+      return { success: false, error: limitError };
     }
   }
 
@@ -99,7 +101,7 @@ export async function createItem(input: CreateItemInput): Promise<CreateItemStat
 
   const isLink = parsed.data.itemType === "link";
   const isFile = FILE_ITEM_TYPES.has(parsed.data.itemType);
-  const created = await createItemRecord(session.user.id, itemType.id, {
+  const created = await createItemRecord(auth.userId, itemType.id, {
     title: parsed.data.title,
     description: parsed.data.description || null,
     contentType: isFile ? "file" : isLink ? "url" : "text",
@@ -140,17 +142,17 @@ export interface UpdateItemState {
 }
 
 export async function updateItem(itemId: string, input: UpdateItemInput): Promise<UpdateItemState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  const parsed = updateItemSchema.safeParse(input);
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0].message };
+  const parsed = parseOrError(updateItemSchema, input);
+  if ("error" in parsed) {
+    return { success: false, error: parsed.error };
   }
 
-  const updated = await updateItemRecord(session.user.id, itemId, parsed.data);
+  const updated = await updateItemRecord(auth.userId, itemId, parsed.data);
   if (!updated) {
     return { success: false, error: "Item not found" };
   }
@@ -164,12 +166,12 @@ export interface DeleteItemState {
 }
 
 export async function deleteItem(itemId: string): Promise<DeleteItemState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  const deleted = await deleteItemRecord(session.user.id, itemId);
+  const deleted = await deleteItemRecord(auth.userId, itemId);
   if (!deleted) {
     return { success: false, error: "Item not found" };
   }
@@ -184,12 +186,12 @@ export interface ToggleFavoriteState {
 }
 
 export async function toggleItemFavorite(itemId: string): Promise<ToggleFavoriteState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  const isFavorite = await toggleItemFavoriteRecord(session.user.id, itemId);
+  const isFavorite = await toggleItemFavoriteRecord(auth.userId, itemId);
   if (isFavorite === null) {
     return { success: false, error: "Item not found" };
   }
@@ -204,12 +206,12 @@ export interface TogglePinState {
 }
 
 export async function toggleItemPin(itemId: string): Promise<TogglePinState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  const isPinned = await toggleItemPinRecord(session.user.id, itemId);
+  const isPinned = await toggleItemPinRecord(auth.userId, itemId);
   if (isPinned === null) {
     return { success: false, error: "Item not found" };
   }

@@ -2,12 +2,37 @@
 
 import { z } from "zod";
 
-import { auth } from "@/auth";
 import { openai, AI_MODEL, isAiEnabled } from "@/lib/openai";
 import { checkRateLimit, rateLimiters, rateLimitErrorMessage } from "@/lib/rate-limit";
+import { requireSession } from "@/lib/auth-utils";
+import { parseOrError } from "@/lib/validation";
 
 const CONTENT_TRUNCATE_LENGTH = 2000;
 const MAX_SUGGESTED_TAGS = 5;
+
+/** Pro-gates an AI action; returns an error message, or null if allowed to proceed. */
+function requireProAi(isPro: boolean): string | null {
+  if (!isPro) return "AI features require a Pro plan";
+  if (!isAiEnabled()) return "AI features are not configured";
+  return null;
+}
+
+/** Checks a per-user AI rate limit; returns an error message, or null if allowed to proceed. */
+async function checkAiRateLimit(
+  limiter: Parameters<typeof checkRateLimit>[0],
+  userId: string
+): Promise<string | null> {
+  const rl = await checkRateLimit(limiter, userId);
+  return rl.success ? null : rateLimitErrorMessage(rl.reset);
+}
+
+function safeJsonParse(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
 
 const generateAutoTagsSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
@@ -43,12 +68,7 @@ export interface GenerateDescriptionState {
 const GENERIC_DESCRIPTION_ERROR = "Couldn't generate a description. Try again.";
 
 function parseTagsFromResponse(outputText: string): string[] | null {
-  let raw: unknown;
-  try {
-    raw = JSON.parse(outputText);
-  } catch {
-    return null;
-  }
+  const raw = safeJsonParse(outputText);
 
   const list = Array.isArray(raw) ? raw : Array.isArray((raw as { tags?: unknown })?.tags) ? (raw as { tags: unknown[] }).tags : null;
   if (!list) return null;
@@ -66,27 +86,24 @@ function parseTagsFromResponse(outputText: string): string[] | null {
 }
 
 export async function generateAutoTags(input: GenerateAutoTagsInput): Promise<GenerateAutoTagsState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  if (!session.user.isPro) {
-    return { success: false, error: "AI features require a Pro plan" };
+  const proError = requireProAi(auth.isPro);
+  if (proError) {
+    return { success: false, error: proError };
   }
 
-  if (!isAiEnabled()) {
-    return { success: false, error: "AI features are not configured" };
+  const parsed = parseOrError(generateAutoTagsSchema, input);
+  if ("error" in parsed) {
+    return { success: false, error: parsed.error };
   }
 
-  const parsed = generateAutoTagsSchema.safeParse(input);
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0].message };
-  }
-
-  const rl = await checkRateLimit(rateLimiters.aiSuggestTags, session.user.id);
-  if (!rl.success) {
-    return { success: false, error: rateLimitErrorMessage(rl.reset) };
+  const rateLimitError = await checkAiRateLimit(rateLimiters.aiSuggestTags, auth.userId);
+  if (rateLimitError) {
+    return { success: false, error: rateLimitError };
   }
 
   const truncatedContent = parsed.data.content.trim().slice(0, CONTENT_TRUNCATE_LENGTH);
@@ -113,12 +130,7 @@ export async function generateAutoTags(input: GenerateAutoTagsInput): Promise<Ge
 }
 
 function parseDescriptionFromResponse(outputText: string): string | null {
-  let raw: unknown;
-  try {
-    raw = JSON.parse(outputText);
-  } catch {
-    return null;
-  }
+  const raw = safeJsonParse(outputText);
 
   const description = (raw as { description?: unknown })?.description;
   if (typeof description !== "string") return null;
@@ -144,12 +156,7 @@ export interface ExplainCodeState {
 const GENERIC_EXPLAIN_ERROR = "Couldn't generate an explanation. Try again.";
 
 function parseExplanationFromResponse(outputText: string): string | null {
-  let raw: unknown;
-  try {
-    raw = JSON.parse(outputText);
-  } catch {
-    return null;
-  }
+  const raw = safeJsonParse(outputText);
 
   const explanation = (raw as { explanation?: unknown })?.explanation;
   if (typeof explanation !== "string") return null;
@@ -159,27 +166,24 @@ function parseExplanationFromResponse(outputText: string): string | null {
 }
 
 export async function explainCode(input: ExplainCodeInput): Promise<ExplainCodeState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  if (!session.user.isPro) {
-    return { success: false, error: "AI features require a Pro plan" };
+  const proError = requireProAi(auth.isPro);
+  if (proError) {
+    return { success: false, error: proError };
   }
 
-  if (!isAiEnabled()) {
-    return { success: false, error: "AI features are not configured" };
+  const parsed = parseOrError(explainCodeSchema, input);
+  if ("error" in parsed) {
+    return { success: false, error: parsed.error };
   }
 
-  const parsed = explainCodeSchema.safeParse(input);
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0].message };
-  }
-
-  const rl = await checkRateLimit(rateLimiters.aiExplainCode, session.user.id);
-  if (!rl.success) {
-    return { success: false, error: rateLimitErrorMessage(rl.reset) };
+  const rateLimitError = await checkAiRateLimit(rateLimiters.aiExplainCode, auth.userId);
+  if (rateLimitError) {
+    return { success: false, error: rateLimitError };
   }
 
   const { content, language, itemType } = parsed.data;
@@ -227,12 +231,7 @@ export interface OptimizePromptState {
 const GENERIC_OPTIMIZE_ERROR = "Couldn't optimize this prompt. Try again.";
 
 function parseOptimizedPromptFromResponse(outputText: string): string | null {
-  let raw: unknown;
-  try {
-    raw = JSON.parse(outputText);
-  } catch {
-    return null;
-  }
+  const raw = safeJsonParse(outputText);
 
   const optimizedPrompt = (raw as { optimizedPrompt?: unknown })?.optimizedPrompt;
   if (typeof optimizedPrompt !== "string") return null;
@@ -242,27 +241,24 @@ function parseOptimizedPromptFromResponse(outputText: string): string | null {
 }
 
 export async function optimizePrompt(input: OptimizePromptInput): Promise<OptimizePromptState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  if (!session.user.isPro) {
-    return { success: false, error: "AI features require a Pro plan" };
+  const proError = requireProAi(auth.isPro);
+  if (proError) {
+    return { success: false, error: proError };
   }
 
-  if (!isAiEnabled()) {
-    return { success: false, error: "AI features are not configured" };
+  const parsed = parseOrError(optimizePromptSchema, input);
+  if ("error" in parsed) {
+    return { success: false, error: parsed.error };
   }
 
-  const parsed = optimizePromptSchema.safeParse(input);
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0].message };
-  }
-
-  const rl = await checkRateLimit(rateLimiters.aiOptimizePrompt, session.user.id);
-  if (!rl.success) {
-    return { success: false, error: rateLimitErrorMessage(rl.reset) };
+  const rateLimitError = await checkAiRateLimit(rateLimiters.aiOptimizePrompt, auth.userId);
+  if (rateLimitError) {
+    return { success: false, error: rateLimitError };
   }
 
   const truncatedContent = parsed.data.content.trim().slice(0, CONTENT_TRUNCATE_LENGTH);
@@ -291,27 +287,24 @@ export async function optimizePrompt(input: OptimizePromptInput): Promise<Optimi
 export async function generateDescription(
   input: GenerateDescriptionInput
 ): Promise<GenerateDescriptionState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not signed in" };
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
   }
 
-  if (!session.user.isPro) {
-    return { success: false, error: "AI features require a Pro plan" };
+  const proError = requireProAi(auth.isPro);
+  if (proError) {
+    return { success: false, error: proError };
   }
 
-  if (!isAiEnabled()) {
-    return { success: false, error: "AI features are not configured" };
+  const parsed = parseOrError(generateDescriptionSchema, input);
+  if ("error" in parsed) {
+    return { success: false, error: parsed.error };
   }
 
-  const parsed = generateDescriptionSchema.safeParse(input);
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0].message };
-  }
-
-  const rl = await checkRateLimit(rateLimiters.aiSuggestDescription, session.user.id);
-  if (!rl.success) {
-    return { success: false, error: rateLimitErrorMessage(rl.reset) };
+  const rateLimitError = await checkAiRateLimit(rateLimiters.aiSuggestDescription, auth.userId);
+  if (rateLimitError) {
+    return { success: false, error: rateLimitError };
   }
 
   const { title, content, url, language, itemType } = parsed.data;

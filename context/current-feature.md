@@ -2,13 +2,36 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
+Refactor `src/actions/**` to remove duplicated logic surfaced by a `refactor-scanner` pass, per the following findings:
+
+**High confidence (implement):**
+1. `requireSession()` — extract the identical `auth(); if (!session?.user?.id) return {success:false, error:"Not signed in"}` block duplicated across all 17 actions in `items.ts`, `collections.ts`, `ai.ts`, `billing.ts`, `editor-preferences.ts`, `auth.ts`.
+2. `parseOrError()` — extract the Zod `safeParse` + `issues[0].message` error-extraction pattern duplicated 9 times across `items.ts`, `collections.ts`, `ai.ts`, `editor-preferences.ts`.
+3. `requireProAi()` — extract the Pro-gate + `isAiEnabled()` check pair duplicated identically in all 4 `ai.ts` actions.
+4. `checkAiRateLimit()` — extract the rate-limit check + `rateLimitErrorMessage` pattern duplicated in all 4 `ai.ts` actions (differs only by which limiter is passed).
+5. `safeJsonParse()` — extract the `JSON.parse` try/catch-return-null wrapper duplicated in all 4 `ai.ts` response parsers.
+
+**Medium confidence (implement per user request):**
+6. Plan-limit check consolidation in `items.ts`/`collections.ts` — only 2 occurrences today (item limit vs. collection limit), but user asked to include it. Generic `checkPlanLimit(isPro, currentCount, limit, noun)` helper.
+
+**Explicitly out of scope** (scanner reviewed, not recommended):
+- AI actions' OpenAI-call try/catch bodies (each has distinct prompts/fields — not enough duplication to warrant a generic wrapper yet).
+- Test-file mock-setup boilerplate (documented, intentional convention per `ai-interaction.md`).
+
 ## Notes
 
+- `requireSession`/`parseOrError` land in `src/lib/auth-utils.ts` (or `src/lib/validation.ts` for `parseOrError` — decide during implementation per file-organization conventions).
+- `requireProAi`/`checkAiRateLimit`/`safeJsonParse` are AI-specific, so co-locate in `src/actions/ai.ts` or `src/lib/openai.ts`.
+- `checkPlanLimit` lands in `src/lib/plan-limits.ts` alongside existing `FREE_TIER_LIMITS`/`isOverItemLimit`/`isOverCollectionLimit`.
+- Pure refactor — no behavior change. Existing Vitest suite (`src/actions/*.test.ts`) must still pass unchanged after the extraction; add tests only for genuinely new shared logic if warranted.
+
 ## History
+
+- **2026-08-19** — Actions Boilerplate Dedupe completed on `fix/actions-dedupe-boilerplate`, closing the 5 high-confidence + 1 medium-confidence findings from a `refactor-scanner` pass over `src/actions/**`. Added `requireSession()` (`src/lib/auth-utils.ts`) replacing the identical `auth(); if (!session?.user?.id) ...` block in all 17 actions across `items.ts`, `collections.ts`, `ai.ts`, `billing.ts`, `editor-preferences.ts`, `auth.ts` — returns `{ok, userId, isPro}` so callers no longer touch `session.user` directly. Added `parseOrError()` (`src/lib/validation.ts`) replacing the Zod `safeParse` + `issues[0].message` extraction duplicated 9 times across the same files. Added `requireProAi()`, `checkAiRateLimit()`, and `safeJsonParse()` co-located in `src/actions/ai.ts` (AI-specific, not reused elsewhere), collapsing the Pro-gate+`isAiEnabled()` pair, the rate-limit-check-plus-message pattern, and the `JSON.parse` try/catch-return-null wrapper duplicated across all 4 AI actions/parsers. Added `checkPlanLimit(isOverLimit, limit, noun)` to `src/lib/plan-limits.ts`, replacing the inline error-message template duplicated between `items.ts`'s and `collections.ts`'s free-tier gating — kept the existing, already-unit-tested `isOverItemLimit`/`isOverCollectionLimit` predicates and the `isPlanLimitsEnforced()` early-exit (avoids an unneeded stats query when limits aren't enforced) untouched, so `plan-limits.test.ts` needed no changes. Pure refactor, no behavior change: the existing 106 Vitest tests pass unchanged (no new tests added, since nothing genuinely new was introduced — every extracted helper is a mechanical lift of existing logic), and `npm run build`/`npm run lint` both pass with an identical route manifest.
 
 - **2026-08-10** — Initial Next.js 16 (App Router) project setup via `create-next-app`, with TypeScript and Tailwind CSS v4. Placeholder home page (`src/app/page.tsx`), no backend/database/tests configured yet.
 - **2026-08-10** — Dashboard UI Phase 1 (Layout & Setup) completed on `feature/dashboard-phase-1`. ShadCN UI initialized; `/dashboard` route added with a full-width top bar (logo, centered search, "New Collection"/"New item" buttons), dark mode by default, and placeholder Sidebar/Main sections. Switched app font to Libre Franklin and dark background to an anthracite gray.
