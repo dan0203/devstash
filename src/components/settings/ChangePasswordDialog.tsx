@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { postJson } from "@/lib/api-client";
+import { passwordsMatchRefinement } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,10 +25,7 @@ const changePasswordFormSchema = z
     newPassword: z.string().min(8, "Password must be at least 8 characters"),
     confirmNewPassword: z.string(),
   })
-  .refine((data) => data.newPassword === data.confirmNewPassword, {
-    message: "Passwords do not match",
-    path: ["confirmNewPassword"],
-  });
+  .refine(...passwordsMatchRefinement("newPassword", "confirmNewPassword"));
 
 export function ChangePasswordDialog() {
   const [open, setOpen] = useState(false);

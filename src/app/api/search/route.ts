@@ -1,18 +1,16 @@
 import { NextResponse } from "next/server";
 
-import { auth } from "@/auth";
+import { requireApiSession } from "@/lib/auth-utils";
 import { getAllItemsForSearch } from "@/lib/db/items";
 import { getAllCollections } from "@/lib/db/collections";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ success: false, error: "Not signed in" }, { status: 401 });
-  }
+  const session = await requireApiSession();
+  if (!session.ok) return session.response;
 
   const [items, collections] = await Promise.all([
-    getAllItemsForSearch(session.user.id),
-    getAllCollections(session.user.id),
+    getAllItemsForSearch(session.userId),
+    getAllCollections(session.userId),
   ]);
 
   return NextResponse.json({

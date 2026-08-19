@@ -1,12 +1,9 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { type ItemWithType } from "@/lib/db/items";
+import { aggregateTypeCounts, findOwnedCollection, toggleBooleanColumn } from "@/lib/db/query-helpers";
 
-export interface CollectionTypeSummary {
-  icon: string;
-  color: string;
-  count: number;
-}
+export type CollectionTypeSummary = ReturnType<typeof aggregateTypeCounts>[number];
 
 export interface CollectionWithStats {
   id: string;
@@ -37,22 +34,14 @@ const getCollectionsWithStats = cache(async (userId: string): Promise<Collection
   });
 
   const withStats = collections.map((collection) => {
-    const typeCounts = new Map<string, CollectionTypeSummary>();
     let lastUpdated: Date | null = null;
-
     for (const { item } of collection.items) {
-      const existing = typeCounts.get(item.itemType.id);
-      typeCounts.set(item.itemType.id, {
-        icon: item.itemType.icon,
-        color: item.itemType.color,
-        count: (existing?.count ?? 0) + 1,
-      });
       if (!lastUpdated || item.updatedAt > lastUpdated) {
         lastUpdated = item.updatedAt;
       }
     }
 
-    const types = [...typeCounts.values()].sort((a, b) => b.count - a.count);
+    const types = aggregateTypeCounts(collection.items.map(({ item }) => item));
 
     return {
       id: collection.id,
@@ -178,15 +167,7 @@ export async function getCollectionDetail(
     prisma.itemCollection.count({ where: { collectionId } }),
   ]);
 
-  const typeCounts = new Map<string, CollectionTypeSummary>();
-  for (const { item } of allItemTypes) {
-    const existing = typeCounts.get(item.itemType.id);
-    typeCounts.set(item.itemType.id, {
-      icon: item.itemType.icon,
-      color: item.itemType.color,
-      count: (existing?.count ?? 0) + 1,
-    });
-  }
+  const types = aggregateTypeCounts(allItemTypes.map(({ item }) => item));
 
   return {
     id: collection.id,
@@ -213,7 +194,7 @@ export async function getCollectionDetail(
         color: item.itemType.color,
       },
     })),
-    types: [...typeCounts.values()].sort((a, b) => b.count - a.count),
+    types,
     totalCount,
   };
 }
@@ -258,9 +239,7 @@ export async function updateCollection(
   collectionId: string,
   data: UpdateCollectionData
 ): Promise<Collection | null> {
-  const existing = await prisma.collection.findFirst({
-    where: { id: collectionId, userId },
-  });
+  const existing = await findOwnedCollection(userId, collectionId, { id: true });
   if (!existing) return null;
 
   const updated = await prisma.collection.update({
@@ -282,28 +261,14 @@ export async function toggleCollectionFavorite(
   userId: string,
   collectionId: string
 ): Promise<boolean | null> {
-  const existing = await prisma.collection.findFirst({
-    where: { id: collectionId, userId },
-    select: { isFavorite: true },
-  });
+  const existing = await findOwnedCollection(userId, collectionId, { isFavorite: true });
   if (!existing) return null;
 
-  // Raw SQL so this doesn't bump `updatedAt` (Prisma Client's mutation
-  // resolver sets @updatedAt on every .update() call) — favoriting shouldn't
-  // reorder collection listings.
-  const [updated] = await prisma.$queryRaw<{ isFavorite: boolean }[]>`
-    UPDATE "Collection" SET "isFavorite" = ${!existing.isFavorite}
-    WHERE "id" = ${collectionId}
-    RETURNING "isFavorite"
-  `;
-
-  return updated.isFavorite;
+  return toggleBooleanColumn("Collection", "isFavorite", collectionId, existing.isFavorite);
 }
 
 export async function deleteCollection(userId: string, collectionId: string): Promise<boolean> {
-  const existing = await prisma.collection.findFirst({
-    where: { id: collectionId, userId },
-  });
+  const existing = await findOwnedCollection(userId, collectionId, { id: true });
   if (!existing) return false;
 
   // Only removes the Collection row (and its ItemCollection join rows via the

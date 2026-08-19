@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit, rateLimiters, rateLimitResponse } from "@/lib/rate-limit";
+import { updateUserPassword } from "@/lib/db/user";
+import { requireApiSession } from "@/lib/auth-utils";
+import { enforceRateLimit, rateLimiters } from "@/lib/rate-limit";
+import { parseJsonBody } from "@/lib/api-request";
+import { passwordsMatchRefinement } from "@/lib/validation";
 
 const changePasswordSchema = z
   .object({
@@ -12,34 +15,20 @@ const changePasswordSchema = z
     newPassword: z.string().min(8),
     confirmNewPassword: z.string().min(8),
   })
-  .refine((data) => data.newPassword === data.confirmNewPassword, {
-    message: "Passwords do not match",
-    path: ["confirmNewPassword"],
-  });
+  .refine(...passwordsMatchRefinement("newPassword", "confirmNewPassword"));
 
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ success: false, error: "Not signed in" }, { status: 401 });
-  }
+  const session = await requireApiSession();
+  if (!session.ok) return session.response;
 
-  const body = await request.json();
-  const parsed = changePasswordSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { success: false, error: parsed.error.issues[0].message },
-      { status: 400 }
-    );
-  }
-
+  const parsed = await parseJsonBody(request, changePasswordSchema);
+  if ("response" in parsed) return parsed.response;
   const { currentPassword, newPassword } = parsed.data;
 
-  const rateLimit = await checkRateLimit(rateLimiters.changePassword, session.user.id);
-  if (!rateLimit.success) {
-    return rateLimitResponse(rateLimit.reset);
-  }
+  const rateLimited = await enforceRateLimit(rateLimiters.changePassword, session.userId);
+  if (rateLimited) return rateLimited;
 
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  const user = await prisma.user.findUnique({ where: { id: session.userId } });
   if (!user?.password) {
     return NextResponse.json(
       { success: false, error: "This account signs in with GitHub and has no password to change" },
@@ -55,11 +44,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const passwordHash = await bcrypt.hash(newPassword, 12);
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { password: passwordHash, passwordChangedAt: new Date() },
-  });
+  await updateUserPassword({ id: user.id }, newPassword);
 
   return NextResponse.json({ success: true });
 }

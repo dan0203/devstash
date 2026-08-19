@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { auth } from "@/auth";
+import { requireApiSession } from "@/lib/auth-utils";
 import { uploadToR2 } from "@/lib/r2";
 import { FILE_CONSTRAINTS, type UploadItemType } from "@/lib/file-constraints";
-import { checkRateLimit, rateLimiters, rateLimitResponse } from "@/lib/rate-limit";
+import { enforceRateLimit, rateLimiters } from "@/lib/rate-limit";
 import { isPlanLimitsEnforced } from "@/lib/plan-limits";
 
 function getExtension(fileName: string): string {
@@ -12,17 +12,13 @@ function getExtension(fileName: string): string {
 }
 
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ success: false, error: "Not signed in" }, { status: 401 });
-  }
+  const session = await requireApiSession();
+  if (!session.ok) return session.response;
 
-  const rateLimit = await checkRateLimit(rateLimiters.upload, session.user.id);
-  if (!rateLimit.success) {
-    return rateLimitResponse(rateLimit.reset);
-  }
+  const rateLimited = await enforceRateLimit(rateLimiters.upload, session.userId);
+  if (rateLimited) return rateLimited;
 
-  if (isPlanLimitsEnforced() && !session.user.isPro) {
+  if (isPlanLimitsEnforced() && !session.isPro) {
     return NextResponse.json(
       { success: false, error: "File and image uploads require a Pro plan" },
       { status: 403 }
@@ -67,7 +63,7 @@ export async function POST(request: Request) {
 
   const buffer = Buffer.from(await file.arrayBuffer());
   const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-  const key = `${session.user.id}/${crypto.randomUUID()}-${sanitizedName}`;
+  const key = `${session.userId}/${crypto.randomUUID()}-${sanitizedName}`;
 
   const url = await uploadToR2(key, buffer, file.type);
 
