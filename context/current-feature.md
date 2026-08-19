@@ -1,30 +1,20 @@
-# Current Feature: Component Folder Reorg — Phase 2 (Component Splits)
+# Current Feature
 
 <!-- Feature Name And Short Description -->
-
-Second of four phases in the components/architecture cleanup (Phase 1 — folder reorg — completed on `feature/component-folder-reorg`). Phase 2 splits the remaining oversized, multi-responsibility components identified by the same day's `code-scanner`/`refactor-scanner`/`Explore` passes, landing them in the per-feature folders Phase 1 already created.
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-In Progress
+Not Started
 
 ## Goals
 
 <!-- Goals & Requirements -->
 
-- `items/NewItemDialog.tsx` (~285 lines, never went through the decomposition `ItemDrawer` already had): extract `use-new-item-form.ts` (form state/handlers) and `NewItemTypeSelector.tsx` (the type-picker UI), leaving `NewItemDialog.tsx` itself as a thin composition shell.
-- `items/ItemDrawer.tsx` (~257 lines): extract `use-item-drawer-actions.ts` bundling the 6 inlined mutation handlers (copy, edit, cancel, save, toggleFavorite, togglePin, delete); extract `ItemDrawerHeader.tsx`; fold the read-only Collections/Details sections into `ItemDrawerView.tsx`.
-- `nav/SidebarContent.tsx` (~238 lines, optional/lowest priority): split into `SidebarTypesList.tsx`, `SidebarCollectionsSection.tsx`, `SidebarUserFooter.tsx`.
-
 ## Notes
 
 <!-- Any Extra Notes -->
-
-- Pure refactor/split work — no behavior change intended. Verify via the live dev server (Playwright) that item create/edit/delete/favorite/pin, drawer open/close, and sidebar nav/active-state all still work identically after the split.
-- No new unit tests expected unless a split pulls pure logic into something in `src/lib/**` or `src/actions/**` scope (unlikely — these are all `src/components/**` client components/hooks, out of Vitest's scope per `context/ai-interaction.md`).
-- Phase 3 (dedupe extractions) and Phase 4 (types convention & route groups) remain backlog items for later, not part of this feature — see the `feature/component-folder-reorg` history entry for their full scope.
 
 ## History
 
@@ -101,3 +91,4 @@ In Progress
     - **Phase 2 — Component splits** (now land in Phase 1's new homes): `items/NewItemDialog.tsx` (~285 lines, never got the decomposition `ItemDrawer` already went through) → extract `use-new-item-form.ts` + `NewItemTypeSelector.tsx`, leave the dialog as a thin shell. `items/ItemDrawer.tsx` (~257 lines) → extract `use-item-drawer-actions.ts` (bundles the 6 inlined mutation handlers: copy/edit/cancel/save/toggleFavorite/togglePin/delete) + `ItemDrawerHeader.tsx`; fold read-only Collections/Details sections into `ItemDrawerView.tsx`. `nav/SidebarContent.tsx` (~238 lines, optional/lowest priority) → split into `SidebarTypesList.tsx`, `SidebarCollectionsSection.tsx`, `SidebarUserFooter.tsx`.
     - **Phase 3 — Dedupe extractions**: `postJson` fetch helper (`src/lib/api-client.ts`) for identical fetch/JSON boilerplate in `ForgotPasswordForm.tsx`/`ResetPasswordForm.tsx`/`RegisterForm.tsx`/`ChangePasswordDialog.tsx`/`SignInForm.tsx`'s resend-verification call. `useNavigateCardProps` hook for `collections/CollectionCard.tsx`/`favorites/FavoriteCollectionRow.tsx`'s hand-rolled `role="link"`/keydown pattern (mirror `shared/hooks/use-drawer-card-props.ts`). Merge `ai/ExplainCodeTrigger.tsx`/`ai/OptimizePromptTrigger.tsx` into one `AiActionTrigger.tsx`. Evaluate case-by-case: `useToggleFavorite` hook, `CollectionActionDialogs` wrapper, `useAiSuggestion` loading/error wrapper. Not recommended yet: a shared `useDialogSubmit` hook across the three item/collection dialogs.
     - **Phase 4 — Types convention & route groups**: decide + document in `coding-standards.md` whether `src/types/[feature].ts` is for shared types only or should be used consistently (currently only `editor-preferences` follows it). Introduce `src/app/(auth)/` route group for `sign-in`/`register`/`forgot-password`/`reset-password` to match `(app)`'s treatment. Lower urgency: split `getAllItemsForSearch` out of `src/lib/db/items.ts` (442 lines) and consider a `src/lib/db/favorites.ts` if `items.ts`/`collections.ts` keep growing.
+- **2026-08-19** — Component Folder Reorg (Phase 2 of 4) completed on `feature/component-folder-reorg-phase-2`, splitting the three oversized/multi-responsibility components left over from Phase 1's file moves. `items/NewItemDialog.tsx` (~285 lines): extracted `hooks/use-new-item-form.ts` (form state, the two AI-suggestion hooks, and submit logic — returns a plain boolean so the dialog itself still owns the toast/close/`router.refresh()` side effects) and `NewItemTypeSelector.tsx` (the type-picker button row), leaving the dialog as a thin composition shell. `items/ItemDrawer.tsx` (~257 lines): extracted `hooks/use-item-drawer-actions.ts` (bundles the copy/edit/cancel/save/toggleFavorite/togglePin/delete handlers, taking `item`/`setItem`/`editForm`/`closeDrawer`/`setIsEditing` as args) and `ItemDrawerHeader.tsx` (icon/badge/title block); folded the always-shown read-only Collections/Details sections into a new `ItemDrawerMetaSections` export inside `ItemDrawerView.tsx` rather than gating them behind view-vs-edit mode, preserving the exact pre-refactor behavior where both sections render regardless of `isEditing`. `nav/SidebarContent.tsx` (~238 lines): split into `SidebarTypesList.tsx` (TYPES section), `SidebarCollectionsSection.tsx` (collapsible COLLECTIONS section, including the local `SidebarLink`/`CollectionLink` helpers), and `SidebarUserFooter.tsx` (avatar + dropdown), with `SidebarContent.tsx` itself reduced to composing the three plus the `usePathname()` call they all need for active-state highlighting. Pure refactor/split — no behavior change and no new unit tests (everything touched is `src/components/**` client components/hooks, out of Vitest's `src/actions/**`/`src/lib/**`-excluding-`db` scope). Verified end-to-end via Playwright against the live dev server signed in as the demo user: sidebar active-link highlighting confirmed via computed `aria-current`/class check on `/items/commands`, item drawer view→edit→cancel round-trip showed the Collections/Details sections rendering identically in both modes, a real pin/unpin toggle correctly fired "Item pinned"/"Item unpinned" toasts and returned to baseline, the New Item dialog's type selector correctly swapped Snippet's content fields for a required URL field on Link, and the sidebar's collapsed (icon-rail) variant rendered correctly across all three split components — no console errors throughout. `npm run build` (identical route manifest), `npm run lint` (0 errors), and `npm test` (106 tests, unchanged) all pass. Merged to `main`, local branch deleted.
