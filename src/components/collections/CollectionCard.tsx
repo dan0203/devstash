@@ -11,7 +11,7 @@ import { itemTypeIcons } from "@/lib/icon-map";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { CollectionCardMenu } from "@/components/dashboard/CollectionCardMenu";
+import { CollectionCardMenu } from "@/components/collections/CollectionCardMenu";
 
 export function CollectionCard({ collection }: { collection: CollectionWithStats }) {
   const router = useRouter();

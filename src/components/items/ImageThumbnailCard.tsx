@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Pin, Star } from "lucide-react";
 
 import { type ItemWithType } from "@/lib/db/items";
-import { useDrawerCardProps } from "@/components/dashboard/use-drawer-card-props";
+import { useDrawerCardProps } from "@/components/shared/hooks/use-drawer-card-props";
 import { Card } from "@/components/ui/card";
 
 export function ImageThumbnailCard({ item }: { item: ItemWithType }) {

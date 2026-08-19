@@ -3,10 +3,10 @@ import { File as FileIcon } from "lucide-react";
 
 import { type ItemDetail } from "@/lib/db/items";
 import { formatFileSize } from "@/lib/file-constraints";
-import { LANGUAGE_TYPES } from "@/components/dashboard/item-content-types";
-import { CodeEditor } from "@/components/dashboard/CodeEditor";
-import { MarkdownEditor } from "@/components/dashboard/MarkdownEditor";
-import { SectionLabel } from "@/components/dashboard/SectionLabel";
+import { LANGUAGE_TYPES } from "@/lib/content-types";
+import { CodeEditor } from "@/components/editor/CodeEditor";
+import { MarkdownEditor } from "@/components/editor/MarkdownEditor";
+import { SectionLabel } from "@/components/items/SectionLabel";
 import { Badge } from "@/components/ui/badge";
 
 export function ItemDrawerView({ item, isPro }: { item: ItemDetail; isPro: boolean }) {

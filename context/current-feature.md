@@ -1,20 +1,26 @@
 # Current Feature
 
-<!-- Feature Name And Short Description -->
+Component Folder Reorg — Phase 1 of a 4-phase components/architecture cleanup (see Notes for the full plan and backlog). Splits the `src/components/dashboard/` dumping ground into per-feature folders so later phases (component splits, dedupe extractions) land in the right place the first time.
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
-
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Split `src/components/dashboard/` (43 files spanning 7+ unrelated features) into per-feature folders: `src/components/items/`, `src/components/collections/`, `src/components/favorites/`, `src/components/ai/`, `src/components/command-palette/`, `src/components/editor/` (CodeEditor, MarkdownEditor, editor-preferences-context, monaco themes), `src/components/nav/` (TopBar, Sidebar, MobileSidebar, sidebar-context).
+- Introduce a `hooks/` subpath convention per feature folder (e.g. `src/components/ai/hooks/use-explain-code.ts`) — consolidate the 9 flat `use-*.ts` hooks and 4 `*-context.tsx` providers currently sitting undifferentiated in `components/dashboard/`.
+- Rename/move `item-content-types.ts` → `src/lib/constants.ts` (or `src/lib/content-types.ts`) since it's constants, not types.
+- Update every import path affected by the moves; no behavior change — `npm run build`/`npm run lint`/`npm test` must all still pass with an unchanged test count.
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- This is Phase 1 of 4. Pure file moves, low risk, deliberately done first because Phases 2 and 3 below assume these new locations as their target paths.
+- **Backlog — load as separate features once Phase 1 is merged, in this order:**
+  - **Phase 2 — Component splits** (land in Phase 1's new homes): `NewItemDialog.tsx` (~285 lines) → extract `use-new-item-form.ts` + `NewItemTypeSelector.tsx`, leave the dialog as a thin shell. `ItemDrawer.tsx` (~257 lines) → extract `use-item-drawer-actions.ts` (bundles the 6 inlined mutation handlers: copy/edit/cancel/save/toggleFavorite/togglePin/delete) + `ItemDrawerHeader.tsx`; fold read-only Collections/Details sections into `ItemDrawerView.tsx`. `SidebarContent.tsx` (~238 lines, optional/lowest priority) → split into `SidebarTypesList.tsx`, `SidebarCollectionsSection.tsx`, `SidebarUserFooter.tsx`.
+  - **Phase 3 — Dedupe extractions**: `postJson` fetch helper (`src/lib/api-client.ts`) for the identical fetch/JSON boilerplate in `ForgotPasswordForm.tsx`/`ResetPasswordForm.tsx`/`RegisterForm.tsx`/`ChangePasswordDialog.tsx`/`SignInForm.tsx`'s resend-verification call. `useNavigateCardProps` hook for `CollectionCard.tsx`/`FavoriteCollectionRow.tsx`'s hand-rolled `role="link"`/keydown pattern (mirror `useDrawerCardProps`). Merge `ExplainCodeTrigger.tsx`/`OptimizePromptTrigger.tsx` into one `AiActionTrigger.tsx`. Evaluate case-by-case: `useToggleFavorite` hook, `CollectionActionDialogs` wrapper, `useAiSuggestion` loading/error wrapper. Not recommended yet: a shared `useDialogSubmit` hook across the three item/collection dialogs.
+  - **Phase 4 — Types convention & route groups**: decide + document in `coding-standards.md` whether `src/types/[feature].ts` is for shared types only or should be used consistently (currently only `editor-preferences` follows it). Introduce `src/app/(auth)/` route group for `sign-in`/`register`/`forgot-password`/`reset-password` to match `(app)`'s treatment. Lower urgency: split `getAllItemsForSearch` out of `src/lib/db/items.ts` (442 lines) and consider a `src/lib/db/favorites.ts` if `items.ts`/`collections.ts` keep growing.
+- Source scans (2026-08-19): a `refactor-scanner` pass on `src/components/`, a `code-scanner` pass for oversized/multi-responsibility components, and an `Explore`-agent architecture review of `src/`'s folder structure vs. `coding-standards.md`'s conventions.
 
 ## History
 

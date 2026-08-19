@@ -11,10 +11,10 @@ import type { editor as MonacoEditorNS } from "monaco-editor";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { useEditorPreferences } from "@/components/dashboard/editor-preferences-context";
+import { useEditorPreferences } from "@/components/editor/hooks/editor-preferences-context";
 import { defineCustomMonacoThemes } from "@/lib/monaco-themes";
-import { ExplainCodeTrigger } from "@/components/dashboard/ExplainCodeTrigger";
-import { useExplainCode } from "@/components/dashboard/use-explain-code";
+import { ExplainCodeTrigger } from "@/components/ai/ExplainCodeTrigger";
+import { useExplainCode } from "@/components/ai/hooks/use-explain-code";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,

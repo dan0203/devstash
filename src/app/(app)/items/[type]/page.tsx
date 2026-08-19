@@ -4,10 +4,10 @@ import { auth } from "@/auth";
 import { getItemTypeBySlug, formatItemTypeName } from "@/lib/db/item-types";
 import { getItemsByType } from "@/lib/db/items";
 import { ITEMS_PER_PAGE } from "@/lib/constants";
-import { ItemCard } from "@/components/dashboard/ItemCard";
-import { ImageThumbnailCard } from "@/components/dashboard/ImageThumbnailCard";
-import { FileListRow } from "@/components/dashboard/FileListRow";
-import { PaginationControls } from "@/components/dashboard/PaginationControls";
+import { ItemCard } from "@/components/items/ItemCard";
+import { ImageThumbnailCard } from "@/components/items/ImageThumbnailCard";
+import { FileListRow } from "@/components/items/FileListRow";
+import { PaginationControls } from "@/components/shared/PaginationControls";
 
 const proOnlyTypeNames = new Set(["file", "image"]);
 

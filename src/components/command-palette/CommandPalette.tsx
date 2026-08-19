@@ -7,9 +7,9 @@ import { Folder } from "lucide-react";
 
 import { type CollectionOption } from "@/lib/db/collections";
 import { itemTypeIcons } from "@/lib/icon-map";
-import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
-import { useCommandPalette } from "@/components/dashboard/command-palette-context";
-import { useCommandPaletteData } from "@/components/dashboard/use-command-palette-data";
+import { useItemDrawer } from "@/components/items/hooks/item-drawer-context";
+import { useCommandPalette } from "@/components/command-palette/hooks/command-palette-context";
+import { useCommandPaletteData } from "@/components/command-palette/hooks/use-command-palette-data";
 import {
   Command,
   CommandDialog,

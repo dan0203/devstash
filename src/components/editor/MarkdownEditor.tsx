@@ -9,8 +9,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { OptimizePromptTrigger } from "@/components/dashboard/OptimizePromptTrigger";
-import { useOptimizePrompt } from "@/components/dashboard/use-optimize-prompt";
+import { OptimizePromptTrigger } from "@/components/ai/OptimizePromptTrigger";
+import { useOptimizePrompt } from "@/components/ai/hooks/use-optimize-prompt";
 
 interface MarkdownEditorOptimizeOptions {
   isPro: boolean;

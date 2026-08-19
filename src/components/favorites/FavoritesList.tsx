@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 
 import { type ItemWithType } from "@/lib/db/items";
 import { type CollectionWithStats } from "@/lib/db/collections";
-import { FavoriteItemRow } from "@/components/dashboard/FavoriteItemRow";
-import { FavoriteCollectionRow } from "@/components/dashboard/FavoriteCollectionRow";
+import { FavoriteItemRow } from "@/components/favorites/FavoriteItemRow";
+import { FavoriteCollectionRow } from "@/components/favorites/FavoriteCollectionRow";
 import {
   Select,
   SelectContent,

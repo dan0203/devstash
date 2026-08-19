@@ -2,7 +2,7 @@
 
 import type { KeyboardEvent } from "react";
 
-import { useItemDrawer } from "@/components/dashboard/item-drawer-context";
+import { useItemDrawer } from "@/components/items/hooks/item-drawer-context";
 
 /**
  * Makes a card/row element keyboard-activatable and click-activatable to

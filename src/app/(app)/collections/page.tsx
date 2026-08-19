@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getCollectionsPage } from "@/lib/db/collections";
 import { COLLECTIONS_PER_PAGE } from "@/lib/constants";
-import { CollectionCard } from "@/components/dashboard/CollectionCard";
-import { PaginationControls } from "@/components/dashboard/PaginationControls";
+import { CollectionCard } from "@/components/collections/CollectionCard";
+import { PaginationControls } from "@/components/shared/PaginationControls";
 
 export default async function CollectionsPage(props: PageProps<"/collections">) {
   const session = await auth();

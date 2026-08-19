@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { UpgradePlanCards } from "@/components/dashboard/UpgradePlanCards";
+import { UpgradePlanCards } from "@/components/billing/UpgradePlanCards";
 
 export default async function UpgradePage() {
   const session = await auth();

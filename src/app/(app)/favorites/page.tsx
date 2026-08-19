@@ -4,7 +4,7 @@ import { Star } from "lucide-react";
 import { auth } from "@/auth";
 import { getFavoriteItems } from "@/lib/db/items";
 import { getFavoriteCollections } from "@/lib/db/collections";
-import { FavoritesList } from "@/components/dashboard/FavoritesList";
+import { FavoritesList } from "@/components/favorites/FavoritesList";
 
 export default async function FavoritesPage() {
   const session = await auth();

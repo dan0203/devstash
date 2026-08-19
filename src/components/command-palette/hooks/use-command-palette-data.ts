@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { type SearchItem } from "@/lib/db/items";
-import { type SearchCollection } from "@/components/dashboard/CommandPalette";
+import { type SearchCollection } from "@/components/command-palette/CommandPalette";
 
 /**
  * Fetches search data lazily on first open, rather than shipping every item

@@ -4,10 +4,10 @@ import Link from "next/link";
 import { Layers, Search, Menu, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useSidebar } from "@/components/dashboard/sidebar-context";
-import { useCommandPalette } from "@/components/dashboard/command-palette-context";
-import { NewItemDialog } from "@/components/dashboard/NewItemDialog";
-import { NewCollectionDialog } from "@/components/dashboard/NewCollectionDialog";
+import { useSidebar } from "@/components/nav/hooks/sidebar-context";
+import { useCommandPalette } from "@/components/command-palette/hooks/command-palette-context";
+import { NewItemDialog } from "@/components/items/NewItemDialog";
+import { NewCollectionDialog } from "@/components/collections/NewCollectionDialog";
 import { type ItemTypeWithCount } from "@/lib/db/items";
 import { type CollectionOption } from "@/lib/db/collections";
 

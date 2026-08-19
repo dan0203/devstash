@@ -2,8 +2,8 @@
 
 import type { Session } from "next-auth";
 
-import { useSidebar } from "@/components/dashboard/sidebar-context";
-import { SidebarContent } from "@/components/dashboard/SidebarContent";
+import { useSidebar } from "@/components/nav/hooks/sidebar-context";
+import { SidebarContent } from "@/components/nav/SidebarContent";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { type ItemTypeWithCount } from "@/lib/db/items";
 import { type CollectionWithStats } from "@/lib/db/collections";
