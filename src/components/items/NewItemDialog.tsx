@@ -5,19 +5,16 @@ import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
-import { createItem, type CreateItemInput } from "@/actions/items";
 import { type ItemTypeWithCount } from "@/lib/db/items";
 import { type CollectionOption } from "@/lib/db/collections";
-import { itemTypeIcons } from "@/lib/icon-map";
+import { useNewItemForm, FILE_TYPES } from "@/components/items/hooks/use-new-item-form";
+import { NewItemTypeSelector } from "@/components/items/NewItemTypeSelector";
 import { ItemContentFields } from "@/components/items/ItemContentFields";
-import { FileUpload, type UploadedFile } from "@/components/items/FileUpload";
+import { FileUpload } from "@/components/items/FileUpload";
 import { CollectionSelect } from "@/components/items/CollectionSelect";
 import { SuggestTagsTrigger } from "@/components/ai/SuggestTagsTrigger";
 import { SuggestedTagsList } from "@/components/ai/SuggestedTagsList";
-import { useSuggestTags } from "@/components/ai/hooks/use-suggest-tags";
 import { SuggestDescriptionTrigger } from "@/components/ai/SuggestDescriptionTrigger";
-import { useSuggestDescription } from "@/components/ai/hooks/use-suggest-description";
-import { CONTENT_TYPES, URL_TYPES, LANGUAGE_TYPES } from "@/lib/content-types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,9 +28,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
-
-const FILE_TYPES = new Set(["file", "image"]);
 
 interface NewItemDialogProps {
   itemTypes: ItemTypeWithCount[];
@@ -41,99 +35,20 @@ interface NewItemDialogProps {
   isPro: boolean;
 }
 
-const emptyForm = {
-  title: "",
-  description: "",
-  content: "",
-  language: "plaintext",
-  url: "",
-  tagsInput: "",
-  file: null as UploadedFile | null,
-  collectionIds: [] as string[],
-};
-
 export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState(itemTypes[0]?.value ?? "");
-  const [form, setForm] = useState(emptyForm);
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  const activeType = itemTypes.find((type) => type.value === selectedType) ?? itemTypes[0];
-
-  const existingTags = form.tagsInput
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean);
-  const suggestTags = useSuggestTags({
-    title: form.title,
-    content: form.content,
-    existingTags,
-    onAcceptTag: (tag) =>
-      setForm((f) => {
-        const existing = f.tagsInput
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
-        if (existing.some((t) => t.toLowerCase() === tag.toLowerCase())) return f;
-        return { ...f, tagsInput: [...existing, tag].join(", ") };
-      }),
-  });
-  const suggestDescription = useSuggestDescription({
-    title: form.title,
-    content: activeType && CONTENT_TYPES.has(activeType.value) ? form.content : "",
-    url: activeType && URL_TYPES.has(activeType.value) ? form.url : "",
-    language: activeType && LANGUAGE_TYPES.has(activeType.value) ? form.language : "",
-    itemType: activeType?.value ?? "",
-    onGenerated: (description) => setForm((f) => ({ ...f, description })),
-  });
-
-  function reset() {
-    setSelectedType(itemTypes[0]?.value ?? "");
-    setForm(emptyForm);
-    setError(null);
-    suggestTags.reset();
-  }
+  const newItemForm = useNewItemForm(itemTypes);
+  const { form, setForm, activeType, error, submitting, suggestTags, suggestDescription } = newItemForm;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!activeType) return;
-    setError(null);
-    setSubmitting(true);
-
-    const input: CreateItemInput = {
-      itemType: activeType.value as CreateItemInput["itemType"],
-      title: form.title,
-      description: form.description,
-      content: form.content,
-      language: form.language,
-      url: form.url,
-      fileUrl: form.file?.url ?? "",
-      fileName: form.file?.fileName ?? "",
-      fileSize: form.file?.fileSize ?? null,
-      tags: form.tagsInput
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean),
-      collectionIds: form.collectionIds,
-    };
-
-    try {
-      const result = await createItem(input);
-      if (!result.success) {
-        setError(result.error ?? "Something went wrong");
-        return;
-      }
-
+    const success = await newItemForm.submit();
+    if (success) {
       toast.success("Item created");
       setOpen(false);
-      reset();
+      newItemForm.reset();
       router.refresh();
-    } catch {
-      setError("Something went wrong — check your connection and try again");
-    } finally {
-      setSubmitting(false);
     }
   }
 
@@ -142,7 +57,7 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (!next) reset();
+        if (!next) newItemForm.reset();
       }}
     >
       <DialogTrigger render={<Button aria-label="New item" />}>
@@ -156,29 +71,11 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label>Type</Label>
-            <div className="flex flex-wrap gap-2">
-              {itemTypes.map((type) => {
-                const Icon = itemTypeIcons[type.icon];
-                const active = type.value === selectedType;
-                return (
-                  <button
-                    key={type.id}
-                    type="button"
-                    onClick={() => setSelectedType(type.value)}
-                    className={cn(
-                      "flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm",
-                      active ? "border-primary bg-primary/10" : "border-border hover:bg-accent"
-                    )}
-                  >
-                    {Icon && <Icon className="size-4" style={{ color: type.color }} />}
-                    {type.name.replace(/s$/, "")}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <NewItemTypeSelector
+            itemTypes={itemTypes}
+            selectedType={newItemForm.selectedType}
+            onSelect={newItemForm.setSelectedType}
+          />
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="new-item-title">Title</Label>

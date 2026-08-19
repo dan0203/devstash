@@ -1,8 +1,9 @@
 import Image from "next/image";
-import { File as FileIcon } from "lucide-react";
+import { File as FileIcon, Folder } from "lucide-react";
 
 import { type ItemDetail } from "@/lib/db/items";
 import { formatFileSize } from "@/lib/file-constraints";
+import { formatRelativeTime } from "@/lib/format";
 import { LANGUAGE_TYPES } from "@/lib/content-types";
 import { CodeEditor } from "@/components/editor/CodeEditor";
 import { MarkdownEditor } from "@/components/editor/MarkdownEditor";
@@ -84,6 +85,45 @@ export function ItemDrawerView({ item, isPro }: { item: ItemDetail; isPro: boole
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+export function ItemDrawerMetaSections({ item }: { item: ItemDetail }) {
+  return (
+    <>
+      {item.collections.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <SectionLabel icon={Folder}>Collections</SectionLabel>
+          <div className="flex flex-wrap gap-1.5">
+            {item.collections.map((collection) => (
+              <Badge key={collection.id} variant="secondary" className="text-[10px]">
+                {collection.name}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-2">
+        <SectionLabel>Details</SectionLabel>
+        <div className="flex flex-col gap-1.5 rounded-md border bg-muted/40 px-3 py-2 text-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Created</span>
+            <span>{formatRelativeTime(item.createdAt)}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Updated</span>
+            <span>{formatRelativeTime(item.updatedAt)}</span>
+          </div>
+          {item.language && (
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Language</span>
+              <span>{item.language}</span>
+            </div>
+          )}
+        </div>
+      </div>
     </>
   );
 }
