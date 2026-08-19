@@ -46,15 +46,6 @@ export async function upsertSubscriptionFromWebhook(params: {
   });
 }
 
-export async function getUserIdByStripeCustomerId(stripeCustomerId: string): Promise<string | null> {
-  const user = await prisma.user.findUnique({
-    where: { stripeCustomerId },
-    select: { id: true },
-  });
-
-  return user?.id ?? null;
-}
-
 export interface StripeCustomerContext {
   stripeCustomerId: string | null;
   email: string | null;

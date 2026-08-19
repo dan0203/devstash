@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { formatItemTypeName, getSystemItemTypesOrdered, pluralize } from "@/lib/db/item-types";
 import { deleteFromR2, r2KeyFromUrl } from "@/lib/r2";
 import { findOwnedItem, getItemCountsByTypeId, toggleBooleanColumn } from "@/lib/db/query-helpers";
+import { SEARCH_ITEMS_LIMIT } from "@/lib/constants";
 
 export interface ItemWithType {
   id: string;
@@ -356,6 +357,7 @@ export async function getAllItemsForSearch(userId: string): Promise<SearchItem[]
       itemType: { select: { name: true, icon: true, color: true } },
     },
     orderBy: { updatedAt: "desc" },
+    take: SEARCH_ITEMS_LIMIT,
   });
 
   return items.map((item) => ({
