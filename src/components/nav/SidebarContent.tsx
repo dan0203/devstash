@@ -1,27 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Session } from "next-auth";
-import { signOut } from "next-auth/react";
-import { ChevronDown, ChevronRight, LogOut, Settings, Star } from "lucide-react";
 
 import { type ItemTypeWithCount } from "@/lib/db/items";
 import { type CollectionWithStats } from "@/lib/db/collections";
-import { itemTypeIcons } from "@/lib/icon-map";
-import { Badge } from "@/components/ui/badge";
+import { SidebarTypesList } from "@/components/nav/SidebarTypesList";
+import { SidebarCollectionsSection } from "@/components/nav/SidebarCollectionsSection";
+import { SidebarUserFooter } from "@/components/nav/SidebarUserFooter";
 import { Separator } from "@/components/ui/separator";
-import { UserAvatar } from "@/components/ui/user-avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-
-const proTypeSlugs = new Set(["files", "images"]);
 
 interface SidebarContentProps {
   collapsed?: boolean;
@@ -38,201 +25,24 @@ export function SidebarContent({
   favoriteCollections,
   recentCollections,
 }: SidebarContentProps) {
-  const [collectionsOpen, setCollectionsOpen] = useState(true);
-  const showCollectionsList = collapsed || collectionsOpen;
   const pathname = usePathname();
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <nav className="flex-1 overflow-y-auto px-3 py-4">
-        {!collapsed && (
-          <p className="px-2 pb-2 text-xs font-semibold tracking-wider text-muted-foreground">
-            TYPES
-          </p>
-        )}
-        <div className="space-y-0.5">
-          {itemTypes.map((type) => {
-            const Icon = itemTypeIcons[type.icon];
-            const href = `/items/${type.slug}`;
-            const active = pathname === href;
-            return (
-              <Link
-                key={type.id}
-                href={href}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-foreground/90 hover:bg-sidebar-accent",
-                  collapsed && "justify-center",
-                  active && "bg-sidebar-accent font-medium text-foreground"
-                )}
-                title={collapsed ? type.name : undefined}
-              >
-                {Icon && <Icon className="size-4 shrink-0" style={{ color: type.color }} />}
-                {!collapsed && (
-                  <>
-                    <span className="flex-1 truncate">{type.name}</span>
-                    {!user.isPro && proTypeSlugs.has(type.slug) && (
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] tracking-wide text-muted-foreground uppercase"
-                      >
-                        Pro
-                      </Badge>
-                    )}
-                    <span className="text-xs text-muted-foreground">{type.count}</span>
-                  </>
-                )}
-              </Link>
-            );
-          })}
-        </div>
+        <SidebarTypesList collapsed={collapsed} itemTypes={itemTypes} isPro={user.isPro} pathname={pathname} />
 
         <Separator className="my-4" />
 
-        {!collapsed && (
-          <button
-            type="button"
-            onClick={() => setCollectionsOpen((prev) => !prev)}
-            className="flex items-center gap-1 px-2 pb-2 text-xs font-semibold tracking-wider text-muted-foreground hover:text-foreground"
-            aria-expanded={collectionsOpen}
-            aria-label={collectionsOpen ? "Collapse collections" : "Expand collections"}
-          >
-            {collectionsOpen ? (
-              <ChevronDown className="size-3.5" />
-            ) : (
-              <ChevronRight className="size-3.5" />
-            )}
-            COLLECTIONS
-          </button>
-        )}
-
-        {showCollectionsList && (
-          <div className="space-y-0.5">
-            {!collapsed && (
-              <SidebarLink href="/favorites" label="Favorites" active={pathname === "/favorites"} />
-            )}
-            <div className={cn("space-y-0.5", !collapsed && "pl-3")}>
-              {favoriteCollections.map((collection) => (
-                <CollectionLink
-                  key={collection.id}
-                  collection={collection}
-                  collapsed={collapsed}
-                  favorite
-                  active={pathname === `/collections/${collection.id}`}
-                />
-              ))}
-            </div>
-            {!collapsed && <SidebarLink href="/recent" label="Recent" active={pathname === "/recent"} />}
-            <div className={cn("space-y-0.5", !collapsed && "pl-3")}>
-              {recentCollections.map((collection) => (
-                <CollectionLink
-                  key={collection.id}
-                  collection={collection}
-                  collapsed={collapsed}
-                  active={pathname === `/collections/${collection.id}`}
-                />
-              ))}
-            </div>
-            {!collapsed && (
-              <SidebarLink
-                href="/collections"
-                label="View all collections"
-                active={pathname === "/collections"}
-              />
-            )}
-          </div>
-        )}
+        <SidebarCollectionsSection
+          collapsed={collapsed}
+          favoriteCollections={favoriteCollections}
+          recentCollections={recentCollections}
+          pathname={pathname}
+        />
       </nav>
 
-      <div className="border-t border-sidebar-border p-3">
-        <div className={cn("flex items-center gap-2.5", collapsed && "justify-center")}>
-          <Link href="/profile" title="Profile">
-            <UserAvatar name={user.name ?? user.email ?? "User"} image={user.image} />
-          </Link>
-          {!collapsed && (
-            <DropdownMenu>
-              <DropdownMenuTrigger className="min-w-0 flex-1 rounded-md px-1.5 py-1 text-left outline-none hover:bg-sidebar-accent focus-visible:bg-sidebar-accent">
-                <p className="truncate text-sm font-medium">{user.name ?? "Unnamed user"}</p>
-                <p className="truncate text-xs text-muted-foreground">{user.email}</p>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="top" align="start">
-                <DropdownMenuItem render={<Link href="/settings" />}>
-                  <Settings />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/sign-in" })}>
-                  <LogOut />
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </div>
+      <SidebarUserFooter collapsed={collapsed} user={user} />
     </div>
-  );
-}
-
-function SidebarLink({
-  href,
-  label,
-  active,
-}: {
-  href: string;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={cn(
-        "flex items-center rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-sidebar-accent",
-        active && "bg-sidebar-accent font-medium text-foreground"
-      )}
-    >
-      <span className="truncate">{label}</span>
-    </Link>
-  );
-}
-
-function CollectionLink({
-  collection,
-  collapsed,
-  favorite,
-  active,
-}: {
-  collection: CollectionWithStats;
-  collapsed?: boolean;
-  favorite?: boolean;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={`/collections/${collection.id}`}
-      aria-current={active ? "page" : undefined}
-      className={cn(
-        "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-foreground/90 hover:bg-sidebar-accent",
-        collapsed && "justify-center",
-        active && "bg-sidebar-accent font-medium text-foreground"
-      )}
-      title={collapsed ? collection.name : undefined}
-    >
-      {favorite ? (
-        <Star className="size-3.5 shrink-0 fill-yellow-400 text-yellow-400" />
-      ) : (
-        <span
-          className="size-2 shrink-0 rounded-full"
-          style={{ backgroundColor: collection.color }}
-          aria-hidden="true"
-        />
-      )}
-      {!collapsed && (
-        <>
-          <span className="flex-1 truncate">{collection.name}</span>
-          <span className="text-xs text-muted-foreground">{collection.itemCount}</span>
-        </>
-      )}
-    </Link>
   );
 }

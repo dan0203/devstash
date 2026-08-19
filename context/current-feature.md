@@ -1,20 +1,30 @@
-# Current Feature
+# Current Feature: Component Folder Reorg — Phase 2 (Component Splits)
 
 <!-- Feature Name And Short Description -->
+
+Second of four phases in the components/architecture cleanup (Phase 1 — folder reorg — completed on `feature/component-folder-reorg`). Phase 2 splits the remaining oversized, multi-responsibility components identified by the same day's `code-scanner`/`refactor-scanner`/`Explore` passes, landing them in the per-feature folders Phase 1 already created.
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-Not Started
+In Progress
 
 ## Goals
 
 <!-- Goals & Requirements -->
 
+- `items/NewItemDialog.tsx` (~285 lines, never went through the decomposition `ItemDrawer` already had): extract `use-new-item-form.ts` (form state/handlers) and `NewItemTypeSelector.tsx` (the type-picker UI), leaving `NewItemDialog.tsx` itself as a thin composition shell.
+- `items/ItemDrawer.tsx` (~257 lines): extract `use-item-drawer-actions.ts` bundling the 6 inlined mutation handlers (copy, edit, cancel, save, toggleFavorite, togglePin, delete); extract `ItemDrawerHeader.tsx`; fold the read-only Collections/Details sections into `ItemDrawerView.tsx`.
+- `nav/SidebarContent.tsx` (~238 lines, optional/lowest priority): split into `SidebarTypesList.tsx`, `SidebarCollectionsSection.tsx`, `SidebarUserFooter.tsx`.
+
 ## Notes
 
 <!-- Any Extra Notes -->
+
+- Pure refactor/split work — no behavior change intended. Verify via the live dev server (Playwright) that item create/edit/delete/favorite/pin, drawer open/close, and sidebar nav/active-state all still work identically after the split.
+- No new unit tests expected unless a split pulls pure logic into something in `src/lib/**` or `src/actions/**` scope (unlikely — these are all `src/components/**` client components/hooks, out of Vitest's scope per `context/ai-interaction.md`).
+- Phase 3 (dedupe extractions) and Phase 4 (types convention & route groups) remain backlog items for later, not part of this feature — see the `feature/component-folder-reorg` history entry for their full scope.
 
 ## History
 
