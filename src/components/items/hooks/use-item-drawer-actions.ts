@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { updateItem, deleteItem, toggleItemFavorite, toggleItemPin } from "@/actions/items";
 import { type ItemDetail } from "@/lib/db/items";
 import { type useItemEditForm } from "@/components/items/hooks/use-item-edit-form";
+import { useToggleFavorite } from "@/components/shared/hooks/use-toggle-favorite";
 
 interface UseItemDrawerActionsArgs {
   item: ItemDetail | null;
@@ -30,6 +31,9 @@ export function useItemDrawerActions({
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const toggleFavorite = useToggleFavorite(toggleItemFavorite, (isFavorite) =>
+    setItem((current) => (current ? { ...current, isFavorite } : current))
+  );
 
   const handleCopy = () => {
     if (!item) return;
@@ -66,16 +70,9 @@ export function useItemDrawerActions({
     }
   };
 
-  const handleToggleFavorite = async () => {
+  const handleToggleFavorite = () => {
     if (!item) return;
-
-    const result = await toggleItemFavorite(item.id);
-    if (result.success && result.isFavorite !== undefined) {
-      setItem({ ...item, isFavorite: result.isFavorite });
-      router.refresh();
-    } else {
-      toast.error(result.error ?? "Failed to update favorite");
-    }
+    toggleFavorite(item.id);
   };
 
   const handleTogglePin = async () => {

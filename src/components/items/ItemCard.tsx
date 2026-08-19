@@ -1,7 +1,6 @@
 "use client";
 
 import type { MouseEvent } from "react";
-import { useRouter } from "next/navigation";
 import { Copy, Pin, Star } from "lucide-react";
 import { toast } from "sonner";
 
@@ -10,14 +9,15 @@ import { type ItemWithType } from "@/lib/db/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
 import { useDrawerCardProps } from "@/components/shared/hooks/use-drawer-card-props";
+import { useToggleFavorite } from "@/components/shared/hooks/use-toggle-favorite";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 export function ItemCard({ item }: { item: ItemWithType }) {
-  const router = useRouter();
   const Icon = itemTypeIcons[item.itemType.icon];
   const drawerCardProps = useDrawerCardProps(item.id);
+  const toggleFavorite = useToggleFavorite(toggleItemFavorite);
   const copyText = item.content ?? item.url ?? "";
 
   const handleCopy = (e: MouseEvent) => {
@@ -26,14 +26,9 @@ export function ItemCard({ item }: { item: ItemWithType }) {
     toast.success("Copied to clipboard");
   };
 
-  const handleToggleFavorite = async (e: MouseEvent) => {
+  const handleToggleFavorite = (e: MouseEvent) => {
     e.stopPropagation();
-    const result = await toggleItemFavorite(item.id);
-    if (result.success) {
-      router.refresh();
-    } else {
-      toast.error(result.error ?? "Failed to update favorite");
-    }
+    toggleFavorite(item.id);
   };
 
   return (

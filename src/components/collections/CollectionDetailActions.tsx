@@ -3,12 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Star, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 
 import { toggleCollectionFavorite } from "@/actions/collections";
 import { Button } from "@/components/ui/button";
-import { EditCollectionDialog } from "@/components/collections/EditCollectionDialog";
-import { DeleteCollectionDialog } from "@/components/collections/DeleteCollectionDialog";
+import { CollectionActionDialogs } from "@/components/collections/CollectionActionDialogs";
+import { useToggleFavorite } from "@/components/shared/hooks/use-toggle-favorite";
 
 interface CollectionDetailActionsProps {
   collection: { id: string; name: string; description: string | null; isFavorite: boolean };
@@ -19,16 +18,9 @@ export function CollectionDetailActions({ collection }: CollectionDetailActionsP
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(collection.isFavorite);
+  const toggleFavorite = useToggleFavorite(toggleCollectionFavorite, setIsFavorite);
 
-  const handleToggleFavorite = async () => {
-    const result = await toggleCollectionFavorite(collection.id);
-    if (result.success && result.isFavorite !== undefined) {
-      setIsFavorite(result.isFavorite);
-      router.refresh();
-    } else {
-      toast.error(result.error ?? "Failed to update favorite");
-    }
-  };
+  const handleToggleFavorite = () => toggleFavorite(collection.id);
 
   return (
     <div className="flex items-center gap-2">
@@ -53,12 +45,12 @@ export function CollectionDetailActions({ collection }: CollectionDetailActionsP
         <Trash2 />
       </Button>
 
-      <EditCollectionDialog collection={collection} open={editOpen} onOpenChange={setEditOpen} />
-      <DeleteCollectionDialog
-        collectionId={collection.id}
-        collectionName={collection.name}
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
+      <CollectionActionDialogs
+        collection={collection}
+        editOpen={editOpen}
+        onEditOpenChange={setEditOpen}
+        deleteOpen={deleteOpen}
+        onDeleteOpenChange={setDeleteOpen}
         onDeleted={() => router.push("/collections")}
       />
     </div>

@@ -13,7 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useEditorPreferences } from "@/components/editor/hooks/editor-preferences-context";
 import { defineCustomMonacoThemes } from "@/lib/monaco-themes";
-import { ExplainCodeTrigger } from "@/components/ai/ExplainCodeTrigger";
+import { AiActionTrigger } from "@/components/ai/AiActionTrigger";
 import { useExplainCode } from "@/components/ai/hooks/use-explain-code";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
@@ -133,10 +133,13 @@ export function CodeEditor({
               </span>
             )}
             {explain && !explainState.explanation && (
-              <ExplainCodeTrigger
+              <AiActionTrigger
                 isPro={explain.isPro}
                 loading={explainState.loading}
                 onClick={handleExplainClick}
+                label="Explain"
+                loadingLabel="Explaining..."
+                ariaLabel="Explain code"
               />
             )}
             <Button

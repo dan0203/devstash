@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { postJson } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,12 +48,10 @@ export function ResetPasswordForm() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, ...parsed.data }),
-      });
-      const body = await res.json();
+      const body = await postJson<{ success: boolean; error?: string }>(
+        "/api/auth/reset-password",
+        { token, ...parsed.data }
+      );
 
       if (!body.success) {
         setError(body.error ?? "Something went wrong");

@@ -11,8 +11,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { EditCollectionDialog } from "@/components/collections/EditCollectionDialog";
-import { DeleteCollectionDialog } from "@/components/collections/DeleteCollectionDialog";
+import { CollectionActionDialogs } from "@/components/collections/CollectionActionDialogs";
 
 interface CollectionCardMenuProps {
   collection: { id: string; name: string; description: string | null; isFavorite: boolean };
@@ -52,12 +51,12 @@ export function CollectionCardMenu({ collection, onToggleFavorite }: CollectionC
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <EditCollectionDialog collection={collection} open={editOpen} onOpenChange={setEditOpen} />
-      <DeleteCollectionDialog
-        collectionId={collection.id}
-        collectionName={collection.name}
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
+      <CollectionActionDialogs
+        collection={collection}
+        editOpen={editOpen}
+        onEditOpenChange={setEditOpen}
+        deleteOpen={deleteOpen}
+        onDeleteOpenChange={setDeleteOpen}
         onDeleted={() => router.refresh()}
       />
     </div>

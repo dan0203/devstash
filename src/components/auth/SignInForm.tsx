@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
+import { postJson } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,12 +53,10 @@ export function SignInForm() {
   async function handleResendVerification() {
     setIsResending(true);
     try {
-      const res = await fetch("/api/auth/resend-verification", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const body = await res.json();
+      const body = await postJson<{ success: boolean; error?: string }>(
+        "/api/auth/resend-verification",
+        { email }
+      );
 
       if (!body.success) {
         toast.error(body.error ?? "Something went wrong");
