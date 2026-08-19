@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { Session } from "next-auth";
 import { signOut } from "next-auth/react";
 import { ChevronDown, ChevronRight, LogOut, Settings, Star } from "lucide-react";
@@ -39,6 +40,7 @@ export function SidebarContent({
 }: SidebarContentProps) {
   const [collectionsOpen, setCollectionsOpen] = useState(true);
   const showCollectionsList = collapsed || collectionsOpen;
+  const pathname = usePathname();
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -51,13 +53,17 @@ export function SidebarContent({
         <div className="space-y-0.5">
           {itemTypes.map((type) => {
             const Icon = itemTypeIcons[type.icon];
+            const href = `/items/${type.slug}`;
+            const active = pathname === href;
             return (
               <Link
                 key={type.id}
-                href={`/items/${type.slug}`}
+                href={href}
+                aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-foreground/90 hover:bg-sidebar-accent",
-                  collapsed && "justify-center"
+                  collapsed && "justify-center",
+                  active && "bg-sidebar-accent font-medium text-foreground"
                 )}
                 title={collapsed ? type.name : undefined}
               >
@@ -102,19 +108,38 @@ export function SidebarContent({
 
         {showCollectionsList && (
           <div className="space-y-0.5">
-            {!collapsed && <SidebarLink href="/favorites" label="Favorites" />}
+            {!collapsed && (
+              <SidebarLink href="/favorites" label="Favorites" active={pathname === "/favorites"} />
+            )}
             <div className={cn("space-y-0.5", !collapsed && "pl-3")}>
               {favoriteCollections.map((collection) => (
-                <CollectionLink key={collection.id} collection={collection} collapsed={collapsed} favorite />
+                <CollectionLink
+                  key={collection.id}
+                  collection={collection}
+                  collapsed={collapsed}
+                  favorite
+                  active={pathname === `/collections/${collection.id}`}
+                />
               ))}
             </div>
-            {!collapsed && <SidebarLink href="/recent" label="Recent" />}
+            {!collapsed && <SidebarLink href="/recent" label="Recent" active={pathname === "/recent"} />}
             <div className={cn("space-y-0.5", !collapsed && "pl-3")}>
               {recentCollections.map((collection) => (
-                <CollectionLink key={collection.id} collection={collection} collapsed={collapsed} />
+                <CollectionLink
+                  key={collection.id}
+                  collection={collection}
+                  collapsed={collapsed}
+                  active={pathname === `/collections/${collection.id}`}
+                />
               ))}
             </div>
-            {!collapsed && <SidebarLink href="/collections" label="View all collections" />}
+            {!collapsed && (
+              <SidebarLink
+                href="/collections"
+                label="View all collections"
+                active={pathname === "/collections"}
+              />
+            )}
           </div>
         )}
       </nav>
@@ -148,11 +173,23 @@ export function SidebarContent({
   );
 }
 
-function SidebarLink({ href, label }: { href: string; label: string }) {
+function SidebarLink({
+  href,
+  label,
+  active,
+}: {
+  href: string;
+  label: string;
+  active?: boolean;
+}) {
   return (
     <Link
       href={href}
-      className="flex items-center rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-sidebar-accent"
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "flex items-center rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-sidebar-accent",
+        active && "bg-sidebar-accent font-medium text-foreground"
+      )}
     >
       <span className="truncate">{label}</span>
     </Link>
@@ -163,17 +200,21 @@ function CollectionLink({
   collection,
   collapsed,
   favorite,
+  active,
 }: {
   collection: CollectionWithStats;
   collapsed?: boolean;
   favorite?: boolean;
+  active?: boolean;
 }) {
   return (
     <Link
       href={`/collections/${collection.id}`}
+      aria-current={active ? "page" : undefined}
       className={cn(
         "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-foreground/90 hover:bg-sidebar-accent",
-        collapsed && "justify-center"
+        collapsed && "justify-center",
+        active && "bg-sidebar-accent font-medium text-foreground"
       )}
       title={collapsed ? collection.name : undefined}
     >

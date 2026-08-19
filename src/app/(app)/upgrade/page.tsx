@@ -9,7 +9,7 @@ export default async function UpgradePage() {
     redirect("/sign-in?callbackUrl=/upgrade");
   }
   if (session.user.isPro) {
-    redirect("/settings");
+    redirect("/settings?from=upgrade");
   }
 
   return (

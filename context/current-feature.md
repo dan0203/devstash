@@ -1,14 +1,22 @@
-# Current Feature
-
-<!-- No active feature. Run /feature load to start one. -->
+# UI Review Fixes
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+Fix UI issues surfaced by a `ui-reviewer` Playwright pass across the app (dashboard, items pages, collections, favorites, settings, upgrade, item drawer, sign-in/register, command palette, homepage) at desktop (1440px) and mobile (375px):
+
+1. **Sidebar has no active-link highlighting** (Medium) — navigating between `/items/snippets`, `/items/commands`, and between collection links shows identical styling whether active or not (no background/border/text-color change, no `aria-current`). Where: `src/components/dashboard/Sidebar.tsx` / `SidebarContent.tsx`.
+2. **`/register` is missing "Sign in with GitHub"** (Medium) — `/sign-in` has an OR-divider + GitHub OAuth button; `/register`'s form goes straight from fields to "Create account" with no OAuth option. Where: `src/app/register/page.tsx` / `RegisterForm.tsx`.
+3. **`/upgrade` silently redirects Pro users to `/settings`** with no toast/explanation (Low) — could confuse a user clicking a stale "Upgrade" link. Where: `src/app/(app)/upgrade/page.tsx`.
+
 ## Notes
+
+- No console errors found anywhere in the reviewed pages/widths.
+- Everything else checked (item drawer layout/spacing, Cmd+K command palette, mobile sidebar drawer, mobile dashboard stacking, homepage nav/hero at 375px, favorites sort control + type badges) was consistent and clean — no action needed there.
+- Screenshots from the review pass were saved locally under the project root (`dashboard-1440.png`, `items-snippets-1440.png`, `items-commands-1440.png`, `collections-1440.png`, `favorites-1440.png`, `settings-1440.png`, `item-drawer-1440.png`, `cmdk-1440.png`, `dashboard-375.png`, `mobile-sidebar-375.png`, `homepage-375.png`).
 
 ## History
 
