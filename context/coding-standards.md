@@ -51,9 +51,9 @@ Example v4 configuration:
 ## File Organization
 
 - Components: `src/components/[feature]/ComponentName.tsx`
-- Pages: `src/app/[route]/page.tsx`
+- Pages: `src/app/[route]/page.tsx` (auth pages — sign-in/register/forgot-password/reset-password — live under the `src/app/(auth)/` route group; signed-in app pages under `src/app/(app)/`; route groups don't affect the URL)
 - Server Actions: `src/actions/[feature].ts`
-- Types: `src/types/[feature].ts`
+- Types: `src/types/[feature].ts` — reserved for types/constants shared across multiple layers (e.g. a component, a server action, and a `src/lib/db/**` query fn all importing the same shape), or ambient module augmentation (`next-auth.d.ts`). A type or interface used by only one file (component props, a single action's input shape) stays co-located inline in that file — don't create a `src/types/[feature].ts` just to hold it.
 - Lib/Utils: `src/lib/[utility].ts`
 - Unit tests: co-located as `[name].test.ts` next to the server action or utility it covers (see `context/ai-interaction.md`'s Unit Testing section for scope)
 
