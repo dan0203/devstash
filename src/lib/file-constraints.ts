@@ -18,6 +18,7 @@ export const FILE_CONSTRAINTS = {
       "text/xml",
       "text/csv",
       "application/toml",
+      "application/octet-stream",
     ],
   },
 } as const;

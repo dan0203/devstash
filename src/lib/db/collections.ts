@@ -2,6 +2,7 @@ import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { type ItemWithType } from "@/lib/db/items";
 import { aggregateTypeCounts, findOwnedCollection, toggleBooleanColumn } from "@/lib/db/query-helpers";
+import { SEARCH_COLLECTIONS_LIMIT } from "@/lib/constants";
 
 export type CollectionTypeSummary = ReturnType<typeof aggregateTypeCounts>[number];
 
@@ -69,7 +70,8 @@ export async function getRecentCollections(
 }
 
 export async function getAllCollections(userId: string): Promise<CollectionWithStats[]> {
-  return getCollectionsWithStats(userId);
+  const withStats = await getCollectionsWithStats(userId);
+  return withStats.slice(0, SEARCH_COLLECTIONS_LIMIT);
 }
 
 export interface PaginatedCollections {
@@ -150,7 +152,7 @@ export async function getCollectionDetail(
   if (!collection) return null;
 
   // Type counts are aggregated over every item in the collection (not just the
-  // current page), so this stays a lightweight, non-paginated query — only the
+  // current page), so this stays a lightweight, non-paginated query Ã¢â‚¬â€ only the
   // itemType relation is selected, no item content/tags/file fields.
   const [allItemTypes, pagedItemCollections, totalCount] = await Promise.all([
     prisma.itemCollection.findMany({
@@ -272,7 +274,7 @@ export async function deleteCollection(userId: string, collectionId: string): Pr
   if (!existing) return false;
 
   // Only removes the Collection row (and its ItemCollection join rows via the
-  // schema's onDelete: Cascade) — items themselves are untouched.
+  // schema's onDelete: Cascade) Ã¢â‚¬â€ items themselves are untouched.
   await prisma.collection.delete({ where: { id: collectionId } });
   return true;
 }
