@@ -2,32 +2,11 @@
 
 ## Status
 
-Completed
+Not Started
 
 ## Goals
 
-Refactor `src/actions/**` to remove duplicated logic surfaced by a `refactor-scanner` pass, per the following findings:
-
-**High confidence (implement):**
-1. `requireSession()` — extract the identical `auth(); if (!session?.user?.id) return {success:false, error:"Not signed in"}` block duplicated across all 17 actions in `items.ts`, `collections.ts`, `ai.ts`, `billing.ts`, `editor-preferences.ts`, `auth.ts`.
-2. `parseOrError()` — extract the Zod `safeParse` + `issues[0].message` error-extraction pattern duplicated 9 times across `items.ts`, `collections.ts`, `ai.ts`, `editor-preferences.ts`.
-3. `requireProAi()` — extract the Pro-gate + `isAiEnabled()` check pair duplicated identically in all 4 `ai.ts` actions.
-4. `checkAiRateLimit()` — extract the rate-limit check + `rateLimitErrorMessage` pattern duplicated in all 4 `ai.ts` actions (differs only by which limiter is passed).
-5. `safeJsonParse()` — extract the `JSON.parse` try/catch-return-null wrapper duplicated in all 4 `ai.ts` response parsers.
-
-**Medium confidence (implement per user request):**
-6. Plan-limit check consolidation in `items.ts`/`collections.ts` — only 2 occurrences today (item limit vs. collection limit), but user asked to include it. Generic `checkPlanLimit(isPro, currentCount, limit, noun)` helper.
-
-**Explicitly out of scope** (scanner reviewed, not recommended):
-- AI actions' OpenAI-call try/catch bodies (each has distinct prompts/fields — not enough duplication to warrant a generic wrapper yet).
-- Test-file mock-setup boilerplate (documented, intentional convention per `ai-interaction.md`).
-
 ## Notes
-
-- `requireSession`/`parseOrError` land in `src/lib/auth-utils.ts` (or `src/lib/validation.ts` for `parseOrError` — decide during implementation per file-organization conventions).
-- `requireProAi`/`checkAiRateLimit`/`safeJsonParse` are AI-specific, so co-locate in `src/actions/ai.ts` or `src/lib/openai.ts`.
-- `checkPlanLimit` lands in `src/lib/plan-limits.ts` alongside existing `FREE_TIER_LIMITS`/`isOverItemLimit`/`isOverCollectionLimit`.
-- Pure refactor — no behavior change. Existing Vitest suite (`src/actions/*.test.ts`) must still pass unchanged after the extraction; add tests only for genuinely new shared logic if warranted.
 
 ## History
 
