@@ -1,7 +1,7 @@
 "use client";
 
-import { useEditorPreferences } from "@/components/dashboard/editor-preferences-context";
-import { CodeEditor } from "@/components/dashboard/CodeEditor";
+import { useEditorPreferences } from "@/components/editor/hooks/editor-preferences-context";
+import { CodeEditor } from "@/components/editor/CodeEditor";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {

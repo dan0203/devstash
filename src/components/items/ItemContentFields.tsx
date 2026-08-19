@@ -3,9 +3,9 @@ import {
   CONTENT_TYPES,
   LANGUAGE_TYPES,
   URL_TYPES,
-} from "@/components/dashboard/item-content-types";
-import { CodeEditor } from "@/components/dashboard/CodeEditor";
-import { MarkdownEditor } from "@/components/dashboard/MarkdownEditor";
+} from "@/lib/content-types";
+import { CodeEditor } from "@/components/editor/CodeEditor";
+import { MarkdownEditor } from "@/components/editor/MarkdownEditor";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {

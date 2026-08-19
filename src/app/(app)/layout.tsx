@@ -1,15 +1,15 @@
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { TopBar } from "@/components/dashboard/TopBar";
-import { Sidebar } from "@/components/dashboard/Sidebar";
-import { MobileSidebar } from "@/components/dashboard/MobileSidebar";
-import { SidebarProvider } from "@/components/dashboard/sidebar-context";
-import { ItemDrawerProvider } from "@/components/dashboard/item-drawer-context";
-import { ItemDrawer } from "@/components/dashboard/ItemDrawer";
-import { CommandPaletteProvider } from "@/components/dashboard/command-palette-context";
-import { CommandPalette } from "@/components/dashboard/CommandPalette";
-import { EditorPreferencesProvider } from "@/components/dashboard/editor-preferences-context";
+import { TopBar } from "@/components/nav/TopBar";
+import { Sidebar } from "@/components/nav/Sidebar";
+import { MobileSidebar } from "@/components/nav/MobileSidebar";
+import { SidebarProvider } from "@/components/nav/hooks/sidebar-context";
+import { ItemDrawerProvider } from "@/components/items/hooks/item-drawer-context";
+import { ItemDrawer } from "@/components/items/ItemDrawer";
+import { CommandPaletteProvider } from "@/components/command-palette/hooks/command-palette-context";
+import { CommandPalette } from "@/components/command-palette/CommandPalette";
+import { EditorPreferencesProvider } from "@/components/editor/hooks/editor-preferences-context";
 import { getItemTypesWithCounts } from "@/lib/db/items";
 import {
   getFavoriteCollections,

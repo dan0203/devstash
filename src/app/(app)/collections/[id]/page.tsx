@@ -4,11 +4,11 @@ import { auth } from "@/auth";
 import { getCollectionDetail } from "@/lib/db/collections";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { ITEMS_PER_PAGE } from "@/lib/constants";
-import { ItemCard } from "@/components/dashboard/ItemCard";
-import { ImageThumbnailCard } from "@/components/dashboard/ImageThumbnailCard";
-import { FileListRow } from "@/components/dashboard/FileListRow";
-import { CollectionDetailActions } from "@/components/dashboard/CollectionDetailActions";
-import { PaginationControls } from "@/components/dashboard/PaginationControls";
+import { ItemCard } from "@/components/items/ItemCard";
+import { ImageThumbnailCard } from "@/components/items/ImageThumbnailCard";
+import { FileListRow } from "@/components/items/FileListRow";
+import { CollectionDetailActions } from "@/components/collections/CollectionDetailActions";
+import { PaginationControls } from "@/components/shared/PaginationControls";
 
 export default async function CollectionDetailPage(props: PageProps<"/collections/[id]">) {
   const session = await auth();

@@ -7,8 +7,8 @@ import { toast } from "sonner";
 
 import { toggleCollectionFavorite } from "@/actions/collections";
 import { Button } from "@/components/ui/button";
-import { EditCollectionDialog } from "@/components/dashboard/EditCollectionDialog";
-import { DeleteCollectionDialog } from "@/components/dashboard/DeleteCollectionDialog";
+import { EditCollectionDialog } from "@/components/collections/EditCollectionDialog";
+import { DeleteCollectionDialog } from "@/components/collections/DeleteCollectionDialog";
 
 interface CollectionDetailActionsProps {
   collection: { id: string; name: string; description: string | null; isFavorite: boolean };

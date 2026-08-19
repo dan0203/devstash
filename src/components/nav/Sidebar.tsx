@@ -3,8 +3,8 @@
 import type { Session } from "next-auth";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
-import { useSidebar } from "@/components/dashboard/sidebar-context";
-import { SidebarContent } from "@/components/dashboard/SidebarContent";
+import { useSidebar } from "@/components/nav/hooks/sidebar-context";
+import { SidebarContent } from "@/components/nav/SidebarContent";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type ItemTypeWithCount } from "@/lib/db/items";

@@ -11,8 +11,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { EditCollectionDialog } from "@/components/dashboard/EditCollectionDialog";
-import { DeleteCollectionDialog } from "@/components/dashboard/DeleteCollectionDialog";
+import { EditCollectionDialog } from "@/components/collections/EditCollectionDialog";
+import { DeleteCollectionDialog } from "@/components/collections/DeleteCollectionDialog";
 
 interface CollectionCardMenuProps {
   collection: { id: string; name: string; description: string | null; isFavorite: boolean };

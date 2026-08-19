@@ -1,12 +1,12 @@
 import { type Dispatch, type SetStateAction } from "react";
 
-import { ItemContentFields } from "@/components/dashboard/ItemContentFields";
-import { CollectionSelect } from "@/components/dashboard/CollectionSelect";
-import { SuggestTagsTrigger } from "@/components/dashboard/SuggestTagsTrigger";
-import { SuggestedTagsList } from "@/components/dashboard/SuggestedTagsList";
-import { useSuggestTags } from "@/components/dashboard/use-suggest-tags";
-import { SuggestDescriptionTrigger } from "@/components/dashboard/SuggestDescriptionTrigger";
-import { useSuggestDescription } from "@/components/dashboard/use-suggest-description";
+import { ItemContentFields } from "@/components/items/ItemContentFields";
+import { CollectionSelect } from "@/components/items/CollectionSelect";
+import { SuggestTagsTrigger } from "@/components/ai/SuggestTagsTrigger";
+import { SuggestedTagsList } from "@/components/ai/SuggestedTagsList";
+import { useSuggestTags } from "@/components/ai/hooks/use-suggest-tags";
+import { SuggestDescriptionTrigger } from "@/components/ai/SuggestDescriptionTrigger";
+import { useSuggestDescription } from "@/components/ai/hooks/use-suggest-description";
 import { type CollectionOption } from "@/lib/db/collections";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

@@ -5,8 +5,8 @@ import { getRecentCollections, getCollectionStats } from "@/lib/db/collections";
 import { getPinnedItems, getRecentItems, getItemStats } from "@/lib/db/items";
 import { DASHBOARD_COLLECTIONS_LIMIT, DASHBOARD_RECENT_ITEMS_LIMIT } from "@/lib/constants";
 import { StatsRow } from "@/components/dashboard/StatsRow";
-import { CollectionCard } from "@/components/dashboard/CollectionCard";
-import { ItemCard } from "@/components/dashboard/ItemCard";
+import { CollectionCard } from "@/components/collections/CollectionCard";
+import { ItemCard } from "@/components/items/ItemCard";
 
 export default async function DashboardPage() {
   const session = await auth();

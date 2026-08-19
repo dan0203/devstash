@@ -16,7 +16,7 @@ import {
 import { type ItemWithType } from "@/lib/db/items";
 import { formatFileSize } from "@/lib/file-constraints";
 import { formatRelativeTime } from "@/lib/format";
-import { useDrawerCardProps } from "@/components/dashboard/use-drawer-card-props";
+import { useDrawerCardProps } from "@/components/shared/hooks/use-drawer-card-props";
 import { Button } from "@/components/ui/button";
 
 const EXTENSION_ICONS: Record<string, LucideIcon> = {

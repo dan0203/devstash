@@ -3,7 +3,7 @@
 import { type ItemWithType } from "@/lib/db/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { formatRelativeTime } from "@/lib/format";
-import { useDrawerCardProps } from "@/components/dashboard/use-drawer-card-props";
+import { useDrawerCardProps } from "@/components/shared/hooks/use-drawer-card-props";
 import { Badge } from "@/components/ui/badge";
 
 export function FavoriteItemRow({ item }: { item: ItemWithType }) {
