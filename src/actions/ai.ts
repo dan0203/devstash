@@ -34,6 +34,62 @@ function safeJsonParse(text: string): unknown {
   }
 }
 
+type AiActionResult<TResult> =
+  | { success: true; data: TResult }
+  | { success: false; error: string };
+
+/**
+ * Shared scaffold for every AI action: session check, Pro gate, Zod validation,
+ * rate limit, then a try/catch around the actual OpenAI call + response parsing
+ * (which stays in each call site's `run`, since prompts/parsing genuinely differ).
+ */
+async function runAiAction<TData, TResult>({
+  actionName,
+  input,
+  schema,
+  limiter,
+  genericError,
+  run,
+}: {
+  actionName: string;
+  input: unknown;
+  schema: z.ZodType<TData>;
+  limiter: Parameters<typeof checkRateLimit>[0];
+  genericError: string;
+  run: (data: TData, userId: string) => Promise<TResult | null>;
+}): Promise<AiActionResult<TResult>> {
+  const auth = await requireSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
+  }
+
+  const proError = requireProAi(auth.isPro);
+  if (proError) {
+    return { success: false, error: proError };
+  }
+
+  const parsed = parseOrError(schema, input);
+  if ("error" in parsed) {
+    return { success: false, error: parsed.error };
+  }
+
+  const rateLimitError = await checkAiRateLimit(limiter, auth.userId);
+  if (rateLimitError) {
+    return { success: false, error: rateLimitError };
+  }
+
+  try {
+    const result = await run(parsed.data, auth.userId);
+    if (result === null) {
+      return { success: false, error: genericError };
+    }
+    return { success: true, data: result };
+  } catch (error) {
+    console.error(`${actionName} failed`, error);
+    return { success: false, error: genericError };
+  }
+}
+
 const generateAutoTagsSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
   content: z.string(),
@@ -86,47 +142,32 @@ function parseTagsFromResponse(outputText: string): string[] | null {
 }
 
 export async function generateAutoTags(input: GenerateAutoTagsInput): Promise<GenerateAutoTagsState> {
-  const auth = await requireSession();
-  if (!auth.ok) {
-    return { success: false, error: auth.error };
+  const result = await runAiAction({
+    actionName: "generateAutoTags",
+    input,
+    schema: generateAutoTagsSchema,
+    limiter: rateLimiters.aiSuggestTags,
+    genericError: GENERIC_AI_ERROR,
+    run: async (data) => {
+      const truncatedContent = data.content.trim().slice(0, CONTENT_TRUNCATE_LENGTH);
+
+      const response = await openai.responses.create({
+        model: AI_MODEL,
+        instructions:
+          "You are a tagging assistant for a developer knowledge base. Given an item's title and content, suggest 3-5 short, lowercase, freeform tags that describe it. Respond with strict JSON only, in the shape {\"tags\": [\"tag1\", \"tag2\"]}, and nothing else.",
+        input: `Suggest tags for this item and respond in JSON.\n\nTitle: ${data.title}\n\nContent:\n${truncatedContent || "(no content)"}`,
+        text: { format: { type: "json_object" } },
+      });
+
+      const tags = parseTagsFromResponse(response.output_text ?? "");
+      return tags && tags.length > 0 ? tags : null;
+    },
+  });
+
+  if (!result.success) {
+    return { success: false, error: result.error };
   }
-
-  const proError = requireProAi(auth.isPro);
-  if (proError) {
-    return { success: false, error: proError };
-  }
-
-  const parsed = parseOrError(generateAutoTagsSchema, input);
-  if ("error" in parsed) {
-    return { success: false, error: parsed.error };
-  }
-
-  const rateLimitError = await checkAiRateLimit(rateLimiters.aiSuggestTags, auth.userId);
-  if (rateLimitError) {
-    return { success: false, error: rateLimitError };
-  }
-
-  const truncatedContent = parsed.data.content.trim().slice(0, CONTENT_TRUNCATE_LENGTH);
-
-  try {
-    const response = await openai.responses.create({
-      model: AI_MODEL,
-      instructions:
-        "You are a tagging assistant for a developer knowledge base. Given an item's title and content, suggest 3-5 short, lowercase, freeform tags that describe it. Respond with strict JSON only, in the shape {\"tags\": [\"tag1\", \"tag2\"]}, and nothing else.",
-      input: `Suggest tags for this item and respond in JSON.\n\nTitle: ${parsed.data.title}\n\nContent:\n${truncatedContent || "(no content)"}`,
-      text: { format: { type: "json_object" } },
-    });
-
-    const tags = parseTagsFromResponse(response.output_text ?? "");
-    if (!tags || tags.length === 0) {
-      return { success: false, error: GENERIC_AI_ERROR };
-    }
-
-    return { success: true, tags };
-  } catch (error) {
-    console.error("generateAutoTags failed", error);
-    return { success: false, error: GENERIC_AI_ERROR };
-  }
+  return { success: true, tags: result.data };
 }
 
 function parseDescriptionFromResponse(outputText: string): string | null {
@@ -166,54 +207,38 @@ function parseExplanationFromResponse(outputText: string): string | null {
 }
 
 export async function explainCode(input: ExplainCodeInput): Promise<ExplainCodeState> {
-  const auth = await requireSession();
-  if (!auth.ok) {
-    return { success: false, error: auth.error };
+  const result = await runAiAction({
+    actionName: "explainCode",
+    input,
+    schema: explainCodeSchema,
+    limiter: rateLimiters.aiExplainCode,
+    genericError: GENERIC_EXPLAIN_ERROR,
+    run: async (data) => {
+      const { content, language, itemType } = data;
+      const truncatedContent = content.trim().slice(0, CONTENT_TRUNCATE_LENGTH);
+
+      const detailLines = [
+        `Item type: ${itemType}`,
+        language ? `Language: ${language}` : null,
+        `Content:\n${truncatedContent}`,
+      ].filter(Boolean);
+
+      const response = await openai.responses.create({
+        model: AI_MODEL,
+        instructions:
+          'You are a code-explanation assistant for a developer knowledge base. Given a code snippet or terminal command, explain what it does and the key concepts involved in about 200-300 words. Format the explanation as markdown (short paragraphs, inline code, and lists where useful). Respond with strict JSON only, in the shape {"explanation": "..."}, and nothing else.',
+        input: `Explain this code and respond in JSON.\n\n${detailLines.join("\n")}`,
+        text: { format: { type: "json_object" } },
+      });
+
+      return parseExplanationFromResponse(response.output_text ?? "");
+    },
+  });
+
+  if (!result.success) {
+    return { success: false, error: result.error };
   }
-
-  const proError = requireProAi(auth.isPro);
-  if (proError) {
-    return { success: false, error: proError };
-  }
-
-  const parsed = parseOrError(explainCodeSchema, input);
-  if ("error" in parsed) {
-    return { success: false, error: parsed.error };
-  }
-
-  const rateLimitError = await checkAiRateLimit(rateLimiters.aiExplainCode, auth.userId);
-  if (rateLimitError) {
-    return { success: false, error: rateLimitError };
-  }
-
-  const { content, language, itemType } = parsed.data;
-  const truncatedContent = content.trim().slice(0, CONTENT_TRUNCATE_LENGTH);
-
-  const detailLines = [
-    `Item type: ${itemType}`,
-    language ? `Language: ${language}` : null,
-    `Content:\n${truncatedContent}`,
-  ].filter(Boolean);
-
-  try {
-    const response = await openai.responses.create({
-      model: AI_MODEL,
-      instructions:
-        'You are a code-explanation assistant for a developer knowledge base. Given a code snippet or terminal command, explain what it does and the key concepts involved in about 200-300 words. Format the explanation as markdown (short paragraphs, inline code, and lists where useful). Respond with strict JSON only, in the shape {"explanation": "..."}, and nothing else.',
-      input: `Explain this code and respond in JSON.\n\n${detailLines.join("\n")}`,
-      text: { format: { type: "json_object" } },
-    });
-
-    const explanation = parseExplanationFromResponse(response.output_text ?? "");
-    if (!explanation) {
-      return { success: false, error: GENERIC_EXPLAIN_ERROR };
-    }
-
-    return { success: true, explanation };
-  } catch (error) {
-    console.error("explainCode failed", error);
-    return { success: false, error: GENERIC_EXPLAIN_ERROR };
-  }
+  return { success: true, explanation: result.data };
 }
 
 const optimizePromptSchema = z.object({
@@ -241,100 +266,68 @@ function parseOptimizedPromptFromResponse(outputText: string): string | null {
 }
 
 export async function optimizePrompt(input: OptimizePromptInput): Promise<OptimizePromptState> {
-  const auth = await requireSession();
-  if (!auth.ok) {
-    return { success: false, error: auth.error };
+  const result = await runAiAction({
+    actionName: "optimizePrompt",
+    input,
+    schema: optimizePromptSchema,
+    limiter: rateLimiters.aiOptimizePrompt,
+    genericError: GENERIC_OPTIMIZE_ERROR,
+    run: async (data) => {
+      const truncatedContent = data.content.trim().slice(0, CONTENT_TRUNCATE_LENGTH);
+
+      const response = await openai.responses.create({
+        model: AI_MODEL,
+        instructions:
+          'You are a prompt engineering assistant for a developer knowledge base. Given a prompt intended for use with an AI assistant, refine it for clarity, specificity, and effectiveness while fully preserving its original intent and goal. If the prompt is already clear and effective, return it unchanged. Respond with strict JSON only, in the shape {"optimizedPrompt": "..."}, and nothing else.',
+        input: `Optimize this prompt and respond in JSON.\n\nPrompt:\n${truncatedContent}`,
+        text: { format: { type: "json_object" } },
+      });
+
+      return parseOptimizedPromptFromResponse(response.output_text ?? "");
+    },
+  });
+
+  if (!result.success) {
+    return { success: false, error: result.error };
   }
-
-  const proError = requireProAi(auth.isPro);
-  if (proError) {
-    return { success: false, error: proError };
-  }
-
-  const parsed = parseOrError(optimizePromptSchema, input);
-  if ("error" in parsed) {
-    return { success: false, error: parsed.error };
-  }
-
-  const rateLimitError = await checkAiRateLimit(rateLimiters.aiOptimizePrompt, auth.userId);
-  if (rateLimitError) {
-    return { success: false, error: rateLimitError };
-  }
-
-  const truncatedContent = parsed.data.content.trim().slice(0, CONTENT_TRUNCATE_LENGTH);
-
-  try {
-    const response = await openai.responses.create({
-      model: AI_MODEL,
-      instructions:
-        'You are a prompt engineering assistant for a developer knowledge base. Given a prompt intended for use with an AI assistant, refine it for clarity, specificity, and effectiveness while fully preserving its original intent and goal. If the prompt is already clear and effective, return it unchanged. Respond with strict JSON only, in the shape {"optimizedPrompt": "..."}, and nothing else.',
-      input: `Optimize this prompt and respond in JSON.\n\nPrompt:\n${truncatedContent}`,
-      text: { format: { type: "json_object" } },
-    });
-
-    const optimizedContent = parseOptimizedPromptFromResponse(response.output_text ?? "");
-    if (!optimizedContent) {
-      return { success: false, error: GENERIC_OPTIMIZE_ERROR };
-    }
-
-    return { success: true, optimizedContent };
-  } catch (error) {
-    console.error("optimizePrompt failed", error);
-    return { success: false, error: GENERIC_OPTIMIZE_ERROR };
-  }
+  return { success: true, optimizedContent: result.data };
 }
 
 export async function generateDescription(
   input: GenerateDescriptionInput
 ): Promise<GenerateDescriptionState> {
-  const auth = await requireSession();
-  if (!auth.ok) {
-    return { success: false, error: auth.error };
+  const result = await runAiAction({
+    actionName: "generateDescription",
+    input,
+    schema: generateDescriptionSchema,
+    limiter: rateLimiters.aiSuggestDescription,
+    genericError: GENERIC_DESCRIPTION_ERROR,
+    run: async (data) => {
+      const { title, content, url, language, itemType } = data;
+      const truncatedContent = content?.trim().slice(0, CONTENT_TRUNCATE_LENGTH) || "";
+
+      const detailLines = [
+        `Item type: ${itemType}`,
+        `Title: ${title}`,
+        url ? `URL: ${url}` : null,
+        language ? `Language: ${language}` : null,
+        `Content:\n${truncatedContent || "(no content)"}`,
+      ].filter(Boolean);
+
+      const response = await openai.responses.create({
+        model: AI_MODEL,
+        instructions:
+          "You are a summarizing assistant for a developer knowledge base. Given an item's type, title, and available content, write a concise 1-2 sentence description summarizing what it is or does. Use only the information provided. Respond with strict JSON only, in the shape {\"description\": \"...\"}, and nothing else.",
+        input: `Summarize this item and respond in JSON.\n\n${detailLines.join("\n")}`,
+        text: { format: { type: "json_object" } },
+      });
+
+      return parseDescriptionFromResponse(response.output_text ?? "");
+    },
+  });
+
+  if (!result.success) {
+    return { success: false, error: result.error };
   }
-
-  const proError = requireProAi(auth.isPro);
-  if (proError) {
-    return { success: false, error: proError };
-  }
-
-  const parsed = parseOrError(generateDescriptionSchema, input);
-  if ("error" in parsed) {
-    return { success: false, error: parsed.error };
-  }
-
-  const rateLimitError = await checkAiRateLimit(rateLimiters.aiSuggestDescription, auth.userId);
-  if (rateLimitError) {
-    return { success: false, error: rateLimitError };
-  }
-
-  const { title, content, url, language, itemType } = parsed.data;
-  const truncatedContent = content?.trim().slice(0, CONTENT_TRUNCATE_LENGTH) || "";
-
-  const detailLines = [
-    `Item type: ${itemType}`,
-    `Title: ${title}`,
-    url ? `URL: ${url}` : null,
-    language ? `Language: ${language}` : null,
-    `Content:\n${truncatedContent || "(no content)"}`,
-  ].filter(Boolean);
-
-  try {
-    const response = await openai.responses.create({
-      model: AI_MODEL,
-      instructions:
-        "You are a summarizing assistant for a developer knowledge base. Given an item's type, title, and available content, write a concise 1-2 sentence description summarizing what it is or does. Use only the information provided. Respond with strict JSON only, in the shape {\"description\": \"...\"}, and nothing else.",
-      input: `Summarize this item and respond in JSON.\n\n${detailLines.join("\n")}`,
-      text: { format: { type: "json_object" } },
-    });
-
-    const description = parseDescriptionFromResponse(response.output_text ?? "");
-    if (!description) {
-      return { success: false, error: GENERIC_DESCRIPTION_ERROR };
-    }
-
-    return { success: true, description };
-  } catch (error) {
-    console.error("generateDescription failed", error);
-    return { success: false, error: GENERIC_DESCRIPTION_ERROR };
-  }
+  return { success: true, description: result.data };
 }
