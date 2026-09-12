@@ -4,8 +4,6 @@
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
-
 Not Started
 
 ## Goals
@@ -18,6 +16,7 @@ Not Started
 
 ## History
 
+- **2026-09-12** — AI Trigger Pro Gate Fix completed on `fix/ai-trigger-pro-gate`. Fixed a UI inconsistency where the Suggest Tags and Generate Description AI triggers were hidden entirely for free users (`{isPro && (...)}` in `NewItemDialog.tsx`/`ItemDrawerEditForm.tsx`), unlike Explain (`CodeEditor.tsx`) and Optimize (`MarkdownEditor.tsx`), which always render and show a Crown icon + "AI features require Pro subscription" tooltip via the shared `AiActionTrigger` component. Replaced both call sites' usages of the single-purpose `SuggestTagsTrigger`/`SuggestDescriptionTrigger` components with `AiActionTrigger` directly, removing the `isPro &&` wrappers; deleted the two now-unused trigger components since nothing else referenced them. No server-side changes — `generateAutoTags`/`generateDescription`'s Pro gate in `src/actions/ai.ts` was already correct, this was UI-only. No new unit tests: every file touched is a `src/components/**` client component, out of Vitest's `src/actions/**`/`src/lib/**`-excluding-`db` scope. Verified end-to-end via Playwright against the live dev server using a disposable, deleted-afterward DB toggle script to temporarily flip the demo user's `isPro` to `false`: both the New Item dialog and the Item Drawer's edit mode now show "Generate description (requires Pro)"/"Suggest tags (requires Pro)" with the crown icon instead of hiding the buttons, matching Explain's existing gating exactly, with no console errors; reverted `isPro` back to `true` afterward and confirmed the real (enabled) buttons still render normally for Pro users. `npm run build` (identical route manifest), `npm run lint` (0 errors), and `npm test` (127 tests, unchanged) all pass. Merged to `main` via `--no-ff`, local branch deleted.
 - **2026-08-10** — Initial Next.js 16 (App Router) project setup via `create-next-app`, with TypeScript and Tailwind CSS v4. Placeholder home page (`src/app/page.tsx`), no backend/database/tests configured yet.
 - **2026-08-10** — Dashboard UI Phase 1 (Layout & Setup) completed on `feature/dashboard-phase-1`. ShadCN UI initialized; `/dashboard` route added with a full-width top bar (logo, centered search, "New Collection"/"New item" buttons), dark mode by default, and placeholder Sidebar/Main sections. Switched app font to Libre Franklin and dark background to an anthracite gray.
 - **2026-08-10** — Dashboard UI Phase 2 (Sidebar & Navigation) completed on `feature/dashboard-phase-2`. Collapsible desktop sidebar (icon-rail toggle) plus an always-on mobile drawer; TYPES section links to `/items/[type]` with per-type item counts and a Pro badge on Files/Images (hidden when the user is Pro); COLLECTIONS section is collapsible with Favorites/Recent links, favorited collections (starred) shown separately from the rest, each with item counts and slight indentation. Fixed a flexbox `min-height: auto` bug so the sidebar always fills the viewport height with the user footer pinned to the bottom and only the nav scrolling.
