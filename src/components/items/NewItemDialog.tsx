@@ -12,9 +12,8 @@ import { NewItemTypeSelector } from "@/components/items/NewItemTypeSelector";
 import { ItemContentFields } from "@/components/items/ItemContentFields";
 import { FileUpload } from "@/components/items/FileUpload";
 import { CollectionSelect } from "@/components/items/CollectionSelect";
-import { SuggestTagsTrigger } from "@/components/ai/SuggestTagsTrigger";
+import { AiActionTrigger } from "@/components/ai/AiActionTrigger";
 import { SuggestedTagsList } from "@/components/ai/SuggestedTagsList";
-import { SuggestDescriptionTrigger } from "@/components/ai/SuggestDescriptionTrigger";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -90,12 +89,14 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="new-item-description">Description</Label>
-              {isPro && (
-                <SuggestDescriptionTrigger
-                  loading={suggestDescription.loading}
-                  onClick={suggestDescription.handleSuggest}
-                />
-              )}
+              <AiActionTrigger
+                isPro={isPro}
+                loading={suggestDescription.loading}
+                onClick={suggestDescription.handleSuggest}
+                label="Generate description"
+                loadingLabel="Generating..."
+                ariaLabel="Generate description"
+              />
             </div>
             <Textarea
               id="new-item-description"
@@ -144,9 +145,14 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="new-item-tags">Tags</Label>
-              {isPro && (
-                <SuggestTagsTrigger loading={suggestTags.loading} onClick={suggestTags.handleSuggest} />
-              )}
+              <AiActionTrigger
+                isPro={isPro}
+                loading={suggestTags.loading}
+                onClick={suggestTags.handleSuggest}
+                label="Suggest tags"
+                loadingLabel="Suggesting..."
+                ariaLabel="Suggest tags"
+              />
             </div>
             <Input
               id="new-item-tags"

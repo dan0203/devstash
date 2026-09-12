@@ -2,10 +2,9 @@ import { type Dispatch, type SetStateAction } from "react";
 
 import { ItemContentFields } from "@/components/items/ItemContentFields";
 import { CollectionSelect } from "@/components/items/CollectionSelect";
-import { SuggestTagsTrigger } from "@/components/ai/SuggestTagsTrigger";
+import { AiActionTrigger } from "@/components/ai/AiActionTrigger";
 import { SuggestedTagsList } from "@/components/ai/SuggestedTagsList";
 import { useSuggestTags } from "@/components/ai/hooks/use-suggest-tags";
-import { SuggestDescriptionTrigger } from "@/components/ai/SuggestDescriptionTrigger";
 import { useSuggestDescription } from "@/components/ai/hooks/use-suggest-description";
 import { type CollectionOption } from "@/lib/db/collections";
 import { Input } from "@/components/ui/input";
@@ -87,12 +86,14 @@ export function ItemDrawerEditForm({
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <Label htmlFor="item-edit-description">Description</Label>
-          {isPro && (
-            <SuggestDescriptionTrigger
-              loading={suggestDescription.loading}
-              onClick={suggestDescription.handleSuggest}
-            />
-          )}
+          <AiActionTrigger
+            isPro={isPro}
+            loading={suggestDescription.loading}
+            onClick={suggestDescription.handleSuggest}
+            label="Generate description"
+            loadingLabel="Generating..."
+            ariaLabel="Generate description"
+          />
         </div>
         <Textarea
           id="item-edit-description"
@@ -123,9 +124,14 @@ export function ItemDrawerEditForm({
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <Label htmlFor="item-edit-tags">Tags</Label>
-          {isPro && (
-            <SuggestTagsTrigger loading={suggestTags.loading} onClick={suggestTags.handleSuggest} />
-          )}
+          <AiActionTrigger
+            isPro={isPro}
+            loading={suggestTags.loading}
+            onClick={suggestTags.handleSuggest}
+            label="Suggest tags"
+            loadingLabel="Suggesting..."
+            ariaLabel="Suggest tags"
+          />
         </div>
         <Input
           id="item-edit-tags"
