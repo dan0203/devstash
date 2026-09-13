@@ -1,18 +1,21 @@
-# Current Feature
-
-<!-- Feature Name And Short Description -->
+# Current Feature: Reposition & Restyle Upgrade Button (Top Bar)
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- In `TopBar.tsx`, for non-Pro users, move the "Upgrade" button so it sits to the LEFT of the Favorites (star) button, instead of its current position to the right of it.
+- Rename/restyle the button's label to include an AI sparkles icon (small stars), signaling it's tied to AI features — e.g. "✨ Upgrade" using the existing `Sparkles` icon from `lucide-react` (already used elsewhere in the app for AI triggers, e.g. `AiActionTrigger.tsx`).
+- Keep existing behavior: still `ghost` variant, still links to `/upgrade`, still only rendered when `!isPro`.
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Current order in `TopBar.tsx` (~line 83-92): Favorites button, then `!isPro && Upgrade button`, then `NewItemDialog`/`NewCollectionDialog` triggers. New order should be: Upgrade button (with Sparkles icon), then Favorites button.
+- Use the outline (stroke-based) `Sparkles` icon from `lucide-react` — its default rendering — not a filled/solid variant.
+- Follow existing icon+label button conventions in the file (see the "New item"/"New Collection" buttons' `hidden md:inline` label pattern for responsive text).
+- No server action / utility changes expected — this is a `src/components/**` client component change, out of Vitest's unit-testing scope.
 
 ## History
 

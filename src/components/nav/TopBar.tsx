@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Layers, Search, Menu, Star } from "lucide-react";
+import { Layers, Search, Menu, Star, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/nav/hooks/sidebar-context";
@@ -80,14 +80,15 @@ export function TopBar({ itemTypes, collections, isPro }: TopBarProps) {
         >
           <Search className="size-4" />
         </Button>
-        <Button variant="ghost" size="icon-sm" aria-label="Favorites" nativeButton={false} render={<Link href="/favorites" />}>
-          <Star className="size-4" />
-        </Button>
         {!isPro && (
           <Button variant="ghost" nativeButton={false} render={<Link href="/upgrade" />}>
+            <Sparkles className="size-4" />
             Upgrade
           </Button>
         )}
+        <Button variant="ghost" size="icon-sm" aria-label="Favorites" nativeButton={false} render={<Link href="/favorites" />}>
+          <Star className="size-4" />
+        </Button>
         <NewCollectionDialog />
         <NewItemDialog itemTypes={creatableTypes} collections={collections} isPro={isPro} />
       </div>
