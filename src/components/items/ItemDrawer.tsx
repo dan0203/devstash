@@ -46,19 +46,9 @@ export function ItemDrawer({ collections, isPro }: ItemDrawerProps) {
                     <ItemDrawerSkeleton />
                 ) : (
                     <>
-                        <ItemDrawerHeader item={item} isEditing={isEditing} />
+                        <ItemDrawerHeader item={item} />
 
-                        {!isEditing && (
-                            <ItemDrawerActions
-                                item={item}
-                                onCopy={actions.handleCopy}
-                                onEdit={actions.handleEdit}
-                                onDelete={actions.handleDelete}
-                                onToggleFavorite={actions.handleToggleFavorite}
-                                onTogglePin={actions.handleTogglePin}
-                                deleting={actions.deleting}
-                            />
-                        )}
+                        {!isEditing && <ItemDrawerActions item={item} onCopy={actions.handleCopy} onEdit={actions.handleEdit} onDelete={actions.handleDelete} onToggleFavorite={actions.handleToggleFavorite} onTogglePin={actions.handleTogglePin} deleting={actions.deleting} />}
 
                         <div className="flex flex-col gap-6 px-4">
                             {isEditing ? <ItemDrawerEditForm itemTypeName={item.itemType.name} collections={collections} isPro={isPro} {...editForm} /> : <ItemDrawerView item={item} isPro={isPro} />}

@@ -3,7 +3,7 @@ import { itemTypeIcons } from '@/lib/icon-map';
 import { formatRelativeTime } from '@/lib/format';
 import { SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
-export function ItemDrawerHeader({ item, isEditing }: { item: ItemDetail; isEditing: boolean }) {
+export function ItemDrawerHeader({ item }: { item: ItemDetail }) {
     return (
         <SheetHeader className="pt-6 pb-1">
             <div className="flex items-start gap-3 pr-6">
