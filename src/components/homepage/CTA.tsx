@@ -17,7 +17,7 @@ export function CTA() {
         <Button
           size="lg"
           nativeButton={false}
-          render={<Link href="/register" />}
+          render={<Link href="/sign-in" />}
           className="bg-gradient-to-br from-sky-400 to-blue-600 text-white hover:brightness-110"
         >
           Get Started

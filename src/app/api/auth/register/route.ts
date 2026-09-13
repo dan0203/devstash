@@ -11,6 +11,7 @@ import {
 import { enforceRateLimit, getClientIp, rateLimiters } from "@/lib/rate-limit";
 import { parseJsonBody } from "@/lib/api-request";
 import { passwordsMatchRefinement } from "@/lib/validation";
+import { isRegistrationEnabled } from "@/lib/registration";
 
 const registerSchema = z
   .object({
@@ -22,6 +23,13 @@ const registerSchema = z
   .refine(...passwordsMatchRefinement("password", "confirmPassword"));
 
 export async function POST(request: Request) {
+  if (!isRegistrationEnabled()) {
+    return NextResponse.json(
+      { success: false, error: "Registration is currently closed." },
+      { status: 403 }
+    );
+  }
+
   const parsed = await parseJsonBody(request, registerSchema);
   if ("response" in parsed) return parsed.response;
   const { name, email, password } = parsed.data;

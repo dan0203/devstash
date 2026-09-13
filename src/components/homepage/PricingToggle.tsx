@@ -55,7 +55,7 @@ export function PricingToggle() {
             variant="outline"
             className="mt-6 w-full"
             nativeButton={false}
-            render={<Link href="/register" />}
+            render={<Link href="/sign-in" />}
           >
             Get Started
           </Button>
@@ -81,7 +81,7 @@ export function PricingToggle() {
           <Button
             className="mt-6 w-full bg-gradient-to-br from-sky-400 to-blue-600 text-white hover:brightness-110"
             nativeButton={false}
-            render={<Link href="/register" />}
+            render={<Link href="/sign-in" />}
           >
             Upgrade to Pro
           </Button>

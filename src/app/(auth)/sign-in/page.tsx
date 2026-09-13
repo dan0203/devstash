@@ -4,8 +4,11 @@ import Link from "next/link";
 import { Navbar } from "@/components/homepage/Navbar";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { isRegistrationEnabled } from "@/lib/registration";
 
 export default function SignInPage() {
+  const registrationEnabled = isRegistrationEnabled();
+
   return (
     <>
       <Navbar />
@@ -19,12 +22,14 @@ export default function SignInPage() {
             <Suspense>
               <SignInForm />
             </Suspense>
-            <p className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
-              <Link href="/register" className="text-primary hover:underline">
-                Register
-              </Link>
-            </p>
+            {registrationEnabled && (
+              <p className="text-center text-sm text-muted-foreground">
+                Don&apos;t have an account?{" "}
+                <Link href="/register" className="text-primary hover:underline">
+                  Register
+                </Link>
+              </p>
+            )}
           </CardContent>
         </Card>
       </main>
