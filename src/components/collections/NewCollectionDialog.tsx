@@ -75,7 +75,15 @@ export function NewCollectionDialog() {
         if (!next) reset();
       }}
     >
-      <DialogTrigger render={<Button variant="secondary" aria-label="New Collection" />}>
+      <DialogTrigger
+        render={
+          <Button
+            variant="secondary"
+            aria-label="New Collection"
+            className="cursor-pointer hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_18%)]"
+          />
+        }
+      >
         <FolderPlus />
         <span className="hidden md:inline">New Collection</span>
       </DialogTrigger>

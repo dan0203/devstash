@@ -81,13 +81,25 @@ export function TopBar({ itemTypes, collections, isPro }: TopBarProps) {
           <Search className="size-4" />
         </Button>
         {!isPro && (
-          <Button variant="ghost" nativeButton={false} render={<Link href="/upgrade" />}>
-            <Sparkles className="size-4" />
+          <Button
+            variant="ghost"
+            nativeButton={false}
+            render={<Link href="/upgrade" />}
+            className="border border-transparent transition-all duration-200 hover:scale-105 hover:border-blue-500/40 hover:bg-blue-500/10 hover:text-blue-500"
+          >
+            <Sparkles className="size-4 transition-transform group-hover/button:animate-[sparkle-shimmer_0.8s_ease-in-out_infinite]" />
             Upgrade
           </Button>
         )}
-        <Button variant="ghost" size="icon-sm" aria-label="Favorites" nativeButton={false} render={<Link href="/favorites" />}>
-          <Star className="size-4" />
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Favorites"
+          nativeButton={false}
+          render={<Link href="/favorites" />}
+          className="border border-transparent transition-all duration-200 hover:border-yellow-400/40 hover:bg-yellow-400/10 hover:text-yellow-400"
+        >
+          <Star className="size-4 transition-colors group-hover/button:fill-yellow-400" />
         </Button>
         <NewCollectionDialog />
         <NewItemDialog itemTypes={creatableTypes} collections={collections} isPro={isPro} />

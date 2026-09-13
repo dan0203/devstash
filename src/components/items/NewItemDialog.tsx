@@ -74,7 +74,14 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
         if (!next) newItemForm.reset();
       }}
     >
-      <DialogTrigger render={<Button aria-label="New item" />}>
+      <DialogTrigger
+        render={
+          <Button
+            aria-label="New item"
+            className="cursor-pointer"
+          />
+        }
+      >
         <Plus />
         <span className="hidden md:inline">New item</span>
       </DialogTrigger>

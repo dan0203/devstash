@@ -1,12 +1,16 @@
-# Current Feature
+# Current Feature: TopBar Hover Polish + Upgrade Sparkles Animation
 
 <!-- Feature Name And Short Description -->
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
+
+- Improve the visual hover effect on the buttons in `TopBar.tsx` (the icon buttons: mobile sidebar/search toggles, Favorites star, Upgrade, plus New Collection/New Item triggers) so hovering feels more polished than the current plain `ghost`/`icon-sm` variant hover state — e.g. smoother transition, more noticeable background/scale/color change (dark-mode-first, matching existing Tailwind v4 tokens, no new dependencies).
+- On hover of the "Upgrade" button (`TopBar.tsx:83-88`): the `Sparkles` icon plays a shimmer/twinkle animation, and the button's text + icon (and its outline, if the hover state shows one) turn blue (`text-blue-500`, matching the logo's `Layers` icon color) instead of the current neutral `ghost` hover color.
+- Achieve the sparkle animation with pure CSS/Tailwind if feasible (no new dependencies); degrade gracefully (no animation, no breakage) if not easily achievable.
 
 <!-- Goals & Requirements -->
 
