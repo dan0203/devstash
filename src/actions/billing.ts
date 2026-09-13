@@ -38,7 +38,7 @@ export async function createCheckoutSession(plan: "monthly" | "yearly"): Promise
     mode: "subscription",
     line_items: [{ price: STRIPE_PRICE_IDS[plan], quantity: 1 }],
     success_url: `${appUrl}/settings?checkout=success`,
-    cancel_url: `${appUrl}/settings`,
+    cancel_url: `${appUrl}/dashboard?checkout=cancelled`,
   });
 
   if (!checkoutSession.url) {

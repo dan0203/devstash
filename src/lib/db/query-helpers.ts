@@ -38,6 +38,19 @@ export function findOwnedCollection<T extends Prisma.CollectionSelect>(
   return prisma.collection.findFirst({ where: { id: collectionId, userId }, select });
 }
 
+/** Filters a submitted list of collection ids down to ones the user actually owns. */
+export async function findOwnedCollectionIds(
+  userId: string,
+  collectionIds: string[]
+): Promise<string[]> {
+  if (collectionIds.length === 0) return [];
+  const owned = await prisma.collection.findMany({
+    where: { id: { in: collectionIds }, userId },
+    select: { id: true },
+  });
+  return owned.map((c) => c.id);
+}
+
 export interface TypeCountable {
   itemType: { id: string; icon: string; color: string };
 }

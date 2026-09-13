@@ -1,7 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { formatItemTypeName, getSystemItemTypesOrdered, pluralize } from "@/lib/db/item-types";
 import { deleteFromR2, r2KeyFromUrl } from "@/lib/r2";
-import { findOwnedItem, getItemCountsByTypeId, toggleBooleanColumn } from "@/lib/db/query-helpers";
+import {
+  findOwnedItem,
+  findOwnedCollectionIds,
+  getItemCountsByTypeId,
+  toggleBooleanColumn,
+} from "@/lib/db/query-helpers";
 import { SEARCH_ITEMS_LIMIT } from "@/lib/constants";
 
 export interface ItemWithType {
@@ -171,15 +176,6 @@ export async function getItemDetail(userId: string, itemId: string): Promise<Ite
   return toItemDetail(item);
 }
 
-async function ownedCollectionIds(userId: string, collectionIds: string[]): Promise<string[]> {
-  if (collectionIds.length === 0) return [];
-  const owned = await prisma.collection.findMany({
-    where: { id: { in: collectionIds }, userId },
-    select: { id: true },
-  });
-  return owned.map((c) => c.id);
-}
-
 export interface UpdateItemData {
   title: string;
   description: string | null;
@@ -198,7 +194,7 @@ export async function updateItem(
   const existing = await findOwnedItem(userId, itemId, { id: true });
   if (!existing) return null;
 
-  const collectionIds = await ownedCollectionIds(userId, data.collectionIds);
+  const collectionIds = await findOwnedCollectionIds(userId, data.collectionIds);
 
   const item = await prisma.item.update({
     where: { id: itemId },
@@ -245,7 +241,7 @@ export async function createItem(
   itemTypeId: string,
   data: CreateItemData
 ): Promise<ItemDetail> {
-  const collectionIds = await ownedCollectionIds(userId, data.collectionIds);
+  const collectionIds = await findOwnedCollectionIds(userId, data.collectionIds);
 
   const item = await prisma.item.create({
     data: {

@@ -78,15 +78,12 @@ export function useItemDrawerActions({
   const handleTogglePin = async () => {
     if (!item) return;
 
-    const previousIsPinned = item.isPinned;
-    setItem({ ...item, isPinned: !previousIsPinned });
-
     const result = await toggleItemPin(item.id);
     if (result.success && result.isPinned !== undefined) {
+      setItem((current) => (current ? { ...current, isPinned: result.isPinned! } : current));
       toast.success(result.isPinned ? "Item pinned" : "Item unpinned");
       router.refresh();
     } else {
-      setItem((current) => (current ? { ...current, isPinned: previousIsPinned } : current));
       toast.error(result.error ?? "Failed to update pin");
     }
   };

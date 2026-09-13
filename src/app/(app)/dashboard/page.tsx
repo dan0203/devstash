@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
@@ -5,6 +6,7 @@ import { getRecentCollections, getCollectionStats } from "@/lib/db/collections";
 import { getPinnedItems, getRecentItems, getItemStats } from "@/lib/db/items";
 import { DASHBOARD_COLLECTIONS_LIMIT, DASHBOARD_RECENT_ITEMS_LIMIT } from "@/lib/constants";
 import { StatsRow } from "@/components/dashboard/StatsRow";
+import { DashboardRedirectNotice } from "@/components/dashboard/DashboardRedirectNotice";
 import { CollectionCard } from "@/components/collections/CollectionCard";
 import { ItemCard } from "@/components/items/ItemCard";
 
@@ -29,6 +31,9 @@ export default async function DashboardPage() {
 
   return (
     <main className="min-h-0 flex-1 overflow-y-auto p-6">
+      <Suspense>
+        <DashboardRedirectNotice />
+      </Suspense>
       <div className="mx-auto flex max-w-5xl flex-col gap-8">
         <StatsRow
           totalItems={itemStats.total}

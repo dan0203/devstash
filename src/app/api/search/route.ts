@@ -3,10 +3,14 @@ import { NextResponse } from "next/server";
 import { requireApiSession } from "@/lib/auth-utils";
 import { getAllItemsForSearch } from "@/lib/db/items";
 import { getAllCollections } from "@/lib/db/collections";
+import { enforceRateLimit, rateLimiters } from "@/lib/rate-limit";
 
 export async function GET() {
   const session = await requireApiSession();
   if (!session.ok) return session.response;
+
+  const rateLimited = await enforceRateLimit(rateLimiters.search, session.userId);
+  if (rateLimited) return rateLimited;
 
   const [items, collections] = await Promise.all([
     getAllItemsForSearch(session.userId),
