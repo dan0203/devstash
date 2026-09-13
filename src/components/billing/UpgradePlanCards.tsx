@@ -83,7 +83,7 @@ export function UpgradePlanCards() {
             ))}
           </ul>
           <Button
-            className="mt-6 w-full bg-gradient-to-br from-sky-400 to-blue-600 text-white hover:brightness-110"
+            className="mt-6 w-full cursor-pointer bg-gradient-to-br from-sky-400 to-blue-600 text-white hover:brightness-110"
             onClick={handleUpgrade}
             disabled={pending}
           >

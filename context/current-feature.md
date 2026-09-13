@@ -1,18 +1,17 @@
-# Current Feature
-
-<!-- Feature Name And Short Description -->
+# Current Feature: Cursor Pointer on Upgrade Page Button
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- The Pro plan's "Upgrade" button on `/upgrade` (`src/components/billing/UpgradePlanCards.tsx`) shows a pointer cursor on hover, matching the pointer-cursor convention already applied to other buttons in the app (e.g. `NewCollectionDialog`/`NewItemDialog` triggers).
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Root cause: the button is a native `<button>` (shadcn `Button`, default `variant`), which doesn't get a pointer cursor by default — same class of issue already fixed for the New Collection/New Item dialog triggers in `feature/topbar-hover-upgrade-sparkles`.
+- Scope: cursor-only fix, no other visual/behavioral changes to the button or the rest of the upgrade page.
 
 ## History
 
