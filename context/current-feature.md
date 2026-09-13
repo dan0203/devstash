@@ -1,18 +1,21 @@
-# Current Feature
+# Current Feature: New Item Type as Select
 
-<!-- Feature Name And Short Description -->
+Replace the New Item dialog's item-type picker (a row of toggle buttons in `NewItemTypeSelector.tsx`) with a shadcn `Select` dropdown.
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- `NewItemTypeSelector.tsx` renders a shadcn `Select` instead of the current button row, still bound to `selectedType`/`onSelect`.
+- Each option shows the type's icon (from `itemTypeIcons`, colored via `type.color`, matching the button row's existing styling) and singular name.
+- Behavior unchanged otherwise: still driven by the same `itemTypes: ItemTypeWithCount[]` prop from `NewItemDialog.tsx`, selecting a type still swaps the dialog's content fields the same way it does today.
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Install shadcn's `select` component if not already present (it's already used elsewhere — `EditorPreferencesSettings.tsx`, `FavoritesList.tsx` sort control — so likely just needs importing, not reinstalling).
+- Reuse the established `Select.Value` render-function-children gotcha documented in prior features (Favorites Page Sorting, Stripe Phase 2 settings): `SelectValue` needs an explicit `(value) => ReactNode` child to show a formatted label/icon instead of the raw value.
 
 ## History
 
