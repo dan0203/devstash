@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
+const SECTION_LABEL_CLASSNAME = "text-xs font-semibold tracking-wide text-muted-foreground";
+
 interface ItemDrawerEditFormProps {
   itemTypeName: string;
   title: string;
@@ -80,12 +82,16 @@ export function ItemDrawerEditForm({
   return (
     <>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="item-edit-title">Title</Label>
+        <Label htmlFor="item-edit-title" className={SECTION_LABEL_CLASSNAME}>
+          Title
+        </Label>
         <Input id="item-edit-title" value={title} onChange={(e) => setTitle(e.target.value)} />
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="item-edit-description">Description</Label>
+          <Label htmlFor="item-edit-description" className={SECTION_LABEL_CLASSNAME}>
+            Description
+          </Label>
           <AiActionTrigger
             isPro={isPro}
             loading={suggestDescription.loading}
@@ -112,9 +118,10 @@ export function ItemDrawerEditForm({
         language={language}
         onLanguageChange={setLanguage}
         isPro={isPro}
+        labelClassName={SECTION_LABEL_CLASSNAME}
       />
       <div className="flex flex-col gap-2">
-        <Label>Collections</Label>
+        <Label className={SECTION_LABEL_CLASSNAME}>Collections</Label>
         <CollectionSelect
           collections={collections}
           selectedIds={collectionIds}
@@ -123,7 +130,9 @@ export function ItemDrawerEditForm({
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="item-edit-tags">Tags</Label>
+          <Label htmlFor="item-edit-tags" className={SECTION_LABEL_CLASSNAME}>
+            Tags
+          </Label>
           <AiActionTrigger
             isPro={isPro}
             loading={suggestTags.loading}

@@ -1,18 +1,20 @@
-# Current Feature
-
-<!-- Feature Name And Short Description -->
+# Current Feature: Item Drawer Edit Mode Label Styling
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- In the Item Drawer's edit mode (`ItemDrawerEditForm.tsx`), restyle the field labels (Title, Description, Content/Language/URL, Collections, Tags) to match the color and size of the "Details" section label in read mode.
+- No layout/structural changes — only label color/size (typography), matching `SectionLabel`'s look.
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Read mode's "Details" label (`ItemDrawerMetaSections` in `src/components/items/ItemDrawerView.tsx`) renders via the shared `SectionLabel` component (`src/components/items/SectionLabel.tsx`): `text-xs font-semibold tracking-wide text-muted-foreground`.
+- Edit mode currently uses shadcn's `Label` (`src/components/ui/label.tsx`), which defaults to `text-sm font-medium` with normal foreground color — visibly larger/bolder/lighter-colored than "Details".
+- Edit-mode labels live in `ItemDrawerEditForm.tsx` (Title, Description, Collections, Tags) and the shared `ItemContentFields.tsx` (Content/Language/URL) — the latter is also used by `NewItemDialog.tsx`'s create form, which is explicitly out of scope ("On edit mode" only), so changing `ItemContentFields.tsx`'s labels directly would leak into the create dialog too. Needs a scoping approach (e.g. a className override passed down only from the edit-form call site, or an `isEditMode`-style prop) rather than a blanket change to the shared component.
+- Likely implementation: apply `SectionLabel`'s className (`text-xs font-semibold tracking-wide text-muted-foreground`) to each `Label` via its `className` prop, rather than swapping to the `SectionLabel` component itself (which renders an `<h3>`, not an accessible form `<label>` tied via `htmlFor`).
 
 ## History
 

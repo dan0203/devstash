@@ -26,6 +26,7 @@ interface ItemContentFieldsProps {
   language: string;
   onLanguageChange: (language: string) => void;
   fieldClassName?: string;
+  labelClassName?: string;
   urlRequired?: boolean;
   isPro?: boolean;
 }
@@ -46,6 +47,7 @@ export function ItemContentFields({
   language,
   onLanguageChange,
   fieldClassName = "flex flex-col gap-2",
+  labelClassName,
   urlRequired,
   isPro = false,
 }: ItemContentFieldsProps) {
@@ -53,7 +55,9 @@ export function ItemContentFields({
     <>
       {LANGUAGE_TYPES.has(itemTypeName) && (
         <div className={fieldClassName}>
-          <Label htmlFor={`${idPrefix}-language`}>Language</Label>
+          <Label htmlFor={`${idPrefix}-language`} className={labelClassName}>
+            Language
+          </Label>
           <Select value={language} onValueChange={(value) => onLanguageChange(value ?? "")}>
             <SelectTrigger id={`${idPrefix}-language`} className="w-full">
               <SelectValue placeholder="Select a language">
@@ -74,7 +78,9 @@ export function ItemContentFields({
       )}
       {CONTENT_TYPES.has(itemTypeName) && (
         <div className={fieldClassName}>
-          <Label htmlFor={`${idPrefix}-content`}>Content</Label>
+          <Label htmlFor={`${idPrefix}-content`} className={labelClassName}>
+            Content
+          </Label>
           {LANGUAGE_TYPES.has(itemTypeName) ? (
             <CodeEditor value={content} onChange={onContentChange} language={language} />
           ) : (
@@ -88,7 +94,9 @@ export function ItemContentFields({
       )}
       {URL_TYPES.has(itemTypeName) && (
         <div className={fieldClassName}>
-          <Label htmlFor={`${idPrefix}-url`}>URL</Label>
+          <Label htmlFor={`${idPrefix}-url`} className={labelClassName}>
+            URL
+          </Label>
           <Input
             id={`${idPrefix}-url`}
             value={url}
