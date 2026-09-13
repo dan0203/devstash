@@ -36,6 +36,7 @@ const tabTriggerClassName =
 interface CodeEditorExplainOptions {
   itemTypeName: string;
   isPro: boolean;
+  onUpgradeClick?: () => void;
 }
 
 interface CodeEditorProps {
@@ -140,6 +141,7 @@ export function CodeEditor({
                 label="Explain"
                 loadingLabel="Explaining..."
                 ariaLabel="Explain code"
+                onUpgradeClick={explain.onUpgradeClick}
               />
             )}
             <Button

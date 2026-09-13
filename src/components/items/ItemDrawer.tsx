@@ -29,6 +29,11 @@ export function ItemDrawer({ collections, isPro }: ItemDrawerProps) {
     const editForm = useItemEditForm();
     const actions = useItemDrawerActions({ item, setItem, editForm, closeDrawer, setIsEditing });
 
+    const handleUpgradeClick = () => {
+        closeDrawer();
+        setIsEditing(false);
+    };
+
     return (
         <Sheet
             open={openItemId !== null}
@@ -51,7 +56,7 @@ export function ItemDrawer({ collections, isPro }: ItemDrawerProps) {
                         {!isEditing && <ItemDrawerActions item={item} onCopy={actions.handleCopy} onEdit={actions.handleEdit} onDelete={actions.handleDelete} onToggleFavorite={actions.handleToggleFavorite} onTogglePin={actions.handleTogglePin} deleting={actions.deleting} />}
 
                         <div className="flex flex-col gap-6 px-4">
-                            {isEditing ? <ItemDrawerEditForm itemTypeName={item.itemType.name} collections={collections} isPro={isPro} {...editForm} /> : <ItemDrawerView item={item} isPro={isPro} />}
+                            {isEditing ? <ItemDrawerEditForm itemTypeName={item.itemType.name} collections={collections} isPro={isPro} onUpgradeClick={handleUpgradeClick} {...editForm} /> : <ItemDrawerView item={item} isPro={isPro} onUpgradeClick={handleUpgradeClick} />}
 
                             <ItemDrawerMetaSections item={item} />
                         </div>

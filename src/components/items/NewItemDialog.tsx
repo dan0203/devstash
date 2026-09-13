@@ -40,6 +40,21 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
   const newItemForm = useNewItemForm(itemTypes);
   const { form, setForm, activeType, error, submitting, suggestTags, suggestDescription } = newItemForm;
 
+  function handleSelectType(value: string) {
+    if (!isPro && FILE_TYPES.has(value)) {
+      setOpen(false);
+      newItemForm.reset();
+      router.push("/upgrade");
+      return;
+    }
+    newItemForm.setSelectedType(value);
+  }
+
+  function handleUpgradeClick() {
+    setOpen(false);
+    newItemForm.reset();
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const success = await newItemForm.submit();
@@ -73,7 +88,7 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
           <NewItemTypeSelector
             itemTypes={itemTypes}
             selectedType={newItemForm.selectedType}
-            onSelect={newItemForm.setSelectedType}
+            onSelect={handleSelectType}
           />
 
           <div className="flex flex-col gap-1.5">
@@ -96,6 +111,7 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
                 label="Generate description"
                 loadingLabel="Generating..."
                 ariaLabel="Generate description"
+                onUpgradeClick={handleUpgradeClick}
               />
             </div>
             <Textarea
@@ -119,6 +135,7 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
               onLanguageChange={(language) => setForm((f) => ({ ...f, language }))}
               urlRequired
               isPro={isPro}
+              onUpgradeClick={handleUpgradeClick}
             />
           )}
 
@@ -152,6 +169,7 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
                 label="Suggest tags"
                 loadingLabel="Suggesting..."
                 ariaLabel="Suggest tags"
+                onUpgradeClick={handleUpgradeClick}
               />
             </div>
             <Input

@@ -14,6 +14,7 @@ import { useOptimizePrompt } from "@/components/ai/hooks/use-optimize-prompt";
 
 interface MarkdownEditorOptimizeOptions {
   isPro: boolean;
+  onUpgradeClick?: () => void;
 }
 
 interface MarkdownEditorProps {
@@ -87,6 +88,7 @@ export function MarkdownEditor({
                 label="Optimize"
                 loadingLabel="Optimizing..."
                 ariaLabel="Optimize prompt"
+                onUpgradeClick={optimize.onUpgradeClick}
               />
             )}
             <Button

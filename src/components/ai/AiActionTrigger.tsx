@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Crown, Loader2, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,8 @@ interface AiActionTriggerProps {
   label: string;
   loadingLabel: string;
   ariaLabel: string;
+  /** Called before navigating to /upgrade — e.g. to close the dialog/drawer this trigger lives in. */
+  onUpgradeClick?: () => void;
 }
 
 export function AiActionTrigger({
@@ -21,7 +24,10 @@ export function AiActionTrigger({
   label,
   loadingLabel,
   ariaLabel,
+  onUpgradeClick,
 }: AiActionTriggerProps) {
+  const router = useRouter();
+
   if (!isPro) {
     return (
       <Tooltip>
@@ -32,16 +38,18 @@ export function AiActionTrigger({
               variant="ghost"
               size="sm"
               aria-label={`${label} (requires Pro)`}
-              aria-disabled="true"
-              className="h-auto cursor-not-allowed gap-1.5 px-2 py-1 text-xs text-neutral-400 opacity-50 hover:bg-transparent hover:text-neutral-400"
-              onClick={(e) => e.preventDefault()}
+              className="h-auto gap-1.5 px-2 py-1 text-xs text-neutral-400 hover:bg-white/10 hover:text-neutral-100"
+              onClick={() => {
+                onUpgradeClick?.();
+                router.push("/upgrade");
+              }}
             />
           }
         >
           <Crown className="size-3.5 text-amber-400" />
           {label}
         </TooltipTrigger>
-        <TooltipContent>AI features require Pro subscription</TooltipContent>
+        <TooltipContent>Upgrade to Pro to use AI features</TooltipContent>
       </Tooltip>
     );
   }
