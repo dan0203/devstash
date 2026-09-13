@@ -1,23 +1,22 @@
-# Current Feature: Item Drawer Edit Mode Label Styling
+# Current Feature
+
+<!-- Feature Name And Short Description -->
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- In the Item Drawer's edit mode (`ItemDrawerEditForm.tsx`), restyle the field labels (Title, Description, Content/Language/URL, Collections, Tags) to match the color and size of the "Details" section label in read mode.
-- No layout/structural changes — only label color/size (typography), matching `SectionLabel`'s look.
+<!-- Goals & Requirements -->
 
 ## Notes
 
-- Read mode's "Details" label (`ItemDrawerMetaSections` in `src/components/items/ItemDrawerView.tsx`) renders via the shared `SectionLabel` component (`src/components/items/SectionLabel.tsx`): `text-xs font-semibold tracking-wide text-muted-foreground`.
-- Edit mode currently uses shadcn's `Label` (`src/components/ui/label.tsx`), which defaults to `text-sm font-medium` with normal foreground color — visibly larger/bolder/lighter-colored than "Details".
-- Edit-mode labels live in `ItemDrawerEditForm.tsx` (Title, Description, Collections, Tags) and the shared `ItemContentFields.tsx` (Content/Language/URL) — the latter is also used by `NewItemDialog.tsx`'s create form, which is explicitly out of scope ("On edit mode" only), so changing `ItemContentFields.tsx`'s labels directly would leak into the create dialog too. Needs a scoping approach (e.g. a className override passed down only from the edit-form call site, or an `isEditMode`-style prop) rather than a blanket change to the shared component.
-- Likely implementation: apply `SectionLabel`'s className (`text-xs font-semibold tracking-wide text-muted-foreground`) to each `Label` via its `className` prop, rather than swapping to the `SectionLabel` component itself (which renders an `<h3>`, not an accessible form `<label>` tied via `htmlFor`).
+<!-- Any Extra Notes -->
 
 ## History
 
+- **2026-09-13** — Item Drawer Edit Mode Label Styling completed on `feature/item-drawer-edit-mode-label-styling`. Restyled `ItemDrawerEditForm.tsx`'s field labels (Title, Description, Content/Language/URL, Collections, Tags) to match the read-mode "Details" section label's typography (`SectionLabel`'s `text-xs font-semibold tracking-wide text-muted-foreground`), replacing shadcn `Label`'s default `text-sm font-medium`. Since `ItemContentFields.tsx` (Content/Language/URL labels) is also shared by `NewItemDialog.tsx`'s create form, which was explicitly out of scope, added an optional `labelClassName` prop defaulting to `undefined` — only the drawer's edit form passes the override, so the New Item dialog's labels are untouched. Pure typography change, no layout/structural changes. No new unit tests: both files touched are `src/components/**` client components, out of Vitest's `src/actions/**`/`src/lib/**`-excluding-`db` scope. Verified end-to-end via Playwright against the live dev server: opened the item drawer's edit mode and confirmed all five labels now render in the smaller, muted, tracked-wide style matching "Details", confirmed the New Item dialog's Content/Language labels are unaffected (still default styling), no console errors throughout. `npm run build` and `npm run lint` both pass (no server actions/utilities touched, so `npm test` is unaffected).
 - **2026-08-10** — Initial Next.js 16 (App Router) project setup via `create-next-app`, with TypeScript and Tailwind CSS v4. Placeholder home page (`src/app/page.tsx`), no backend/database/tests configured yet.
 - **2026-08-10** — Dashboard UI Phase 1 (Layout & Setup) completed on `feature/dashboard-phase-1`. ShadCN UI initialized; `/dashboard` route added with a full-width top bar (logo, centered search, "New Collection"/"New item" buttons), dark mode by default, and placeholder Sidebar/Main sections. Switched app font to Libre Franklin and dark background to an anthracite gray.
 - **2026-08-10** — Dashboard UI Phase 2 (Sidebar & Navigation) completed on `feature/dashboard-phase-2`. Collapsible desktop sidebar (icon-rail toggle) plus an always-on mobile drawer; TYPES section links to `/items/[type]` with per-type item counts and a Pro badge on Files/Images (hidden when the user is Pro); COLLECTIONS section is collapsible with Favorites/Recent links, favorited collections (starred) shown separately from the rest, each with item counts and slight indentation. Fixed a flexbox `min-height: auto` bug so the sidebar always fills the viewport height with the user footer pinned to the bottom and only the nav scrolling.
