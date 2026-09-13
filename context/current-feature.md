@@ -1,18 +1,18 @@
-# Current Feature
+# Current Feature: Item Drawer Actions Spacing
 
-<!-- Feature Name And Short Description -->
+<!-- Add some more space between the item drawer actions and the Description label -->
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Increase the vertical spacing between the `ItemDrawerActions` bar and the "Description" section label directly below it in the item drawer's read mode.
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Likely just a padding/margin tweak on `ItemDrawerActions`' wrapper div (`src/components/items/ItemDrawerActions.tsx`, currently `px-4 pb-4`) or the content container in `ItemDrawer.tsx`.
 
 ## History
 

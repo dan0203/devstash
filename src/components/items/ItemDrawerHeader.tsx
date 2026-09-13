@@ -6,7 +6,7 @@ import { SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 export function ItemDrawerHeader({ item, isEditing }: { item: ItemDetail; isEditing: boolean }) {
     return (
-        <SheetHeader>
+        <SheetHeader className="pb-1">
             <div className="mb-3 flex items-start justify-between gap-2 pr-6">
                 <div className="flex items-center gap-3">
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-md" style={{ backgroundColor: `${item.itemType.color}26` }}>

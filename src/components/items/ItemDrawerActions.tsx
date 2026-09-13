@@ -16,7 +16,7 @@ interface ItemDrawerActionsProps {
 
 export function ItemDrawerActions({ item, onCopy, onEdit, onDelete, onToggleFavorite, onTogglePin, deleting }: ItemDrawerActionsProps) {
     return (
-        <div className="flex items-center justify-between gap-2 px-4 pb-4">
+        <div className="flex items-center justify-between gap-2 px-4 pb-8">
             <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" className={item.isFavorite ? 'text-yellow-400' : 'text-muted-foreground'} onClick={onToggleFavorite}>
                     <Star className={item.isFavorite ? 'fill-yellow-400 text-yellow-400' : undefined} />
