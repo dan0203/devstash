@@ -1,18 +1,26 @@
-# Current Feature
+# Current Feature: Disable Public Registration
 
-<!-- Feature Name And Short Description -->
+Disable the ability to register a new account on the site. The user will be the only person using the app for now — it's serving as a demonstration project of their skills, not a multi-tenant product.
 
 ## Status
 
-<!-- Not Started | In Progress | Complete -->
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- New account registration (`POST /api/auth/register`) is no longer usable — the endpoint and/or its UI should stop letting anyone create a new account.
+- The `/register` page should not offer a working sign-up form (either remove/hide it, or replace it with a message that registration is closed).
+- Any "Sign up"/"Register" links pointing at `/register` (e.g. from `/sign-in`) should be removed or updated so they don't lead to a dead/broken flow.
+- Existing sign-in (credentials) for already-registered accounts must keep working unaffected — this is only about closing new-account creation, not locking out existing users.
+- GitHub OAuth must be restricted so it can no longer be used to create a brand-new account either: only an email on an allowlist (the owner's own GitHub-linked email, plus room for the existing demo account) may sign in/register via GitHub — any other GitHub account attempting first-time sign-in should be rejected with a clear error, not silently given a new `User` row via the `signIn` callback's auto-verify logic (added in `feature/email-verification`).
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- This is a demo/portfolio project going forward, not aiming for real multi-user growth — favor the simplest, least-effortful way to close registration over building a full invite/waitlist system.
+- Keep it easily reversible (e.g. a flag/toggle or a small code change) in case the user wants to reopen registration later, rather than deleting the registration code outright.
+- Existing users/data (the demo/seed account, the user's own account) must be unaffected.
+- Rate limiting, email verification, and password reset flows for existing accounts should continue to work as before.
+- Suggested approach: an allowlist of permitted emails (e.g. an env var, defaulting to the owner's email + demo account) checked in `src/auth.ts`'s `signIn` callback for the GitHub provider, and a similar closed/disabled check gating `POST /api/auth/register` and the `/register` page's UI.
 
 ## History
 

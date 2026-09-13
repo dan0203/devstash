@@ -27,10 +27,20 @@ const {
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   callbacks: {
-    async signIn({ user, account }) {
-      if (account?.provider === "github" && user.id) {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === "github") {
+        // Registration is closed: only let GitHub OAuth sign in as an
+        // already-existing account (owner/demo/test users), never create a
+        // brand-new one — GitHub would otherwise auto-provision a User row
+        // for anyone who authorizes the app.
+        const email = profile?.email ?? user.email;
+        if (!email) return false;
+
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        if (!existingUser) return false;
+
         await prisma.user.updateMany({
-          where: { id: user.id, emailVerified: null },
+          where: { id: existingUser.id, emailVerified: null },
           data: { emailVerified: new Date() },
         });
       }
