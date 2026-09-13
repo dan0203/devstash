@@ -8,6 +8,7 @@ import { useSidebar } from "@/components/nav/hooks/sidebar-context";
 import { useCommandPalette } from "@/components/command-palette/hooks/command-palette-context";
 import { NewItemDialog } from "@/components/items/NewItemDialog";
 import { NewCollectionDialog } from "@/components/collections/NewCollectionDialog";
+import { ProBadge } from "@/components/shared/ProBadge";
 import { type ItemTypeWithCount } from "@/lib/db/items";
 import { type CollectionOption } from "@/lib/db/collections";
 
@@ -48,6 +49,8 @@ export function TopBar({ itemTypes, collections, isPro }: TopBarProps) {
           <Layers className="size-5 text-blue-500" />
           <span className="hidden font-semibold md:inline">DevStash</span>
         </Link>
+        {isPro && <ProBadge iconOnly className="md:hidden" />}
+        {isPro && <ProBadge className="hidden md:inline-flex" />}
       </div>
 
       <div className="hidden flex-1 md:flex md:justify-center md:px-4">
