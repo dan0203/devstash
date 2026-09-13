@@ -10,6 +10,17 @@ function isActiveSubscription(status: Stripe.Subscription.Status): boolean {
   return status === "active" || status === "trialing";
 }
 
+// "canceled"/"incomplete_expired" are terminal — the subscription is gone for good,
+// unlike "past_due"/"unpaid" which can still recover. Stripe doesn't reliably send a
+// separate customer.subscription.deleted event for every cancellation path (e.g. an
+// immediate cancel via the Customer Portal only sent .updated in testing), so this
+// terminal check runs inside the shared sync path rather than only in the .deleted
+// handler, to avoid leaving a stale stripeSubscriptionId/stripePriceId/currentPeriodEnd
+// behind when only .updated fires.
+function isTerminalSubscription(status: Stripe.Subscription.Status): boolean {
+  return status === "canceled" || status === "incomplete_expired";
+}
+
 function toDate(unixSeconds: number | null | undefined): Date | null {
   return unixSeconds ? new Date(unixSeconds * 1000) : null;
 }
@@ -17,6 +28,18 @@ function toDate(unixSeconds: number | null | undefined): Date | null {
 async function syncFromSubscription(subscription: Stripe.Subscription): Promise<void> {
   const customerId =
     typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
+
+  if (isTerminalSubscription(subscription.status)) {
+    await upsertSubscriptionFromWebhook({
+      stripeCustomerId: customerId,
+      stripeSubscriptionId: null,
+      stripePriceId: null,
+      isPro: false,
+      currentPeriodEnd: null,
+    });
+    return;
+  }
+
   const priceId = subscription.items.data[0]?.price.id ?? null;
 
   await upsertSubscriptionFromWebhook({
@@ -56,16 +79,12 @@ export async function POST(request: Request) {
         break;
       }
       case "customer.subscription.deleted": {
-        const subscription = event.data.object;
-        const customerId =
-          typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
-        await upsertSubscriptionFromWebhook({
-          stripeCustomerId: customerId,
-          stripeSubscriptionId: null,
-          stripePriceId: null,
-          isPro: false,
-          currentPeriodEnd: null,
-        });
+        // The subscription object's own status is normally already "canceled" here,
+        // so syncFromSubscription's terminal-status check clears the linked fields
+        // the same way — but route it through the same function rather than
+        // hardcoding that assumption, in case Stripe ever sends this event with a
+        // different status.
+        await syncFromSubscription(event.data.object);
         break;
       }
       case "invoice.payment_failed": {
