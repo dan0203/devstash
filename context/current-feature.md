@@ -1,18 +1,50 @@
-# Current Feature
-
-<!-- Feature Name And Short Description -->
+# Current Feature: Migrate AI Provider from OpenAI to Mistral AI
 
 ## Status
 
-<!-- Not Started | In Progress | Complete -->
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Replace the OpenAI-backed AI layer (`src/lib/openai.ts`) with an equivalent Mistral-backed one, used by all 4 existing AI actions in `src/actions/ai.ts`: `generateAutoTags`, `generateDescription`, `explainCode`, `optimizePrompt`.
+- No change to the actions' external behavior/contracts (`{success, data/tags/description/explanation/optimizedContent, error}` shapes, Zod schemas, Pro gating, rate limiting) — this is a provider swap under `runAiAction`'s `run` callbacks only.
+- Keep the existing "fail open at import" posture (module must not throw when the API key env var is unset, matching `stripe.ts`/`r2.ts`/`rate-limit.ts`).
+- Update `.env`/`.env.example` to add `MISTRAL_API_KEY` (and remove/replace `OPENAI_API_KEY` once nothing references it).
 
 ## Notes
 
-<!-- Any Extra Notes -->
+Based on https://docs.mistral.ai/getting-started/quickstarts/developer/first-api-request :
+
+- **Package**: swap the `openai` npm dependency for `mistralai` (`npm uninstall openai && npm install mistralai`).
+- **Client**: `import { Mistral } from "mistralai"; const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });` — replaces `src/lib/openai.ts`'s `OpenAI` client. New file should be named `src/lib/mistral.ts` (or keep `openai.ts`'s name/exports if minimizing diff is preferred — decide at `start`), exporting the client, an `AI_MODEL` constant (e.g. `"mistral-large-latest"`, or a smaller/cheaper model if one better matches the current `gpt-5-nano` cost tier — worth checking Mistral's model list), and `isAiEnabled()` checking `MISTRAL_API_KEY`.
+- **Chat call shape differs from OpenAI's Responses API** used today (`openai.responses.create({ model, instructions, input, text: { format: { type: "json_object" } } })`). Mistral's SDK uses `client.chat.complete({ model, messages: [{role, content}], responseFormat: { type: "json_object" } })` (or possibly `response_format` — confirm exact casing/param name against the SDK's TypeScript types at implementation time, since the docs page fetched didn't give the precise JSON-mode parameter name). Each of the 4 call sites in `ai.ts` currently passes `instructions` (system-style prompt) + `input` (user content) as two separate strings — under Mistral this becomes a `messages` array, likely `[{role: "system", content: instructions}, {role: "user", content: input}]`.
+- **Response shape differs**: OpenAI's Responses API returns `response.output_text`; Mistral's `chat.complete` returns `response.choices[0].message.content`. All 4 `parse*FromResponse` helpers (`parseTagsFromResponse`, `parseDescriptionFromResponse`, `parseExplanationFromResponse`, `parseOptimizedPromptFromResponse`) take a raw string and should keep working unchanged once fed the right string.
+- **JSON mode**: Mistral's docs confirm you must explicitly instruct the model in the prompt to output JSON (same constraint already worked around in this codebase — every existing prompt already says "respond in JSON" per a documented gotcha from `feature/ai-auto-tagging`'s history entry). Confirm the exact `response_format`/`responseFormat` parameter shape against the installed SDK's TypeScript types during implementation (Context7 or the SDK's own `.d.ts` is more reliable here than the docs page fetched, which didn't spell it out).
+- **Env vars**: `MISTRAL_API_KEY` needs to go in `.env` (real key) and `.env.example` (placeholder), replacing `OPENAI_API_KEY` in both once no code references it. Double check no other file reads `OPENAI_API_KEY` besides `src/lib/openai.ts`/`isAiEnabled()`.
+- **Rate limiters / Pro gating / action structure** (`rateLimiters.aiSuggestTags` etc. in `src/lib/rate-limit.ts`, `requireProAi`, `runAiAction` scaffold in `ai.ts`) are provider-agnostic and need no changes.
+- **Tests**: `src/actions/ai.test.ts` (36 tests across the 4 actions, per the AI features' history entries) currently mocks `@/lib/openai` — needs its mock target renamed/updated to whatever module replaces it, and any assertions on the OpenAI-specific call shape (`openai.responses.create` args) updated to the new Mistral call shape. Follow `ai-interaction.md`'s Unit Testing workflow step for this.
+- Not yet decided (resolve at `start`): exact Mistral model name to use, and whether to keep the file named `src/lib/openai.ts`-equivalent as `src/lib/mistral.ts` (recommended, since keeping a file called `openai.ts` importing `Mistral` would be confusing).
+
+### Implementation results (post-`start`)
+
+- Package: `@mistralai/mistralai` (the docs page said `mistralai`, but that name isn't published on npm — confirmed via `npm view`).
+- New `src/lib/mistral.ts` replaces `src/lib/openai.ts`: exports `mistral` (client), `AI_MODEL`, `isAiEnabled()` (checks `MISTRAL_API_KEY`), same fail-open-at-import posture.
+- Confirmed against the installed SDK's generated types (`node_modules/@mistralai/mistralai/src/models/components/chatcompletionrequest.ts`): request shape is `{ model, messages: [{role, content}, ...], responseFormat: { type: "json_object" } }` (camelCase `responseFormat` in the JS SDK, remapped to `response_format` on the wire); response is `response.choices[0].message.content` (a `string | ContentChunk[] | null` — a small `messageTextContent()` helper in `ai.ts` narrows it to a string, since JSON mode always returns a plain string in practice).
+- All 4 call sites in `src/actions/ai.ts` converted: `instructions`/`input` → a `messages` array (`system` + `user` roles), `text: { format: { type: "json_object" } }` → `responseFormat: { type: "json_object" }`, `response.output_text` → `messageTextContent(response.choices?.[0]?.message?.content)`. `parse*FromResponse` helpers unchanged.
+- **Model chosen: `ministral-14b-latest`** — not what the Notes section originally guessed (`mistral-large-latest`). Verified live against the real account: `mistral-large-latest` returned a `403 tier_not_allowed` (not available on this account's free/Experiment tier), `mistral-small-latest` passed the tier check but then hit sustained `429 rate_limited` even after spacing out requests over 2+ minutes, and `ministral-14b-latest` succeeded end-to-end with a real 200 and correctly-parsed JSON tags.
+- `src/actions/ai.test.ts` fully rewritten: mocks `@/lib/mistral` instead of `@/lib/openai`, `mockChatComplete` instead of `mockResponsesCreate`, responses shaped as `{choices: [{message: {content}}]}` via a `chatResponse()` helper, assertions read `messages[1].content` (the user message) instead of `call.input`. All 36 tests pass unchanged in intent.
+- Removed `openai` npm dependency; removed `OPENAI_API_KEY` from `.env`, `.env.example`, and `.env.production` (local files only — the user separately removed/will remove it from Vercel's project env vars, since `.env.production` is gitignored and doesn't affect the Vercel deployment).
+- Verified end-to-end via Playwright against the live dev server, signed in as a disposable test account (`isPro` temporarily flipped to `true` via a temporary script, reverted to `false` afterward — no leftover test data): a real "Suggest tags" call on a Docker command item returned 5 correctly-parsed tags (`docker`, `cleanup`, `command`, `system-maintenance`, `storage`) via a genuine Mistral API round-trip. `explainCode`/`optimizePrompt`/`generateDescription` share the exact same `runAiAction` scaffold and response-parsing path as `generateAutoTags` (only the prompt strings and Zod schemas differ) and were not separately live-tested, but are covered by the updated unit test suite.
+- `npm run build`, `npm run lint` (0 errors), and `npm test` (127 tests) all pass.
+
+### Follow-up: specific error message for Mistral rate limiting
+
+Live usage surfaced that the account's free-tier key is capped at **0.5 requests/second** for `ministral-14b-2512` (confirmed via a Mistral console screenshot) — a token-bucket-style limit that real usage patterns (e.g. Suggest tags + Generate description fired close together) trip easily, previously surfacing only as the generic per-action error message ("Couldn't generate tag suggestions. Try again.", etc.), indistinguishable from any other failure.
+
+- `runAiAction`'s `catch` block in `src/actions/ai.ts` now checks `error instanceof MistralError && error.statusCode === 429` (imported from `@mistralai/mistralai/models/errors`, the SDK's real error class — `SDKError` extends it and carries the HTTP status) and returns a dedicated `MISTRAL_RATE_LIMIT_ERROR` ("Too many AI requests right now. Wait a few seconds and try again.") instead of the per-action generic message, for all 4 AI actions at once (shared scaffold).
+- Added a `mistralErrorWithStatus(status)` test helper in `src/actions/ai.test.ts` (constructs a real `MistralError` via `new Response(null, {status})`/`new Request(...)`) and one new test on `generateAutoTags` (the shared-scaffold behavior only needs covering once) — 128 tests total, up from 127.
+- Verified live against the real API that the underlying 429 does occur under realistic double-click usage patterns (confirmed via `.next/dev/logs/next-development.log`), though a live repro of the *new* friendly message specifically wasn't captured in this session (quota had regenerated by the time of the deliberate re-test) — correctness relies on the unit test's real `MistralError` instance plus code review, not a live-observed message swap.
+- `npm run build`, `npm run lint`, and `npm test` (128 tests) all pass.
 
 ## History
 
