@@ -1,29 +1,22 @@
-# Current Feature: Disable Public Registration
+# Current Feature
 
-Disable the ability to register a new account on the site. The user will be the only person using the app for now — it's serving as a demonstration project of their skills, not a multi-tenant product.
+<!-- Feature Name And Short Description -->
 
 ## Status
 
-In Progress
+<!-- Not Started | In Progress | Complete -->
 
 ## Goals
 
-- New account registration (`POST /api/auth/register`) is no longer usable — the endpoint and/or its UI should stop letting anyone create a new account.
-- The `/register` page should not offer a working sign-up form (either remove/hide it, or replace it with a message that registration is closed).
-- Any "Sign up"/"Register" links pointing at `/register` (e.g. from `/sign-in`) should be removed or updated so they don't lead to a dead/broken flow.
-- Existing sign-in (credentials) for already-registered accounts must keep working unaffected — this is only about closing new-account creation, not locking out existing users.
-- GitHub OAuth must be restricted so it can no longer be used to create a brand-new account either: only an email on an allowlist (the owner's own GitHub-linked email, plus room for the existing demo account) may sign in/register via GitHub — any other GitHub account attempting first-time sign-in should be rejected with a clear error, not silently given a new `User` row via the `signIn` callback's auto-verify logic (added in `feature/email-verification`).
+<!-- Goals & Requirements -->
 
 ## Notes
 
-- This is a demo/portfolio project going forward, not aiming for real multi-user growth — favor the simplest, least-effortful way to close registration over building a full invite/waitlist system.
-- Keep it easily reversible (e.g. a flag/toggle or a small code change) in case the user wants to reopen registration later, rather than deleting the registration code outright.
-- Existing users/data (the demo/seed account, the user's own account) must be unaffected.
-- Rate limiting, email verification, and password reset flows for existing accounts should continue to work as before.
-- Suggested approach: an allowlist of permitted emails (e.g. an env var, defaulting to the owner's email + demo account) checked in `src/auth.ts`'s `signIn` callback for the GitHub provider, and a similar closed/disabled check gating `POST /api/auth/register` and the `/register` page's UI.
+<!-- Any Extra Notes -->
 
 ## History
 
+- **2026-09-14** — Disable Public Registration completed on `feature/disable-registration`. Closed new-account creation site-wide, framed as a demo/portfolio project rather than a multi-tenant product going forward. Added `isRegistrationEnabled()` (`src/lib/registration.ts`, reads `REGISTRATION_ENABLED`, defaults closed unless explicitly `"true"` — mirrors the existing `isEmailVerificationEnabled()`/`isPlanLimitsEnforced()` flag pattern): `POST /api/auth/register` now returns a `403` immediately when disabled, and `/register` renders a "Registration is closed" card with a "Back to sign in" button instead of `RegisterForm` — both reversible via the flag alone. `/sign-in`'s "Don't have an account? Register" link is now conditional on the same flag; the four homepage marketing CTAs that pointed at `/register` ("Get Started" on `Hero`/`CTA`/`Navbar`, "Get Started"/"Upgrade to Pro" on `PricingToggle`) now point at `/sign-in` instead, since `/register` would otherwise be a dead end. Per explicit user decision, GitHub OAuth is also restricted independent of the flag: `src/auth.ts`'s `signIn` callback now looks up the GitHub profile's email against `prisma.user` and returns `false` (rejecting sign-in) unless a `User` row already exists for that email — closing off GitHub's auto-provisioning of new `User` rows as a second, previously-open registration path, while still allowing existing accounts (the demo/test accounts, the user's own account) to keep signing in via GitHub. Existing credentials sign-in, rate limiting, and email verification/password reset were all left untouched and reverified working. `REGISTRATION_ENABLED="false"` was added to `.env`/`.env.production`/`.env.example` in the same position (right after `AUTH_GITHUB_SECRET`) with identical documentation comments across all three, after a mid-review duplicate-entry mixup (the user had appended a second, differently-commented copy near the bottom of each file) was caught and resolved per the user's explicit instruction to consolidate on the top entry's wording. Added `src/lib/registration.test.ts` (3 tests: unset/false/true) since `isRegistrationEnabled` falls under Vitest's `src/lib/**` scope; every other file touched is a page/component/config file out of that scope. Verified end-to-end via Playwright against the live dev server: `/register` shows the closed message and its button correctly returns to `/sign-in`, `/sign-in` no longer shows a Register link, the homepage's `/register` links are all gone (6 links now correctly point to `/sign-in`), a real credentials sign-in (the `devstash-free@danzerbib.me` test account) still reaches `/dashboard` with no console errors, and GitHub OAuth's redirect to github.com still kicks off correctly (a full round-trip rejection wasn't re-verified live, since that requires real GitHub credentials — correctness there rests on the email-lookup logic and Auth.js's documented `signIn`-callback-based registration-restriction pattern, not a live-observed rejection). `npm run build`, `npm run lint`, and `npm test` (131 tests, up from 128) all pass.
 - **2026-08-10** — Initial Next.js 16 (App Router) project setup via `create-next-app`, with TypeScript and Tailwind CSS v4. Placeholder home page (`src/app/page.tsx`), no backend/database/tests configured yet.
 - **2026-08-10** — Dashboard UI Phase 1 (Layout & Setup) completed on `feature/dashboard-phase-1`. ShadCN UI initialized; `/dashboard` route added with a full-width top bar (logo, centered search, "New Collection"/"New item" buttons), dark mode by default, and placeholder Sidebar/Main sections. Switched app font to Libre Franklin and dark background to an anthracite gray.
 - **2026-08-10** — Dashboard UI Phase 2 (Sidebar & Navigation) completed on `feature/dashboard-phase-2`. Collapsible desktop sidebar (icon-rail toggle) plus an always-on mobile drawer; TYPES section links to `/items/[type]` with per-type item counts and a Pro badge on Files/Images (hidden when the user is Pro); COLLECTIONS section is collapsible with Favorites/Recent links, favorited collections (starred) shown separately from the rest, each with item counts and slight indentation. Fixed a flexbox `min-height: auto` bug so the sidebar always fills the viewport height with the user footer pinned to the bottom and only the nav scrolling.
