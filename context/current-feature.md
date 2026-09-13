@@ -1,12 +1,16 @@
-# Current Feature
+# Current Feature: Move Item Drawer Actions to the Top
 
-<!-- Feature Name And Short Description -->
+<!-- Move buttons in the drawer to the top, above the item's title -->
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
+
+- In the read (non-editing) mode of `ItemDrawer`, move the `ItemDrawerActions` action bar (Favorite/Pin/Copy or Download/Edit/Delete) from the `SheetFooter` at the bottom of the drawer to the top, above the item's title — i.e. above/within `ItemDrawerHeader`, rendered before `SheetTitle`.
+- Edit mode's Save/Cancel footer stays where it is (bottom `SheetFooter`) — this change is scoped to the read-mode action bar only, not the edit-mode buttons.
+- Preserve all existing action behavior exactly (favorite/pin toggle, copy/download, edit, delete with confirmation) — this is a layout/position change only, not a logic change.
 
 <!-- Goals & Requirements -->
 
