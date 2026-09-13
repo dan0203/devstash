@@ -10,7 +10,15 @@ import { MarkdownEditor } from "@/components/editor/MarkdownEditor";
 import { SectionLabel } from "@/components/items/SectionLabel";
 import { Badge } from "@/components/ui/badge";
 
-export function ItemDrawerView({ item, isPro }: { item: ItemDetail; isPro: boolean }) {
+export function ItemDrawerView({
+  item,
+  isPro,
+  onUpgradeClick,
+}: {
+  item: ItemDetail;
+  isPro: boolean;
+  onUpgradeClick?: () => void;
+}) {
   return (
     <>
       {item.description && (
@@ -28,7 +36,7 @@ export function ItemDrawerView({ item, isPro }: { item: ItemDetail; isPro: boole
               value={item.content}
               language={item.language}
               readOnly
-              explain={{ itemTypeName: item.itemType.name, isPro }}
+              explain={{ itemTypeName: item.itemType.name, isPro, onUpgradeClick }}
             />
           ) : (
             <MarkdownEditor value={item.content} readOnly />

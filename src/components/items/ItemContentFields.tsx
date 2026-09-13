@@ -29,6 +29,7 @@ interface ItemContentFieldsProps {
   labelClassName?: string;
   urlRequired?: boolean;
   isPro?: boolean;
+  onUpgradeClick?: () => void;
 }
 
 /**
@@ -50,6 +51,7 @@ export function ItemContentFields({
   labelClassName,
   urlRequired,
   isPro = false,
+  onUpgradeClick,
 }: ItemContentFieldsProps) {
   return (
     <>
@@ -87,7 +89,7 @@ export function ItemContentFields({
             <MarkdownEditor
               value={content}
               onChange={onContentChange}
-              optimize={itemTypeName === "prompt" ? { isPro } : undefined}
+              optimize={itemTypeName === "prompt" ? { isPro, onUpgradeClick } : undefined}
             />
           )}
         </div>

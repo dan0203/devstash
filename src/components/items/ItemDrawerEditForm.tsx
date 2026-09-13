@@ -31,6 +31,7 @@ interface ItemDrawerEditFormProps {
   collectionIds: string[];
   setCollectionIds: Dispatch<SetStateAction<string[]>>;
   isPro: boolean;
+  onUpgradeClick?: () => void;
 }
 
 export function ItemDrawerEditForm({
@@ -51,6 +52,7 @@ export function ItemDrawerEditForm({
   collectionIds,
   setCollectionIds,
   isPro,
+  onUpgradeClick,
 }: ItemDrawerEditFormProps) {
   const existingTags = tagsInput
     .split(",")
@@ -99,6 +101,7 @@ export function ItemDrawerEditForm({
             label="Generate description"
             loadingLabel="Generating..."
             ariaLabel="Generate description"
+            onUpgradeClick={onUpgradeClick}
           />
         </div>
         <Textarea
@@ -119,6 +122,7 @@ export function ItemDrawerEditForm({
         onLanguageChange={setLanguage}
         isPro={isPro}
         labelClassName={SECTION_LABEL_CLASSNAME}
+        onUpgradeClick={onUpgradeClick}
       />
       <div className="flex flex-col gap-2">
         <Label className={SECTION_LABEL_CLASSNAME}>Collections</Label>
@@ -140,6 +144,7 @@ export function ItemDrawerEditForm({
             label="Suggest tags"
             loadingLabel="Suggesting..."
             ariaLabel="Suggest tags"
+            onUpgradeClick={onUpgradeClick}
           />
         </div>
         <Input

@@ -1,12 +1,23 @@
-# Current Feature
+# Current Feature: Pro-Only Buttons Redirect to Upgrade Page
 
 <!-- Feature Name And Short Description -->
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
+
+- `AiActionTrigger` (`src/components/ai/AiActionTrigger.tsx`): for a non-Pro user, clicking the button navigates to `/upgrade` instead of being inert (`aria-disabled` + `preventDefault`). Keep the Crown icon as a visual hint; tooltip copy can stay or be adjusted to hint at the redirect, but the click must navigate.
+- Applies everywhere `AiActionTrigger` is already used for free users: Suggest tags / Generate description (`NewItemDialog.tsx`, `ItemDrawerEditForm.tsx`), Explain (`CodeEditor.tsx`), Optimize (`MarkdownEditor.tsx`).
+- `NewItemTypeSelector`/`NewItemDialog`: a free user selecting the File or Image type in the "New item" dialog redirects to `/upgrade` instead of revealing the upload form — don't rely solely on the existing server-side `ENFORCE_PLAN_LIMITS` gate, which is off by default in dev.
+- No change to already-correct redirect-based gates: `/items/files` and `/items/images` already show `ProUpgradePrompt` for free users (`src/app/(app)/items/[type]/page.tsx`) — leave as-is.
+
+## Notes
+
+- Redirect target is the existing `/upgrade` route (`src/app/(app)/upgrade/page.tsx`).
+- Server-side Pro enforcement (`createItem`/`generateAutoTags`/etc. in `src/actions/*.ts`) is already correct and out of scope — this feature is UI-only, making the free-user click path consistent (redirect) instead of inert/disabled.
+- Follows the existing `nativeButton={false}` + `render={<Link .../>}` pattern already used elsewhere in the app (e.g. `TopBar.tsx`'s Upgrade button, `ProUpgradePrompt.tsx`) for button-as-link navigation.
 
 <!-- Goals & Requirements -->
 
