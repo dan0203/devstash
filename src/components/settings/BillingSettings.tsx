@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { Sparkles } from "lucide-react";
 
 import { createCheckoutSession, createPortalSession } from "@/actions/billing";
 import type { BillingInfo } from "@/lib/db/billing";
@@ -102,18 +103,22 @@ export function BillingSettings({
           {pendingPlan === "portal" ? "Opening..." : "Manage subscription"}
         </Button>
       ) : (
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap justify-end gap-3">
           <Button
             onClick={() => handleUpgrade("monthly")}
             disabled={pendingPlan !== null}
+            className="cursor-pointer transition-all duration-200 hover:scale-105 hover:bg-gradient-to-br hover:from-sky-400 hover:to-blue-600 hover:text-white"
           >
+            <Sparkles className="size-4 transition-transform group-hover/button:animate-[sparkle-shimmer_0.8s_ease-in-out_infinite]" />
             {pendingPlan === "monthly" ? "Redirecting..." : "Upgrade $8/mo"}
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={() => handleUpgrade("yearly")}
             disabled={pendingPlan !== null}
+            className="cursor-pointer border border-current transition-all duration-200 hover:scale-105 hover:bg-blue-500/10 hover:text-blue-500"
           >
+            <Sparkles className="size-4 transition-transform group-hover/button:animate-[sparkle-shimmer_0.8s_ease-in-out_infinite]" />
             {pendingPlan === "yearly" ? "Redirecting..." : "Upgrade $72/yr (save 25%)"}
           </Button>
         </div>
