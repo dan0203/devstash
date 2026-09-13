@@ -1,18 +1,23 @@
 # Current Feature
 
-<!-- Feature Name And Short Description -->
+Toast Position — Top Center
+
+Move the sonner toast notifications (currently rendered via `<Toaster />` in `src/app/layout.tsx`, default bottom-right position) to the top of the screen, horizontally centered.
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
+
+- Toasts appear at the top of the viewport, centered horizontally, instead of the current default position.
+- Applies globally to all toasts in the app (sonner's `<Toaster />` is mounted once in root `layout.tsx`).
 
 <!-- Goals & Requirements -->
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Sonner's `Toaster` supports a `position` prop (e.g. `"top-center"`) that should cover this — likely a one-line change in `src/components/ui/sonner.tsx` or the `<Toaster />` usage in `src/app/layout.tsx`.
 
 ## History
 
