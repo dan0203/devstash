@@ -33,6 +33,8 @@ export const rateLimiters = {
   aiSuggestDescription: createLimiter("ai-suggest-description", 20, "1 h"),
   aiExplainCode: createLimiter("ai-explain-code", 20, "1 h"),
   aiOptimizePrompt: createLimiter("ai-optimize-prompt", 20, "1 h"),
+  download: createLimiter("download", 60, "1 m"),
+  search: createLimiter("search", 60, "1 m"),
 };
 
 export interface RateLimitResult {

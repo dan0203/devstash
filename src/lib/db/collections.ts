@@ -27,8 +27,13 @@ const getCollectionsWithStats = cache(async (userId: string): Promise<Collection
     where: { userId },
     include: {
       items: {
-        include: {
-          item: { include: { itemType: true } },
+        select: {
+          item: {
+            select: {
+              updatedAt: true,
+              itemType: { select: { id: true, icon: true, color: true } },
+            },
+          },
         },
       },
     },

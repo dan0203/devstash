@@ -3,10 +3,14 @@ import { NextResponse } from "next/server";
 import { requireApiSession } from "@/lib/auth-utils";
 import { getItemDetail } from "@/lib/db/items";
 import { getR2Object, r2KeyFromUrl } from "@/lib/r2";
+import { enforceRateLimit, rateLimiters } from "@/lib/rate-limit";
 
 export async function GET(_request: Request, ctx: RouteContext<"/api/items/[id]/download">) {
   const session = await requireApiSession();
   if (!session.ok) return session.response;
+
+  const rateLimited = await enforceRateLimit(rateLimiters.download, session.userId);
+  if (rateLimited) return rateLimited;
 
   const { id } = await ctx.params;
   const item = await getItemDetail(session.userId, id);
