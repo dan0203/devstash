@@ -1,18 +1,20 @@
-# Current Feature
-
-<!-- Feature Name And Short Description -->
+# Current Feature: Item Drawer Header
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Remove the item's type badge from the item drawer header
+- Move the item's title to the right of the item type's icon
+- Move the "Updated ... ago" text below the title, next to the item's type badge
+- Add top spacing so a longer title doesn't collide with the drawer's close (X) button
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- Spec source: `context/features/item-drawer-header-spec.md`
+- Affects `ItemDrawerHeader.tsx` (and possibly nearby drawer header spacing touched by the recent `feature/item-drawer-actions-top` / `fix/item-drawer-actions-spacing` work)
 
 ## History
 
