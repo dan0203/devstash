@@ -2,13 +2,17 @@
 
 import { z } from "zod";
 
-import { openai, AI_MODEL, isAiEnabled } from "@/lib/openai";
+import { MistralError } from "@mistralai/mistralai/models/errors";
+
+import { mistral, AI_MODEL, isAiEnabled } from "@/lib/mistral";
 import { checkRateLimit, rateLimiters, rateLimitErrorMessage } from "@/lib/rate-limit";
 import { requireSession } from "@/lib/auth-utils";
 import { parseOrError } from "@/lib/validation";
 
 const CONTENT_TRUNCATE_LENGTH = 2000;
 const MAX_SUGGESTED_TAGS = 5;
+
+const MISTRAL_RATE_LIMIT_ERROR = "Too many AI requests right now. Wait a few seconds and try again.";
 
 /** Pro-gates an AI action; returns an error message, or null if allowed to proceed. */
 function requireProAi(isPro: boolean): string | null {
@@ -34,13 +38,21 @@ function safeJsonParse(text: string): unknown {
   }
 }
 
+/** Mistral's assistant message content is `string | ContentChunk[] | null`; JSON mode always returns a plain string. */
+function messageTextContent(
+  content: string | Array<{ type: string; text?: string }> | null | undefined
+): string {
+  if (typeof content === "string") return content;
+  return "";
+}
+
 type AiActionResult<TResult> =
   | { success: true; data: TResult }
   | { success: false; error: string };
 
 /**
  * Shared scaffold for every AI action: session check, Pro gate, Zod validation,
- * rate limit, then a try/catch around the actual OpenAI call + response parsing
+ * rate limit, then a try/catch around the actual Mistral call + response parsing
  * (which stays in each call site's `run`, since prompts/parsing genuinely differ).
  */
 async function runAiAction<TData, TResult>({
@@ -86,6 +98,9 @@ async function runAiAction<TData, TResult>({
     return { success: true, data: result };
   } catch (error) {
     console.error(`${actionName} failed`, error);
+    if (error instanceof MistralError && error.statusCode === 429) {
+      return { success: false, error: MISTRAL_RATE_LIMIT_ERROR };
+    }
     return { success: false, error: genericError };
   }
 }
@@ -151,15 +166,23 @@ export async function generateAutoTags(input: GenerateAutoTagsInput): Promise<Ge
     run: async (data) => {
       const truncatedContent = data.content.trim().slice(0, CONTENT_TRUNCATE_LENGTH);
 
-      const response = await openai.responses.create({
+      const response = await mistral.chat.complete({
         model: AI_MODEL,
-        instructions:
-          "You are a tagging assistant for a developer knowledge base. Given an item's title and content, suggest 3-5 short, lowercase, freeform tags that describe it. Respond with strict JSON only, in the shape {\"tags\": [\"tag1\", \"tag2\"]}, and nothing else.",
-        input: `Suggest tags for this item and respond in JSON.\n\nTitle: ${data.title}\n\nContent:\n${truncatedContent || "(no content)"}`,
-        text: { format: { type: "json_object" } },
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a tagging assistant for a developer knowledge base. Given an item's title and content, suggest 3-5 short, lowercase, freeform tags that describe it. Respond with strict JSON only, in the shape {\"tags\": [\"tag1\", \"tag2\"]}, and nothing else.",
+          },
+          {
+            role: "user",
+            content: `Suggest tags for this item and respond in JSON.\n\nTitle: ${data.title}\n\nContent:\n${truncatedContent || "(no content)"}`,
+          },
+        ],
+        responseFormat: { type: "json_object" },
       });
 
-      const tags = parseTagsFromResponse(response.output_text ?? "");
+      const tags = parseTagsFromResponse(messageTextContent(response.choices?.[0]?.message?.content));
       return tags && tags.length > 0 ? tags : null;
     },
   });
@@ -223,15 +246,23 @@ export async function explainCode(input: ExplainCodeInput): Promise<ExplainCodeS
         `Content:\n${truncatedContent}`,
       ].filter(Boolean);
 
-      const response = await openai.responses.create({
+      const response = await mistral.chat.complete({
         model: AI_MODEL,
-        instructions:
-          'You are a code-explanation assistant for a developer knowledge base. Given a code snippet or terminal command, explain what it does and the key concepts involved in about 200-300 words. Format the explanation as markdown (short paragraphs, inline code, and lists where useful). Respond with strict JSON only, in the shape {"explanation": "..."}, and nothing else.',
-        input: `Explain this code and respond in JSON.\n\n${detailLines.join("\n")}`,
-        text: { format: { type: "json_object" } },
+        messages: [
+          {
+            role: "system",
+            content:
+              'You are a code-explanation assistant for a developer knowledge base. Given a code snippet or terminal command, explain what it does and the key concepts involved in about 200-300 words. Format the explanation as markdown (short paragraphs, inline code, and lists where useful). Respond with strict JSON only, in the shape {"explanation": "..."}, and nothing else.',
+          },
+          {
+            role: "user",
+            content: `Explain this code and respond in JSON.\n\n${detailLines.join("\n")}`,
+          },
+        ],
+        responseFormat: { type: "json_object" },
       });
 
-      return parseExplanationFromResponse(response.output_text ?? "");
+      return parseExplanationFromResponse(messageTextContent(response.choices?.[0]?.message?.content));
     },
   });
 
@@ -275,15 +306,23 @@ export async function optimizePrompt(input: OptimizePromptInput): Promise<Optimi
     run: async (data) => {
       const truncatedContent = data.content.trim().slice(0, CONTENT_TRUNCATE_LENGTH);
 
-      const response = await openai.responses.create({
+      const response = await mistral.chat.complete({
         model: AI_MODEL,
-        instructions:
-          'You are a prompt engineering assistant for a developer knowledge base. Given a prompt intended for use with an AI assistant, refine it for clarity, specificity, and effectiveness while fully preserving its original intent and goal. If the prompt is already clear and effective, return it unchanged. Respond with strict JSON only, in the shape {"optimizedPrompt": "..."}, and nothing else.',
-        input: `Optimize this prompt and respond in JSON.\n\nPrompt:\n${truncatedContent}`,
-        text: { format: { type: "json_object" } },
+        messages: [
+          {
+            role: "system",
+            content:
+              'You are a prompt engineering assistant for a developer knowledge base. Given a prompt intended for use with an AI assistant, refine it for clarity, specificity, and effectiveness while fully preserving its original intent and goal. If the prompt is already clear and effective, return it unchanged. Respond with strict JSON only, in the shape {"optimizedPrompt": "..."}, and nothing else.',
+          },
+          {
+            role: "user",
+            content: `Optimize this prompt and respond in JSON.\n\nPrompt:\n${truncatedContent}`,
+          },
+        ],
+        responseFormat: { type: "json_object" },
       });
 
-      return parseOptimizedPromptFromResponse(response.output_text ?? "");
+      return parseOptimizedPromptFromResponse(messageTextContent(response.choices?.[0]?.message?.content));
     },
   });
 
@@ -314,15 +353,23 @@ export async function generateDescription(
         `Content:\n${truncatedContent || "(no content)"}`,
       ].filter(Boolean);
 
-      const response = await openai.responses.create({
+      const response = await mistral.chat.complete({
         model: AI_MODEL,
-        instructions:
-          "You are a summarizing assistant for a developer knowledge base. Given an item's type, title, and available content, write a concise 1-2 sentence description summarizing what it is or does. Use only the information provided. Respond with strict JSON only, in the shape {\"description\": \"...\"}, and nothing else.",
-        input: `Summarize this item and respond in JSON.\n\n${detailLines.join("\n")}`,
-        text: { format: { type: "json_object" } },
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a summarizing assistant for a developer knowledge base. Given an item's type, title, and available content, write a concise 1-2 sentence description summarizing what it is or does. Use only the information provided. Respond with strict JSON only, in the shape {\"description\": \"...\"}, and nothing else.",
+          },
+          {
+            role: "user",
+            content: `Summarize this item and respond in JSON.\n\n${detailLines.join("\n")}`,
+          },
+        ],
+        responseFormat: { type: "json_object" },
       });
 
-      return parseDescriptionFromResponse(response.output_text ?? "");
+      return parseDescriptionFromResponse(messageTextContent(response.choices?.[0]?.message?.content));
     },
   });
 

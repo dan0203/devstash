@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { MistralError } from "@mistralai/mistralai/models/errors";
+
 // vi.mock factories are hoisted above imports/const declarations, so the
 // mocks they reference must be created via vi.hoisted().
-const { mockAuth, mockResponsesCreate, mockIsAiEnabled } = vi.hoisted(() => ({
+const { mockAuth, mockChatComplete, mockIsAiEnabled } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
-  mockResponsesCreate: vi.fn(),
+  mockChatComplete: vi.fn(),
   mockIsAiEnabled: vi.fn(),
 }));
 
@@ -12,13 +14,33 @@ vi.mock(import("@/auth"), () => ({
   auth: mockAuth,
 }));
 
-vi.mock(import("@/lib/openai"), () => ({
-  openai: { responses: { create: mockResponsesCreate } },
-  AI_MODEL: "gpt-5-nano",
+vi.mock(import("@/lib/mistral"), () => ({
+  mistral: { chat: { complete: mockChatComplete } },
+  AI_MODEL: "mistral-large-latest",
   isAiEnabled: mockIsAiEnabled,
 }) as never);
 
 import { explainCode, generateAutoTags, generateDescription, optimizePrompt } from "./ai";
+
+/** Mimics a Mistral chat.complete response containing the given JSON-stringified text. */
+function chatResponse(content: string) {
+  return { choices: [{ message: { content } }] };
+}
+
+/** The user-message content string sent in a mocked chat.complete call. */
+function userMessageContent(callIndex = 0): string {
+  const call = mockChatComplete.mock.calls[callIndex][0];
+  return call.messages[1].content;
+}
+
+/** A MistralError as thrown by the SDK for a given HTTP status (e.g. 429 rate limiting). */
+function mistralErrorWithStatus(status: number): MistralError {
+  return new MistralError(`API error occurred: Status ${status}`, {
+    response: new Response(null, { status }),
+    request: new Request("https://api.mistral.ai/v1/chat/completions"),
+    body: "",
+  });
+}
 
 const validInput = {
   title: "Docker full prune",
@@ -51,7 +73,7 @@ describe("generateAutoTags", () => {
     const result = await generateAutoTags(validInput);
 
     expect(result).toEqual({ success: false, error: "Not signed in" });
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
   it("returns an error when the signed-in user is not Pro", async () => {
@@ -60,7 +82,7 @@ describe("generateAutoTags", () => {
     const result = await generateAutoTags(validInput);
 
     expect(result).toEqual({ success: false, error: "AI features require a Pro plan" });
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
   it("returns an error when AI features aren't configured", async () => {
@@ -70,24 +92,24 @@ describe("generateAutoTags", () => {
     const result = await generateAutoTags(validInput);
 
     expect(result).toEqual({ success: false, error: "AI features are not configured" });
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
-  it("returns a validation error for an empty title without calling OpenAI", async () => {
+  it("returns a validation error for an empty title without calling Mistral", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
 
     const result = await generateAutoTags({ ...validInput, title: "  " });
 
     expect(result.success).toBe(false);
     expect(result.error).toBeTruthy();
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
   it("parses a {tags: [...]} response, normalizing to lowercase", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockResolvedValue({
-      output_text: JSON.stringify({ tags: ["Docker", "Cleanup", "docker"] }),
-    });
+    mockChatComplete.mockResolvedValue(
+      chatResponse(JSON.stringify({ tags: ["Docker", "Cleanup", "docker"] }))
+    );
 
     const result = await generateAutoTags(validInput);
 
@@ -96,30 +118,28 @@ describe("generateAutoTags", () => {
 
   it("parses a bare array response", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockResolvedValue({
-      output_text: JSON.stringify(["Bash", "System"]),
-    });
+    mockChatComplete.mockResolvedValue(chatResponse(JSON.stringify(["Bash", "System"])));
 
     const result = await generateAutoTags(validInput);
 
     expect(result).toEqual({ success: true, tags: ["bash", "system"] });
   });
 
-  it("truncates content to 2000 chars before calling OpenAI", async () => {
+  it("truncates content to 2000 chars before calling Mistral", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockResolvedValue({ output_text: JSON.stringify({ tags: ["tag"] }) });
+    mockChatComplete.mockResolvedValue(chatResponse(JSON.stringify({ tags: ["tag"] })));
     const longContent = "a".repeat(5000);
 
     await generateAutoTags({ ...validInput, content: longContent });
 
-    const call = mockResponsesCreate.mock.calls[0][0];
-    expect(call.input).toContain("a".repeat(2000));
-    expect(call.input).not.toContain("a".repeat(2001));
+    const content = userMessageContent();
+    expect(content).toContain("a".repeat(2000));
+    expect(content).not.toContain("a".repeat(2001));
   });
 
-  it("returns a generic error when the OpenAI call throws", async () => {
+  it("returns a generic error when the Mistral call throws", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockRejectedValue(new Error("network error"));
+    mockChatComplete.mockRejectedValue(new Error("network error"));
 
     const result = await generateAutoTags(validInput);
 
@@ -129,9 +149,21 @@ describe("generateAutoTags", () => {
     });
   });
 
+  it("returns a specific rate-limit error when Mistral itself returns 429", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
+    mockChatComplete.mockRejectedValue(mistralErrorWithStatus(429));
+
+    const result = await generateAutoTags(validInput);
+
+    expect(result).toEqual({
+      success: false,
+      error: "Too many AI requests right now. Wait a few seconds and try again.",
+    });
+  });
+
   it("returns a generic error when the response can't be parsed as tags", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockResolvedValue({ output_text: "not json" });
+    mockChatComplete.mockResolvedValue(chatResponse("not json"));
 
     const result = await generateAutoTags(validInput);
 
@@ -154,7 +186,7 @@ describe("generateDescription", () => {
     const result = await generateDescription(validDescriptionInput);
 
     expect(result).toEqual({ success: false, error: "Not signed in" });
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
   it("returns an error when the signed-in user is not Pro", async () => {
@@ -163,7 +195,7 @@ describe("generateDescription", () => {
     const result = await generateDescription(validDescriptionInput);
 
     expect(result).toEqual({ success: false, error: "AI features require a Pro plan" });
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
   it("returns an error when AI features aren't configured", async () => {
@@ -173,24 +205,24 @@ describe("generateDescription", () => {
     const result = await generateDescription(validDescriptionInput);
 
     expect(result).toEqual({ success: false, error: "AI features are not configured" });
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
-  it("returns a validation error for an empty title without calling OpenAI", async () => {
+  it("returns a validation error for an empty title without calling Mistral", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
 
     const result = await generateDescription({ ...validDescriptionInput, title: "  " });
 
     expect(result.success).toBe(false);
     expect(result.error).toBeTruthy();
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
   it("parses a {description: ...} response", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockResolvedValue({
-      output_text: JSON.stringify({ description: "Fully wipes unused Docker resources." }),
-    });
+    mockChatComplete.mockResolvedValue(
+      chatResponse(JSON.stringify({ description: "Fully wipes unused Docker resources." }))
+    );
 
     const result = await generateDescription(validDescriptionInput);
 
@@ -202,9 +234,9 @@ describe("generateDescription", () => {
 
   it("works for a link item with no content, using the URL instead", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockResolvedValue({
-      output_text: JSON.stringify({ description: "A link to the Lucide icon library." }),
-    });
+    mockChatComplete.mockResolvedValue(
+      chatResponse(JSON.stringify({ description: "A link to the Lucide icon library." }))
+    );
 
     const result = await generateDescription({
       title: "Lucide icons",
@@ -215,27 +247,24 @@ describe("generateDescription", () => {
     });
 
     expect(result).toEqual({ success: true, description: "A link to the Lucide icon library." });
-    const call = mockResponsesCreate.mock.calls[0][0];
-    expect(call.input).toContain("https://lucide.dev");
+    expect(userMessageContent()).toContain("https://lucide.dev");
   });
 
-  it("truncates content to 2000 chars before calling OpenAI", async () => {
+  it("truncates content to 2000 chars before calling Mistral", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockResolvedValue({
-      output_text: JSON.stringify({ description: "desc" }),
-    });
+    mockChatComplete.mockResolvedValue(chatResponse(JSON.stringify({ description: "desc" })));
     const longContent = "a".repeat(5000);
 
     await generateDescription({ ...validDescriptionInput, content: longContent });
 
-    const call = mockResponsesCreate.mock.calls[0][0];
-    expect(call.input).toContain("a".repeat(2000));
-    expect(call.input).not.toContain("a".repeat(2001));
+    const content = userMessageContent();
+    expect(content).toContain("a".repeat(2000));
+    expect(content).not.toContain("a".repeat(2001));
   });
 
-  it("returns a generic error when the OpenAI call throws", async () => {
+  it("returns a generic error when the Mistral call throws", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockRejectedValue(new Error("network error"));
+    mockChatComplete.mockRejectedValue(new Error("network error"));
 
     const result = await generateDescription(validDescriptionInput);
 
@@ -247,7 +276,7 @@ describe("generateDescription", () => {
 
   it("returns a generic error when the response can't be parsed as a description", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockResolvedValue({ output_text: "not json" });
+    mockChatComplete.mockResolvedValue(chatResponse("not json"));
 
     const result = await generateDescription(validDescriptionInput);
 
@@ -270,7 +299,7 @@ describe("explainCode", () => {
     const result = await explainCode(validExplainInput);
 
     expect(result).toEqual({ success: false, error: "Not signed in" });
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
   it("returns an error when the signed-in user is not Pro", async () => {
@@ -279,7 +308,7 @@ describe("explainCode", () => {
     const result = await explainCode(validExplainInput);
 
     expect(result).toEqual({ success: false, error: "AI features require a Pro plan" });
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
   it("returns an error when AI features aren't configured", async () => {
@@ -289,24 +318,24 @@ describe("explainCode", () => {
     const result = await explainCode(validExplainInput);
 
     expect(result).toEqual({ success: false, error: "AI features are not configured" });
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
-  it("returns a validation error for empty content without calling OpenAI", async () => {
+  it("returns a validation error for empty content without calling Mistral", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
 
     const result = await explainCode({ ...validExplainInput, content: "  " });
 
     expect(result.success).toBe(false);
     expect(result.error).toBeTruthy();
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
   it("parses a {explanation: ...} response", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockResolvedValue({
-      output_text: JSON.stringify({ explanation: "This removes all unused Docker resources." }),
-    });
+    mockChatComplete.mockResolvedValue(
+      chatResponse(JSON.stringify({ explanation: "This removes all unused Docker resources." }))
+    );
 
     const result = await explainCode(validExplainInput);
 
@@ -316,23 +345,21 @@ describe("explainCode", () => {
     });
   });
 
-  it("truncates content to 2000 chars before calling OpenAI", async () => {
+  it("truncates content to 2000 chars before calling Mistral", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockResolvedValue({
-      output_text: JSON.stringify({ explanation: "explanation" }),
-    });
+    mockChatComplete.mockResolvedValue(chatResponse(JSON.stringify({ explanation: "explanation" })));
     const longContent = "a".repeat(5000);
 
     await explainCode({ ...validExplainInput, content: longContent });
 
-    const call = mockResponsesCreate.mock.calls[0][0];
-    expect(call.input).toContain("a".repeat(2000));
-    expect(call.input).not.toContain("a".repeat(2001));
+    const content = userMessageContent();
+    expect(content).toContain("a".repeat(2000));
+    expect(content).not.toContain("a".repeat(2001));
   });
 
-  it("returns a generic error when the OpenAI call throws", async () => {
+  it("returns a generic error when the Mistral call throws", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockRejectedValue(new Error("network error"));
+    mockChatComplete.mockRejectedValue(new Error("network error"));
 
     const result = await explainCode(validExplainInput);
 
@@ -344,7 +371,7 @@ describe("explainCode", () => {
 
   it("returns a generic error when the response can't be parsed as an explanation", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockResolvedValue({ output_text: "not json" });
+    mockChatComplete.mockResolvedValue(chatResponse("not json"));
 
     const result = await explainCode(validExplainInput);
 
@@ -371,7 +398,7 @@ describe("optimizePrompt", () => {
     const result = await optimizePrompt(validOptimizeInput);
 
     expect(result).toEqual({ success: false, error: "Not signed in" });
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
   it("returns an error when the signed-in user is not Pro", async () => {
@@ -380,7 +407,7 @@ describe("optimizePrompt", () => {
     const result = await optimizePrompt(validOptimizeInput);
 
     expect(result).toEqual({ success: false, error: "AI features require a Pro plan" });
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
   it("returns an error when AI features aren't configured", async () => {
@@ -390,24 +417,24 @@ describe("optimizePrompt", () => {
     const result = await optimizePrompt(validOptimizeInput);
 
     expect(result).toEqual({ success: false, error: "AI features are not configured" });
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
-  it("returns a validation error for empty content without calling OpenAI", async () => {
+  it("returns a validation error for empty content without calling Mistral", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
 
     const result = await optimizePrompt({ content: "  " });
 
     expect(result.success).toBe(false);
     expect(result.error).toBeTruthy();
-    expect(mockResponsesCreate).not.toHaveBeenCalled();
+    expect(mockChatComplete).not.toHaveBeenCalled();
   });
 
   it("parses a {optimizedPrompt: ...} response", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockResolvedValue({
-      output_text: JSON.stringify({ optimizedPrompt: "Write a function that reverses a string." }),
-    });
+    mockChatComplete.mockResolvedValue(
+      chatResponse(JSON.stringify({ optimizedPrompt: "Write a function that reverses a string." }))
+    );
 
     const result = await optimizePrompt(validOptimizeInput);
 
@@ -417,23 +444,21 @@ describe("optimizePrompt", () => {
     });
   });
 
-  it("truncates content to 2000 chars before calling OpenAI", async () => {
+  it("truncates content to 2000 chars before calling Mistral", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockResolvedValue({
-      output_text: JSON.stringify({ optimizedPrompt: "optimized" }),
-    });
+    mockChatComplete.mockResolvedValue(chatResponse(JSON.stringify({ optimizedPrompt: "optimized" })));
     const longContent = "a".repeat(5000);
 
     await optimizePrompt({ content: longContent });
 
-    const call = mockResponsesCreate.mock.calls[0][0];
-    expect(call.input).toContain("a".repeat(2000));
-    expect(call.input).not.toContain("a".repeat(2001));
+    const content = userMessageContent();
+    expect(content).toContain("a".repeat(2000));
+    expect(content).not.toContain("a".repeat(2001));
   });
 
-  it("returns a generic error when the OpenAI call throws", async () => {
+  it("returns a generic error when the Mistral call throws", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockRejectedValue(new Error("network error"));
+    mockChatComplete.mockRejectedValue(new Error("network error"));
 
     const result = await optimizePrompt(validOptimizeInput);
 
@@ -445,7 +470,7 @@ describe("optimizePrompt", () => {
 
   it("returns a generic error when the response can't be parsed as an optimized prompt", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockResponsesCreate.mockResolvedValue({ output_text: "not json" });
+    mockChatComplete.mockResolvedValue(chatResponse("not json"));
 
     const result = await optimizePrompt(validOptimizeInput);
 
