@@ -14,6 +14,23 @@ const MAX_SUGGESTED_TAGS = 5;
 
 const MISTRAL_RATE_LIMIT_ERROR = "Too many AI requests right now. Wait a few seconds and try again.";
 
+/**
+ * Builds a strict JSON Schema response format for `chat.complete`. Plain
+ * `{type: "json_object"}` mode only guarantees *some* JSON comes back — smaller
+ * models like ministral-14b sometimes nest an expected string field into a
+ * richer object despite prompt instructions saying otherwise. `json_schema` +
+ * `strict: true` has the API itself enforce the exact shape.
+ */
+function jsonSchemaResponseFormat(
+  name: string,
+  schema: Record<string, unknown>
+): { type: "json_schema"; jsonSchema: { name: string; schemaDefinition: Record<string, unknown>; strict: true } } {
+  return {
+    type: "json_schema",
+    jsonSchema: { name, schemaDefinition: schema, strict: true },
+  };
+}
+
 /** Pro-gates an AI action; returns an error message, or null if allowed to proceed. */
 function requireProAi(isPro: boolean): string | null {
   if (!isPro) return "AI features require a Pro plan";
@@ -44,6 +61,11 @@ function messageTextContent(
 ): string {
   if (typeof content === "string") return content;
   return "";
+}
+
+/** Logs the raw Mistral response when it couldn't be parsed into the shape an action expected — a 200 response isn't caught by runAiAction's try/catch, so without this the failure is otherwise silent. */
+function logParseFailure(actionName: string, rawText: string): void {
+  console.warn(`${actionName}: couldn't parse Mistral response as expected JSON`, rawText);
 }
 
 type AiActionResult<TResult> =
@@ -179,11 +201,21 @@ export async function generateAutoTags(input: GenerateAutoTagsInput): Promise<Ge
             content: `Suggest tags for this item and respond in JSON.\n\nTitle: ${data.title}\n\nContent:\n${truncatedContent || "(no content)"}`,
           },
         ],
-        responseFormat: { type: "json_object" },
+        responseFormat: jsonSchemaResponseFormat("tag_suggestions", {
+          type: "object",
+          properties: { tags: { type: "array", items: { type: "string" } } },
+          required: ["tags"],
+          additionalProperties: false,
+        }),
       });
 
-      const tags = parseTagsFromResponse(messageTextContent(response.choices?.[0]?.message?.content));
-      return tags && tags.length > 0 ? tags : null;
+      const rawText = messageTextContent(response.choices?.[0]?.message?.content);
+      const tags = parseTagsFromResponse(rawText);
+      if (!tags || tags.length === 0) {
+        logParseFailure("generateAutoTags", rawText);
+        return null;
+      }
+      return tags;
     },
   });
 
@@ -259,10 +291,20 @@ export async function explainCode(input: ExplainCodeInput): Promise<ExplainCodeS
             content: `Explain this code and respond in JSON.\n\n${detailLines.join("\n")}`,
           },
         ],
-        responseFormat: { type: "json_object" },
+        responseFormat: jsonSchemaResponseFormat("code_explanation", {
+          type: "object",
+          properties: { explanation: { type: "string" } },
+          required: ["explanation"],
+          additionalProperties: false,
+        }),
       });
 
-      return parseExplanationFromResponse(messageTextContent(response.choices?.[0]?.message?.content));
+      const rawText = messageTextContent(response.choices?.[0]?.message?.content);
+      const explanation = parseExplanationFromResponse(rawText);
+      if (!explanation) {
+        logParseFailure("explainCode", rawText);
+      }
+      return explanation;
     },
   });
 
@@ -319,10 +361,20 @@ export async function optimizePrompt(input: OptimizePromptInput): Promise<Optimi
             content: `Optimize this prompt and respond in JSON.\n\nPrompt:\n${truncatedContent}`,
           },
         ],
-        responseFormat: { type: "json_object" },
+        responseFormat: jsonSchemaResponseFormat("optimized_prompt", {
+          type: "object",
+          properties: { optimizedPrompt: { type: "string" } },
+          required: ["optimizedPrompt"],
+          additionalProperties: false,
+        }),
       });
 
-      return parseOptimizedPromptFromResponse(messageTextContent(response.choices?.[0]?.message?.content));
+      const rawText = messageTextContent(response.choices?.[0]?.message?.content);
+      const optimizedPrompt = parseOptimizedPromptFromResponse(rawText);
+      if (!optimizedPrompt) {
+        logParseFailure("optimizePrompt", rawText);
+      }
+      return optimizedPrompt;
     },
   });
 
@@ -366,10 +418,20 @@ export async function generateDescription(
             content: `Summarize this item and respond in JSON.\n\n${detailLines.join("\n")}`,
           },
         ],
-        responseFormat: { type: "json_object" },
+        responseFormat: jsonSchemaResponseFormat("item_description", {
+          type: "object",
+          properties: { description: { type: "string" } },
+          required: ["description"],
+          additionalProperties: false,
+        }),
       });
 
-      return parseDescriptionFromResponse(messageTextContent(response.choices?.[0]?.message?.content));
+      const rawText = messageTextContent(response.choices?.[0]?.message?.content);
+      const description = parseDescriptionFromResponse(rawText);
+      if (!description) {
+        logParseFailure("generateDescription", rawText);
+      }
+      return description;
     },
   });
 
