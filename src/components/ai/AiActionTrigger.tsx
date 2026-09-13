@@ -38,7 +38,7 @@ export function AiActionTrigger({
               variant="ghost"
               size="sm"
               aria-label={`${label} (requires Pro)`}
-              className="h-auto gap-1.5 px-2 py-1 text-xs text-neutral-400 hover:bg-white/10 hover:text-neutral-100"
+              className="h-auto cursor-pointer gap-1.5 px-2 py-1 text-xs text-neutral-400 hover:bg-white/10 hover:text-neutral-100"
               onClick={() => {
                 onUpgradeClick?.();
                 router.push("/upgrade");
@@ -60,7 +60,7 @@ export function AiActionTrigger({
       variant="ghost"
       size="sm"
       aria-label={ariaLabel}
-      className="h-auto gap-1.5 px-2 py-1 text-xs text-neutral-400 hover:bg-white/10 hover:text-neutral-100"
+      className="h-auto cursor-pointer gap-1.5 px-2 py-1 text-xs text-neutral-400 hover:bg-white/10 hover:text-neutral-100"
       onClick={onClick}
       disabled={loading}
     >
