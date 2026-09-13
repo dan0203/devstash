@@ -14,7 +14,7 @@ import { ChangePasswordDialog } from "@/components/settings/ChangePasswordDialog
 import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
 import { EditorPreferencesSettings } from "@/components/settings/EditorPreferencesSettings";
 import { BillingSettings } from "@/components/settings/BillingSettings";
-import { UpgradeRedirectNotice } from "@/components/settings/UpgradeRedirectNotice";
+import { SettingsRedirectNotice } from "@/components/settings/SettingsRedirectNotice";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -42,7 +42,7 @@ export default async function SettingsPage() {
   return (
     <main className="min-h-0 flex-1 overflow-y-auto p-6">
       <Suspense>
-        <UpgradeRedirectNotice />
+        <SettingsRedirectNotice />
       </Suspense>
       <div className="mx-auto flex max-w-2xl flex-col gap-6">
         <Card>
