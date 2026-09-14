@@ -58,7 +58,9 @@ export function SidebarCollectionsSection({
               />
             ))}
           </div>
-          {!collapsed && <SidebarLink href="/recent" label="Recent" active={pathname === "/recent"} />}
+          {!collapsed && (
+            <div className="px-2 py-1.5 text-xs text-muted-foreground">Recent</div>
+          )}
           <div className={cn("space-y-0.5", !collapsed && "pl-3")}>
             {recentCollections.map((collection) => (
               <CollectionLink

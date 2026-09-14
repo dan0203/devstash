@@ -1,18 +1,23 @@
-# Current Feature
-
-<!-- Feature Name And Short Description -->
+# Current Feature: Fix Sidebar "Recent" Link 404
 
 ## Status
 
-<!-- Not Started | In Progress | Complete -->
+In Progress
 
 ## Goals
 
-<!-- Goals & Requirements -->
+- Sidebar's collapsible COLLECTIONS section "Recent" link (`SidebarCollectionsSection.tsx`) points to `/recent`, which has no matching route in `src/app/` — clicking it 404s and logs a console error
+- Fix so the link no longer causes a 404/console error
 
 ## Notes
 
-<!-- Any Extra Notes -->
+- `src/components/nav/SidebarCollectionsSection.tsx:61` — `<SidebarLink href="/recent" label="Recent" ...>`
+- No `/recent` page exists anywhere under `src/app/` (confirmed via grep) — looks like a leftover placeholder link, not a regression from a specific past feature
+- `project-overview.md` lists "🕓 Recently used view" as a planned feature (section E, Other Features) that was apparently never implemented
+- Two possible fixes to choose from when implementing:
+  1. Remove the "Recent" link entirely (scope: bug fix only, no new page)
+  2. Build a real `/recent` page showing recently-used items/collections (scope: implementing the planned feature)
+- This was loaded as a bug-fix description, so default to option 1 (remove the dead link) unless the user says otherwise at `start`
 
 ## History
 
