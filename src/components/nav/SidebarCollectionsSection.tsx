@@ -26,27 +26,34 @@ export function SidebarCollectionsSection({
   return (
     <>
       {!collapsed && (
-        <button
-          type="button"
-          onClick={() => setCollectionsOpen((prev) => !prev)}
-          className="flex items-center gap-1 px-2 pb-2 text-xs font-semibold tracking-wider text-muted-foreground hover:text-foreground"
-          aria-expanded={collectionsOpen}
-          aria-label={collectionsOpen ? "Collapse collections" : "Expand collections"}
-        >
-          {collectionsOpen ? (
-            <ChevronDown className="size-3.5" />
-          ) : (
-            <ChevronRight className="size-3.5" />
-          )}
-          COLLECTIONS
-        </button>
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setCollectionsOpen((prev) => !prev)}
+            className="flex items-center gap-1 px-2 py-2 text-xs font-semibold tracking-wider text-muted-foreground hover:text-foreground"
+            aria-expanded={collectionsOpen}
+            aria-label={collectionsOpen ? "Collapse collections" : "Expand collections"}
+          >
+            {collectionsOpen ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
+            COLLECTIONS
+          </button>
+
+          <Link
+            href="/collections"
+            aria-current={pathname === "/collections" ? "page" : undefined}
+            className={cn(
+              "flex items-center rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-sidebar-accent",
+              pathname === "/collections" && "bg-sidebar-accent font-medium text-foreground",
+            )}
+          >
+            <span className="truncate">View all</span>
+          </Link>
+        </div>
       )}
 
       {showCollectionsList && (
         <div className="space-y-0.5">
-          {!collapsed && (
-            <SidebarLink href="/favorites" label="Favorites" active={pathname === "/favorites"} />
-          )}
+          {!collapsed && <SidebarLink href="/favorites" label="Favorites" active={pathname === "/favorites"} />}
           <div className={cn("space-y-0.5", !collapsed && "pl-3")}>
             {favoriteCollections.map((collection) => (
               <CollectionLink
@@ -58,9 +65,7 @@ export function SidebarCollectionsSection({
               />
             ))}
           </div>
-          {!collapsed && (
-            <div className="px-2 py-1.5 text-xs text-muted-foreground">Recent</div>
-          )}
+          {!collapsed && <div className="px-2 py-1.5 text-xs text-muted-foreground">Recent</div>}
           <div className={cn("space-y-0.5", !collapsed && "pl-3")}>
             {recentCollections.map((collection) => (
               <CollectionLink
@@ -71,35 +76,20 @@ export function SidebarCollectionsSection({
               />
             ))}
           </div>
-          {!collapsed && (
-            <SidebarLink
-              href="/collections"
-              label="View all collections"
-              active={pathname === "/collections"}
-            />
-          )}
         </div>
       )}
     </>
   );
 }
 
-function SidebarLink({
-  href,
-  label,
-  active,
-}: {
-  href: string;
-  label: string;
-  active?: boolean;
-}) {
+function SidebarLink({ href, label, active }: { href: string; label: string; active?: boolean }) {
   return (
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
         "flex items-center rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-sidebar-accent",
-        active && "bg-sidebar-accent font-medium text-foreground"
+        active && "bg-sidebar-accent font-medium text-foreground",
       )}
     >
       <span className="truncate">{label}</span>
@@ -125,7 +115,7 @@ function CollectionLink({
       className={cn(
         "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-foreground/90 hover:bg-sidebar-accent",
         collapsed && "justify-center",
-        active && "bg-sidebar-accent font-medium text-foreground"
+        active && "bg-sidebar-accent font-medium text-foreground",
       )}
       title={collapsed ? collection.name : undefined}
     >
