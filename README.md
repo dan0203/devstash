@@ -1,4 +1,3 @@
-
 <div align="center">
 
 # DevStash
@@ -12,7 +11,7 @@
 
 🇬🇧 English&nbsp;&nbsp;·&nbsp;&nbsp;🇫🇷 [Français](./README.fr.md)
 
-**[Try the live demo →](https://devstash-zeta-rust.vercel.app)**
+**[Try the live demo →](https://devstash.danzerbib.me)**
 
 </div>
 
@@ -40,7 +39,7 @@ New account sign-up is closed on this instance (see [Security](#security) below)
 
 ## About this project
 
-DevStash started from Brad Traversy's *Coding With AI* course as a way to practice a **structured, human-reviewed AI-assisted development workflow** rather than an unstructured "prompt and hope" approach. Concretely, every feature follows the same cycle, backed by files in the repo rather than an ephemeral chat history:
+DevStash started from Brad Traversy's _Coding With AI_ course as a way to practice a **structured, human-reviewed AI-assisted development workflow** rather than an unstructured "prompt and hope" approach. Concretely, every feature follows the same cycle, backed by files in the repo rather than an ephemeral chat history:
 
 1. **Spec** — the feature is written down in `context/current-feature.md` (goals, constraints, notes) before any code is touched.
 2. **Build** — implementation happens on its own feature branch, in small, reviewable steps.
@@ -65,20 +64,20 @@ This is presented plainly rather than hidden: the point isn't that an AI wrote t
 
 ## Tech stack
 
-| Layer | Choice |
-| --- | --- |
-| Framework | Next.js 16 (App Router, TypeScript, Turbopack) |
-| Database | Neon (serverless Postgres) + Prisma 7 |
-| Auth | NextAuth v5 — credentials (bcrypt) + GitHub OAuth |
-| File storage | Cloudflare R2 (S3-compatible) |
-| Payments | Stripe (subscriptions + webhooks) |
-| AI | Mistral AI, strict JSON-schema responses |
-| Transactional email | Resend |
-| Rate limiting | Upstash Redis (sliding window) |
-| Testing | Vitest — 139 tests across 16 files (server actions & utilities) |
-| Lint / format | ESLint (flat config) + Prettier |
-| CI | GitHub Actions — lint, test, build on every push/PR |
-| Hosting | Vercel (app + daily Cron job) |
+| Layer               | Choice                                                          |
+| ------------------- | --------------------------------------------------------------- |
+| Framework           | Next.js 16 (App Router, TypeScript, Turbopack)                  |
+| Database            | Neon (serverless Postgres) + Prisma 7                           |
+| Auth                | NextAuth v5 — credentials (bcrypt) + GitHub OAuth               |
+| File storage        | Cloudflare R2 (S3-compatible)                                   |
+| Payments            | Stripe (subscriptions + webhooks)                               |
+| AI                  | Mistral AI, strict JSON-schema responses                        |
+| Transactional email | Resend                                                          |
+| Rate limiting       | Upstash Redis (sliding window)                                  |
+| Testing             | Vitest — 139 tests across 16 files (server actions & utilities) |
+| Lint / format       | ESLint (flat config) + Prettier                                 |
+| CI                  | GitHub Actions — lint, test, build on every push/PR             |
+| Hosting             | Vercel (app + daily Cron job)                                   |
 
 ## Security
 
@@ -90,7 +89,7 @@ DevStash uses Prisma + Postgres rather than a service with built-in row-level se
 - **New account sign-up is closed by default** (`REGISTRATION_ENABLED=false`), and — independent of that flag — the GitHub OAuth callback only signs in **existing** accounts, so it can never silently auto-provision a new user. To let someone new in via GitHub without opening public registration, create a `User` row for their email directly (e.g. via the seed script or a one-off DB write); to reopen self-service sign-up entirely, set `REGISTRATION_ENABLED=true`.
 - **The public demo account is fully isolated**: its own Stripe test-mode configuration (so a visitor can't trigger a real charge or get the shared account permanently stuck "Pro"), and a daily cron reset (`CRON_SECRET`-guarded, fails closed) so visitor activity never accumulates.
 - **A dedicated internal audit exists**: `docs/audit-results/AUTH_SECURITY_REVIEW.md`, produced by a purpose-built review sub-agent (`.claude/agents/auth-auditor.md`) scoped to exactly the auth concerns NextAuth doesn't handle automatically (rate limiting, password hashing, token security, enumeration). Its one open (low-severity) finding — trusting the `X-Forwarded-For` header for per-IP rate limiting — is a documented, accepted trade-off specific to running behind Vercel's edge, which overwrites that header before it reaches the app.
-- **Fail-open-at-import consistency for third-party clients.** `stripe.ts`, `mistral.ts` and `r2.ts` are each written so importing them never throws just because an API key is unset (a placeholder value is used instead) — this matters because Next.js collects page data at build time by importing every route, so a missing key elsewhere shouldn't be able to break the production build. `resend.ts` had been missed from this pattern during an earlier round of work and *did* throw on import with no key set, breaking a real production build; it now follows the same convention as the others.
+- **Fail-open-at-import consistency for third-party clients.** `stripe.ts`, `mistral.ts` and `r2.ts` are each written so importing them never throws just because an API key is unset (a placeholder value is used instead) — this matters because Next.js collects page data at build time by importing every route, so a missing key elsewhere shouldn't be able to break the production build. `resend.ts` had been missed from this pattern during an earlier round of work and _did_ throw on import with no key set, breaking a real production build; it now follows the same convention as the others.
 
 ### Email deliverability (Resend)
 

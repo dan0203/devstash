@@ -1,4 +1,3 @@
-
 <div align="center">
 
 # DevStash
@@ -12,7 +11,7 @@
 
 🇬🇧 [English](./README.md)&nbsp;&nbsp;·&nbsp;&nbsp;🇫🇷 Français
 
-**[Essayer la démo en ligne →](https://devstash-zeta-rust.vercel.app)**
+**[Essayer la démo en ligne →](https://devstash.danzerbib.me)**
 
 </div>
 
@@ -40,7 +39,7 @@ L'inscription de nouveaux comptes est fermée sur cette instance (voir [Sécurit
 
 ## À propos de ce projet
 
-DevStash est parti du cours *Coding With AI* de Brad Traversy, comme exercice pour pratiquer un **workflow de développement assisté par IA structuré et revu humainement**, plutôt qu'une approche "prompt et on verra". Concrètement, chaque fonctionnalité suit le même cycle, appuyé sur des fichiers versionnés plutôt que sur un historique de conversation éphémère :
+DevStash est parti du cours _Coding With AI_ de Brad Traversy, comme exercice pour pratiquer un **workflow de développement assisté par IA structuré et revu humainement**, plutôt qu'une approche "prompt et on verra". Concrètement, chaque fonctionnalité suit le même cycle, appuyé sur des fichiers versionnés plutôt que sur un historique de conversation éphémère :
 
 1. **Spec** — la fonctionnalité est décrite dans `context/current-feature.md` (objectifs, contraintes, notes) avant qu'une seule ligne de code ne soit touchée.
 2. **Build** — l'implémentation se fait sur sa propre branche, par petites étapes révisables.
@@ -65,20 +64,20 @@ Ce choix est assumé plutôt que caché : l'intérêt n'est pas qu'une IA ait é
 
 ## Stack technique
 
-| Couche | Choix |
-| --- | --- |
-| Framework | Next.js 16 (App Router, TypeScript, Turbopack) |
-| Base de données | Neon (Postgres serverless) + Prisma 7 |
-| Authentification | NextAuth v5 — identifiants (bcrypt) + OAuth GitHub |
-| Stockage de fichiers | Cloudflare R2 (compatible S3) |
-| Paiements | Stripe (abonnements + webhooks) |
-| IA | Mistral AI, réponses contraintes par schéma JSON strict |
-| Email transactionnel | Resend |
-| Limitation de débit | Upstash Redis (fenêtre glissante) |
-| Tests | Vitest — 139 tests répartis sur 16 fichiers (server actions et utilitaires) |
-| Lint / format | ESLint (config plate) + Prettier |
-| CI | GitHub Actions — lint, tests, build à chaque push/PR |
-| Hébergement | Vercel (application + tâche Cron quotidienne) |
+| Couche               | Choix                                                                       |
+| -------------------- | --------------------------------------------------------------------------- |
+| Framework            | Next.js 16 (App Router, TypeScript, Turbopack)                              |
+| Base de données      | Neon (Postgres serverless) + Prisma 7                                       |
+| Authentification     | NextAuth v5 — identifiants (bcrypt) + OAuth GitHub                          |
+| Stockage de fichiers | Cloudflare R2 (compatible S3)                                               |
+| Paiements            | Stripe (abonnements + webhooks)                                             |
+| IA                   | Mistral AI, réponses contraintes par schéma JSON strict                     |
+| Email transactionnel | Resend                                                                      |
+| Limitation de débit  | Upstash Redis (fenêtre glissante)                                           |
+| Tests                | Vitest — 139 tests répartis sur 16 fichiers (server actions et utilitaires) |
+| Lint / format        | ESLint (config plate) + Prettier                                            |
+| CI                   | GitHub Actions — lint, tests, build à chaque push/PR                        |
+| Hébergement          | Vercel (application + tâche Cron quotidienne)                               |
 
 ## Sécurité
 
@@ -90,7 +89,7 @@ DevStash utilise Prisma + Postgres plutôt qu'un service avec sécurité au nive
 - **L'inscription de nouveaux comptes est fermée par défaut** (`REGISTRATION_ENABLED=false`), et — indépendamment de ce flag — le callback OAuth GitHub ne connecte que des comptes **déjà existants**, il ne peut donc jamais créer silencieusement un nouvel utilisateur. Pour laisser entrer quelqu'un de nouveau via GitHub sans ouvrir l'inscription publique, il suffit de créer une ligne `User` pour son adresse email directement (via le script de seed ou une écriture ponctuelle en base) ; pour rouvrir l'inscription libre en entier, passer `REGISTRATION_ENABLED=true`.
 - **Le compte de démo public est entièrement isolé** : sa propre configuration Stripe en mode test (pour qu'un visiteur ne puisse ni déclencher une vraie facturation ni laisser le compte partagé bloqué en "Pro"), et une réinitialisation quotidienne par tâche planifiée (protégée par `CRON_SECRET`, refuse par défaut) pour que l'activité des visiteurs ne s'accumule jamais.
 - **Un audit interne dédié existe** : `docs/audit-results/AUTH_SECURITY_REVIEW.md`, produit par un sous-agent de revue conçu spécifiquement pour ça (`.claude/agents/auth-auditor.md`), scopé exactement aux points d'authentification que NextAuth ne gère pas automatiquement (limitation de débit, hachage des mots de passe, sécurité des tokens, énumération de comptes). Son seul point ouvert (sévérité basse) — faire confiance au header `X-Forwarded-For` pour la limitation par IP — est un compromis documenté et accepté, spécifique au déploiement derrière Vercel, qui réécrit ce header avant qu'il n'atteigne l'application.
-- **Cohérence "ne jamais planter à l'import" pour les clients tiers.** `stripe.ts`, `mistral.ts` et `r2.ts` sont chacun écrits pour que leur import ne lève jamais d'exception juste parce qu'une clé API est absente (une valeur factice de repli est utilisée à la place) — c'est important car Next.js collecte les données de page au moment du build en important chaque route, donc une clé manquante ailleurs ne devrait pas pouvoir casser le build de production. `resend.ts` avait été oublié dans ce pattern lors d'une session de travail précédente et levait *bien* une exception à l'import sans clé configurée, cassant un vrai build de production ; il suit désormais la même convention que les autres.
+- **Cohérence "ne jamais planter à l'import" pour les clients tiers.** `stripe.ts`, `mistral.ts` et `r2.ts` sont chacun écrits pour que leur import ne lève jamais d'exception juste parce qu'une clé API est absente (une valeur factice de repli est utilisée à la place) — c'est important car Next.js collecte les données de page au moment du build en important chaque route, donc une clé manquante ailleurs ne devrait pas pouvoir casser le build de production. `resend.ts` avait été oublié dans ce pattern lors d'une session de travail précédente et levait _bien_ une exception à l'import sans clé configurée, cassant un vrai build de production ; il suit désormais la même convention que les autres.
 
 ### Fiabilité de l'envoi d'emails (Resend)
 
