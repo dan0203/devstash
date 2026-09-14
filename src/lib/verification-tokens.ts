@@ -21,9 +21,7 @@ export async function createSingleUseToken(identifier: string): Promise<string> 
   return token;
 }
 
-// TODO: switch to a verified sending domain once one is set up in Resend.
-// Until then, onboarding@resend.dev only delivers to the Resend account owner's email.
-const FROM_ADDRESS = "DevStash <onboarding@resend.dev>";
+const FROM_ADDRESS = "DevStash <no-reply@devstash.danzerbib.me>";
 
 export interface TransactionalEmail {
   to: string;
