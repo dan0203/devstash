@@ -46,7 +46,10 @@ export function CollectionDetailActions({ collection }: CollectionDetailActionsP
         onEditOpenChange={setEditOpen}
         deleteOpen={deleteOpen}
         onDeleteOpenChange={setDeleteOpen}
-        onDeleted={() => router.push("/collections")}
+        onDeleted={() => {
+          router.push("/collections");
+          router.refresh();
+        }}
       />
     </div>
   );
