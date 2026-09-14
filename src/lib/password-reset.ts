@@ -20,9 +20,23 @@ export async function sendPasswordResetEmail(email: string, token: string, origi
     to: email,
     subject: "Reset your DevStash password",
     html: `
-      <p>We received a request to reset your DevStash password.</p>
-      <p><a href="${resetUrl.toString()}">Reset password</a></p>
-      <p>This link expires in 24 hours. If you didn't request this, you can safely ignore this email.</p>
+      <div style="font-family: -apple-system, sans-serif; max-width: 480px; margin: 0 auto;">
+        <h2 style="color: #111827;">Password reset request</h2>
+        <p style="color: #374151; line-height: 1.6;">
+          We received a request to reset the password for your DevStash account.
+          Click the button below to choose a new one:
+        </p>
+        <p style="text-align: center; margin: 32px 0;">
+          <a href="${resetUrl.toString()}"
+             style="background: #3b82f6; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+            Reset my password
+          </a>
+        </p>
+        <p style="color: #6b7280; font-size: 14px;">
+          This link expires in 24 hours. If you didn't request a password reset, you can safely ignore this
+          email — your password will remain unchanged.
+        </p>
+      </div>
     `,
   });
 }
