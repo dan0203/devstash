@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChaosField } from "@/components/homepage/ChaosField";
+import { DemoLoginButton } from "@/components/homepage/DemoLoginButton";
 import { ScrollFadeIn } from "@/components/homepage/ScrollFadeIn";
 import { HOMEPAGE_ITEM_TYPES } from "@/lib/homepage-data";
+import { getDemoAccountCredentials } from "@/lib/demo-account";
 
 const SIDEBAR_ITEMS = HOMEPAGE_ITEM_TYPES;
 const COLLECTION_CARD_COLORS = HOMEPAGE_ITEM_TYPES.slice(0, 4).map((t) => t.color);
@@ -36,6 +38,7 @@ export function Hero() {
           >
             Get Started
           </Button>
+          {getDemoAccountCredentials() && <DemoLoginButton />}
           <Button variant="outline" size="lg" nativeButton={false} render={<a href="#features" />}>
             See Features
           </Button>

@@ -8,7 +8,9 @@ import { PrismaClient } from "../src/generated/prisma/client";
 
 neonConfig.webSocketConstructor = ws;
 
-const DEMO_EMAIL = "demo@devstash.io";
+// The public guest demo account (src/lib/demo-account.ts) is the only
+// "demo" account left — it's the one this cleanup script must never delete.
+const DEMO_EMAIL = process.env.DEMO_ACCOUNT_EMAIL ?? "guest@devstash.io";
 
 async function main() {
   const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL });

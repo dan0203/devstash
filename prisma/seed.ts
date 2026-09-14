@@ -6,6 +6,7 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import ws from "ws";
 
 import { PrismaClient } from "../src/generated/prisma/client";
+import { applyDemoSeedData } from "../src/lib/demo-seed-data";
 
 neonConfig.webSocketConstructor = ws;
 
@@ -22,22 +23,36 @@ const SYSTEM_ITEM_TYPES = [
   { name: "link", icon: "Link", color: "#10b981" },
 ] as const;
 
-async function main() {
-  const passwordHash = await bcrypt.hash("12345678", 12);
-
+async function seedAccount(
+  email: string,
+  name: string,
+  passwordHash: string,
+  itemTypeIdByName: Record<string, string>
+) {
   const user = await prisma.user.upsert({
-    where: { email: "demo@devstash.io" },
+    where: { email },
     update: {},
     create: {
-      email: "demo@devstash.io",
-      name: "Demo User",
+      email,
+      name,
       password: passwordHash,
       isPro: false,
       emailVerified: new Date(),
     },
   });
 
-  const itemTypes = new Map<string, string>();
+  const existingCollections = await prisma.collection.count({ where: { userId: user.id } });
+  if (existingCollections > 0) {
+    console.log(`User ${user.email} already has collections, skipping collection/item seed.`);
+    return;
+  }
+
+  await applyDemoSeedData(prisma, user.id, itemTypeIdByName);
+  console.log(`Seed complete for user ${user.email}`);
+}
+
+async function main() {
+  const itemTypeIdByName: Record<string, string> = {};
   for (const type of SYSTEM_ITEM_TYPES) {
     let itemType = await prisma.itemType.findFirst({
       where: { userId: null, name: type.name },
@@ -53,184 +68,24 @@ async function main() {
         },
       });
     }
-    itemTypes.set(type.name, itemType.id);
+    itemTypeIdByName[type.name] = itemType.id;
   }
 
-  const existingCollections = await prisma.collection.count({
-    where: { userId: user.id },
-  });
-  if (existingCollections > 0) {
-    console.log(`User ${user.email} already has collections, skipping collection/item seed.`);
-    return;
+  // Public guest demo account — visitors auto-sign into this one from the
+  // homepage's "Try the Live Demo" button (src/actions/demo.ts). Deliberately
+  // free-tier and reset daily (src/app/api/cron/reset-demo) so plan limits
+  // stay visible and visitor edits don't accumulate. Skipped if the env vars
+  // aren't configured, so `npm run db:seed` still works without them.
+  const guestEmail = process.env.DEMO_ACCOUNT_EMAIL;
+  const guestPassword = process.env.DEMO_ACCOUNT_PASSWORD;
+  if (guestEmail && guestPassword) {
+    const guestPasswordHash = await bcrypt.hash(guestPassword, 12);
+    await seedAccount(guestEmail, "Guest", guestPasswordHash, itemTypeIdByName);
+  } else {
+    console.log(
+      "DEMO_ACCOUNT_EMAIL/DEMO_ACCOUNT_PASSWORD not set, skipping public guest demo account seed."
+    );
   }
-
-  const snippetTypeId = itemTypes.get("snippet")!;
-  const promptTypeId = itemTypes.get("prompt")!;
-  const commandTypeId = itemTypes.get("command")!;
-
-  async function createCollection(name: string, description: string) {
-    return prisma.collection.create({
-      data: { name, description, userId: user.id },
-    });
-  }
-
-  async function createItem(
-    collectionId: string,
-    itemTypeId: string,
-    data: {
-      title: string;
-      description?: string;
-      content?: string;
-      url?: string;
-      language?: string;
-    },
-  ) {
-    const item = await prisma.item.create({
-      data: {
-        title: data.title,
-        description: data.description,
-        contentType: data.url ? "url" : "text",
-        content: data.content,
-        url: data.url,
-        language: data.language,
-        userId: user.id,
-        itemTypeId,
-      },
-    });
-    await prisma.itemCollection.create({
-      data: { itemId: item.id, collectionId },
-    });
-    return item;
-  }
-
-  // ── React Patterns ────────────────────────────────────
-  const reactPatterns = await createCollection(
-    "React Patterns",
-    "Reusable React patterns and hooks",
-  );
-
-  await createItem(reactPatterns.id, snippetTypeId, {
-    title: "useDebounce hook",
-    description: "Debounce a fast-changing value with a configurable delay.",
-    language: "typescript",
-    content: `import { useEffect, useState } from "react";
-
-export function useDebounce<T>(value: T, delay = 300): T {
-  const [debounced, setDebounced] = useState(value);
-
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(id);
-  }, [value, delay]);
-
-  return debounced;
-}`,
-  });
-
-  await createItem(reactPatterns.id, snippetTypeId, {
-    title: "Compound component context provider",
-    description: "Typed context + provider pattern for compound components.",
-    language: "typescript",
-    content: `import { createContext, useContext, type ReactNode } from "react";
-
-interface TabsContextValue {
-  activeTab: string;
-  setActiveTab: (id: string) => void;
-}
-
-const TabsContext = createContext<TabsContextValue | null>(null);
-
-export function useTabsContext() {
-  const ctx = useContext(TabsContext);
-  if (!ctx) throw new Error("useTabsContext must be used within <Tabs>");
-  return ctx;
-}
-
-export function TabsProvider({
-  value,
-  children,
-}: {
-  value: TabsContextValue;
-  children: ReactNode;
-}) {
-  return <TabsContext.Provider value={value}>{children}</TabsContext.Provider>;
-}`,
-  });
-
-  await createItem(reactPatterns.id, snippetTypeId, {
-    title: "cn() classname utility",
-    description: "Merge conditional class names with tailwind-merge + clsx.",
-    language: "typescript",
-    content: `import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}`,
-  });
-
-  // ── AI Workflows ──────────────────────────────────────
-  const aiWorkflows = await createCollection(
-    "AI Workflows",
-    "AI prompts and workflow automations",
-  );
-
-  await createItem(aiWorkflows.id, promptTypeId, {
-    title: "Strict code review prompt",
-    description: "Baseline system prompt for thorough code review sessions.",
-    content:
-      "You are a senior engineer performing a thorough code review. Focus on correctness, security, and simplicity. Flag anything that would fail in production, and explain the risk in one sentence per finding.",
-  });
-
-  await createItem(aiWorkflows.id, promptTypeId, {
-    title: "Generate README from codebase",
-    description: "Prompt for producing developer-facing documentation.",
-    content:
-      "Read the provided source files and produce a concise README section covering: what this module does, its public API, and one usage example. Avoid restating obvious code; focus on intent and non-obvious behavior.",
-  });
-
-  await createItem(aiWorkflows.id, promptTypeId, {
-    title: "Refactor for readability",
-    description: "Prompt for a conservative, behavior-preserving refactor pass.",
-    content:
-      "Refactor the following code for readability without changing its behavior. Keep the diff minimal, preserve existing naming conventions, and explain each non-trivial change in one line.",
-  });
-
-  // ── Terminal Commands ─────────────────────────────────
-  const terminalCommands = await createCollection(
-    "Terminal Commands",
-    "Useful shell commands for everyday development",
-  );
-
-  await createItem(terminalCommands.id, commandTypeId, {
-    title: "Delete merged git branches",
-    description: "Clean up local branches already merged into main.",
-    language: "bash",
-    content: `git branch --merged main | grep -v '\\* main' | xargs -n 1 git branch -d`,
-  });
-
-  await createItem(terminalCommands.id, commandTypeId, {
-    title: "Docker full prune",
-    description: "Reclaim disk space by removing unused Docker data.",
-    language: "bash",
-    content: `docker system prune -a --volumes`,
-  });
-
-  await createItem(terminalCommands.id, commandTypeId, {
-    title: "Find process on a port",
-    description: "Locate and inspect the process bound to a given TCP port.",
-    language: "bash",
-    content: `lsof -i :3000`,
-  });
-
-  await createItem(terminalCommands.id, commandTypeId, {
-    title: "Clean npm cache and reinstall",
-    description: "Nuke node_modules and lockfile artifacts, then reinstall.",
-    language: "bash",
-    content: `rm -rf node_modules package-lock.json && npm cache clean --force && npm install`,
-  });
-
-  console.log(`Seed complete for user ${user.email}`);
 }
 
 main()

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // vi.mock factories are hoisted above imports/const declarations, so the
 // mocks they reference must be created via vi.hoisted().
@@ -9,6 +9,10 @@ const {
   mockCustomersCreate,
   mockCheckoutSessionsCreate,
   mockBillingPortalSessionsCreate,
+  mockTestCustomersCreate,
+  mockTestCheckoutSessionsCreate,
+  mockTestBillingPortalSessionsCreate,
+  mockIsStripeTestModeConfigured,
 } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
   mockGetStripeCustomerContext: vi.fn(),
@@ -16,6 +20,10 @@ const {
   mockCustomersCreate: vi.fn(),
   mockCheckoutSessionsCreate: vi.fn(),
   mockBillingPortalSessionsCreate: vi.fn(),
+  mockTestCustomersCreate: vi.fn(),
+  mockTestCheckoutSessionsCreate: vi.fn(),
+  mockTestBillingPortalSessionsCreate: vi.fn(),
+  mockIsStripeTestModeConfigured: vi.fn(),
 }));
 
 vi.mock(import("@/auth"), () => ({
@@ -33,14 +41,71 @@ vi.mock(import("@/lib/stripe"), () => ({
     checkout: { sessions: { create: mockCheckoutSessionsCreate } },
     billingPortal: { sessions: { create: mockBillingPortalSessionsCreate } },
   },
+  stripeTest: {
+    customers: { create: mockTestCustomersCreate },
+    checkout: { sessions: { create: mockTestCheckoutSessionsCreate } },
+    billingPortal: { sessions: { create: mockTestBillingPortalSessionsCreate } },
+  },
   STRIPE_PRICE_IDS: { monthly: "price_monthly", yearly: "price_yearly" },
+  STRIPE_TEST_PRICE_IDS: { monthly: "price_monthly_test", yearly: "price_yearly_test" },
+  isStripeTestModeConfigured: mockIsStripeTestModeConfigured,
 }) as never);
 
 import { createCheckoutSession, createPortalSession } from "./billing";
 
 describe("createCheckoutSession", () => {
+  const originalDemoEmail = process.env.DEMO_ACCOUNT_EMAIL;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    delete process.env.DEMO_ACCOUNT_EMAIL;
+    mockIsStripeTestModeConfigured.mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    process.env.DEMO_ACCOUNT_EMAIL = originalDemoEmail;
+  });
+
+  it("routes the public demo account through the test-mode Stripe client", async () => {
+    process.env.DEMO_ACCOUNT_EMAIL = "guest@devstash.io";
+    mockAuth.mockResolvedValue({ user: { id: "guest-user" } });
+    mockGetStripeCustomerContext.mockResolvedValue({
+      stripeCustomerId: null,
+      email: "guest@devstash.io",
+      name: "Guest",
+    });
+    mockTestCustomersCreate.mockResolvedValue({ id: "cus_test_new" });
+    mockTestCheckoutSessionsCreate.mockResolvedValue({ url: "https://checkout.stripe.com/test-session" });
+
+    const result = await createCheckoutSession("monthly");
+
+    expect(mockTestCustomersCreate).toHaveBeenCalled();
+    expect(mockTestCheckoutSessionsCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ customer: "cus_test_new", line_items: [{ price: "price_monthly_test", quantity: 1 }] })
+    );
+    expect(mockCustomersCreate).not.toHaveBeenCalled();
+    expect(mockCheckoutSessionsCreate).not.toHaveBeenCalled();
+    expect(result).toEqual({ success: true, url: "https://checkout.stripe.com/test-session" });
+  });
+
+  it("blocks demo checkout when test mode isn't configured", async () => {
+    process.env.DEMO_ACCOUNT_EMAIL = "guest@devstash.io";
+    mockIsStripeTestModeConfigured.mockReturnValue(false);
+    mockAuth.mockResolvedValue({ user: { id: "guest-user" } });
+    mockGetStripeCustomerContext.mockResolvedValue({
+      stripeCustomerId: null,
+      email: "guest@devstash.io",
+      name: "Guest",
+    });
+
+    const result = await createCheckoutSession("monthly");
+
+    expect(result).toEqual({
+      success: false,
+      error: "Demo checkout isn't configured right now. Please try again later.",
+    });
+    expect(mockTestCheckoutSessionsCreate).not.toHaveBeenCalled();
+    expect(mockCheckoutSessionsCreate).not.toHaveBeenCalled();
   });
 
   it("returns an error when there is no signed-in session", async () => {
@@ -98,8 +163,34 @@ describe("createCheckoutSession", () => {
 });
 
 describe("createPortalSession", () => {
+  const originalDemoEmail = process.env.DEMO_ACCOUNT_EMAIL;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    delete process.env.DEMO_ACCOUNT_EMAIL;
+  });
+
+  afterEach(() => {
+    process.env.DEMO_ACCOUNT_EMAIL = originalDemoEmail;
+  });
+
+  it("routes the public demo account through the test-mode billing portal", async () => {
+    process.env.DEMO_ACCOUNT_EMAIL = "guest@devstash.io";
+    mockAuth.mockResolvedValue({ user: { id: "guest-user" } });
+    mockGetStripeCustomerContext.mockResolvedValue({
+      stripeCustomerId: "cus_test_existing",
+      email: "guest@devstash.io",
+      name: "Guest",
+    });
+    mockTestBillingPortalSessionsCreate.mockResolvedValue({ url: "https://billing.stripe.com/test-session" });
+
+    const result = await createPortalSession();
+
+    expect(mockTestBillingPortalSessionsCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ customer: "cus_test_existing" })
+    );
+    expect(mockBillingPortalSessionsCreate).not.toHaveBeenCalled();
+    expect(result).toEqual({ success: true, url: "https://billing.stripe.com/test-session" });
   });
 
   it("returns an error when there is no signed-in session", async () => {

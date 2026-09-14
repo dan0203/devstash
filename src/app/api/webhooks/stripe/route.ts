@@ -2,9 +2,28 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
-import { stripe } from "@/lib/stripe";
+import { stripe, stripeTest } from "@/lib/stripe";
 import { upsertSubscriptionFromWebhook } from "@/lib/db/billing";
 import { Prisma } from "@/generated/prisma/client";
+
+// Two webhook secrets are accepted: the live-mode endpoint (real users) and,
+// if configured, a test-mode endpoint (the public guest demo account's
+// Checkout flow — src/lib/stripe.ts). Both post to this same URL; Stripe
+// signs each with its own secret, so try each in turn to see which applies.
+function constructEvent(body: string, signature: string): Stripe.Event {
+  const secrets = [process.env.STRIPE_WEBHOOK_SECRET, process.env.STRIPE_WEBHOOK_SECRET_TEST].filter(
+    (secret): secret is string => !!secret
+  );
+
+  for (const secret of secrets) {
+    try {
+      return stripe.webhooks.constructEvent(body, signature, secret);
+    } catch {
+      continue;
+    }
+  }
+  throw new Error("Invalid signature");
+}
 
 function isActiveSubscription(status: Stripe.Subscription.Status): boolean {
   return status === "active" || status === "trialing";
@@ -57,10 +76,14 @@ export async function POST(request: Request) {
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, signature ?? "", process.env.STRIPE_WEBHOOK_SECRET ?? "");
+    event = constructEvent(body, signature ?? "");
   } catch {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
+
+  // Test-mode objects (the demo account's Checkout flow) can only be read back
+  // with a test-mode API key — a live-mode key gets "No such subscription".
+  const client = event.livemode ? stripe : stripeTest;
 
   try {
     switch (event.type) {
@@ -69,7 +92,7 @@ export async function POST(request: Request) {
         if (session.mode === "subscription" && session.subscription) {
           const subscriptionId =
             typeof session.subscription === "string" ? session.subscription : session.subscription.id;
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const subscription = await client.subscriptions.retrieve(subscriptionId);
           await syncFromSubscription(subscription);
         }
         break;

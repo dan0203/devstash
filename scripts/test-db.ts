@@ -19,8 +19,9 @@ async function main() {
     const userCount = await prisma.user.count();
     console.log("User count:", userCount);
 
+    const demoEmail = process.env.DEMO_ACCOUNT_EMAIL ?? "guest@devstash.io";
     const demoUser = await prisma.user.findUnique({
-      where: { email: "demo@devstash.io" },
+      where: { email: demoEmail },
       include: {
         collections: {
           include: {
@@ -33,7 +34,7 @@ async function main() {
     });
 
     if (!demoUser) {
-      console.log("\nDemo user not found. Run `npm run db:seed` first.");
+      console.log(`\n${demoEmail} not found. Run \`npm run db:seed\` first.`);
       return;
     }
 
