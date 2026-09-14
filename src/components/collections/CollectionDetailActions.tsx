@@ -36,12 +36,7 @@ export function CollectionDetailActions({ collection }: CollectionDetailActionsP
       <Button variant="outline" size="icon-sm" aria-label="Edit" onClick={() => setEditOpen(true)}>
         <Pencil />
       </Button>
-      <Button
-        variant="destructive"
-        size="icon-sm"
-        aria-label="Delete"
-        onClick={() => setDeleteOpen(true)}
-      >
+      <Button variant="destructive" size="icon-sm" aria-label="Delete" onClick={() => setDeleteOpen(true)}>
         <Trash2 />
       </Button>
 

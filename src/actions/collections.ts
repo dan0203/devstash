@@ -27,9 +27,7 @@ export interface CreateCollectionState {
   error?: string;
 }
 
-export async function createCollection(
-  input: CreateCollectionInput
-): Promise<CreateCollectionState> {
+export async function createCollection(input: CreateCollectionInput): Promise<CreateCollectionState> {
   const auth = await requireSession();
   if (!auth.ok) {
     return { success: false, error: auth.error };
@@ -45,7 +43,7 @@ export async function createCollection(
     const limitError = checkPlanLimit(
       isOverCollectionLimit(auth.isPro, stats.total),
       FREE_TIER_LIMITS.collections,
-      "collections"
+      "collections",
     );
     if (limitError) {
       return { success: false, error: limitError };
@@ -75,7 +73,7 @@ export interface UpdateCollectionState {
 
 export async function updateCollection(
   collectionId: string,
-  input: UpdateCollectionInput
+  input: UpdateCollectionInput,
 ): Promise<UpdateCollectionState> {
   const auth = await requireSession();
   if (!auth.ok) {

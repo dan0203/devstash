@@ -11,11 +11,7 @@ import { CommandPaletteProvider } from "@/components/command-palette/hooks/comma
 import { CommandPalette } from "@/components/command-palette/CommandPalette";
 import { EditorPreferencesProvider } from "@/components/editor/hooks/editor-preferences-context";
 import { getItemTypesWithCounts } from "@/lib/db/items";
-import {
-  getFavoriteCollections,
-  getSidebarRecentCollections,
-  getUserCollections,
-} from "@/lib/db/collections";
+import { getFavoriteCollections, getSidebarRecentCollections, getUserCollections } from "@/lib/db/collections";
 import { getEditorPreferences } from "@/lib/db/user";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
@@ -28,14 +24,13 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   }
   const user = session.user;
 
-  const [itemTypes, favoriteCollections, recentCollections, collections, editorPreferences] =
-    await Promise.all([
-      getItemTypesWithCounts(user.id),
-      getFavoriteCollections(user.id),
-      getSidebarRecentCollections(user.id, 5),
-      getUserCollections(user.id),
-      getEditorPreferences(user.id),
-    ]);
+  const [itemTypes, favoriteCollections, recentCollections, collections, editorPreferences] = await Promise.all([
+    getItemTypesWithCounts(user.id),
+    getFavoriteCollections(user.id),
+    getSidebarRecentCollections(user.id, 5),
+    getUserCollections(user.id),
+    getEditorPreferences(user.id),
+  ]);
 
   return (
     <SidebarProvider>

@@ -70,7 +70,7 @@ Writes must be idempotent (`upsertSubscriptionFromWebhook` upserts, not inserts)
 "use server";
 
 export async function createCheckoutSession(
-  plan: "monthly" | "yearly"
+  plan: "monthly" | "yearly",
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "Not signed in" };

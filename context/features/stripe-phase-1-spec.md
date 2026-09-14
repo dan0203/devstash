@@ -105,7 +105,8 @@ if (token.sub) {
 }
 ```
 
-  This is the one change everything in Phase 2 depends on — without it, `session.user.isPro` won't reflect a webhook update until the user signs out and back in. Zero additional queries versus today (same query, one more column) since `auth()` is already wrapped in React's `cache()`.
+This is the one change everything in Phase 2 depends on — without it, `session.user.isPro` won't reflect a webhook update until the user signs out and back in. Zero additional queries versus today (same query, one more column) since `auth()` is already wrapped in React's `cache()`.
+
 - **`package.json`** — add `stripe`.
 - **`.env.example`** — already has all 5 Stripe vars (`STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_MONTHLY`, `STRIPE_PRICE_ID_YEARLY`); no change needed. Fill in `.env` with real test-mode keys once the Stripe Dashboard is set up.
 

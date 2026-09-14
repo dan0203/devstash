@@ -1,21 +1,11 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 
-export const ITEM_TYPE_DISPLAY_ORDER = [
-  "snippet",
-  "prompt",
-  "command",
-  "note",
-  "link",
-  "file",
-  "image",
-];
+export const ITEM_TYPE_DISPLAY_ORDER = ["snippet", "prompt", "command", "note", "link", "file", "image"];
 
 export const getSystemItemTypesOrdered = cache(async () => {
   const itemTypes = await prisma.itemType.findMany({ where: { isSystem: true } });
-  itemTypes.sort(
-    (a, b) => ITEM_TYPE_DISPLAY_ORDER.indexOf(a.name) - ITEM_TYPE_DISPLAY_ORDER.indexOf(b.name)
-  );
+  itemTypes.sort((a, b) => ITEM_TYPE_DISPLAY_ORDER.indexOf(a.name) - ITEM_TYPE_DISPLAY_ORDER.indexOf(b.name));
   return itemTypes;
 });
 

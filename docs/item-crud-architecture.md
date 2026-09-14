@@ -54,11 +54,11 @@ One file, five Server Actions, all following the existing `{ success, data?, err
 ```ts
 "use server";
 
-export async function createItem(input: CreateItemInput): Promise<ActionResult<Item>>
-export async function updateItem(id: string, input: UpdateItemInput): Promise<ActionResult<Item>>
-export async function deleteItem(id: string): Promise<ActionResult<void>>
-export async function toggleFavorite(id: string): Promise<ActionResult<{ isFavorite: boolean }>>
-export async function togglePinned(id: string): Promise<ActionResult<{ isPinned: boolean }>>
+export async function createItem(input: CreateItemInput): Promise<ActionResult<Item>>;
+export async function updateItem(id: string, input: UpdateItemInput): Promise<ActionResult<Item>>;
+export async function deleteItem(id: string): Promise<ActionResult<void>>;
+export async function toggleFavorite(id: string): Promise<ActionResult<{ isFavorite: boolean }>>;
+export async function togglePinned(id: string): Promise<ActionResult<{ isPinned: boolean }>>;
 ```
 
 - Every action starts by resolving `session.user.id` via `auth()` (same guard as `deleteAccount()`), then re-checks `item.userId === session.user.id` before mutating/deleting — items are never trusted to belong to the caller just because an id was posted.
@@ -91,14 +91,14 @@ This single route replaces what would otherwise be 7 near-identical route files 
 
 Deliberately **not** in `src/actions/items.ts` or `src/lib/db/items.ts` — both stay type-agnostic (they operate on whatever `contentType`/fields are present). Type-specific behavior is pushed to the edges:
 
-| Concern | Lives in |
-| --- | --- |
-| Which fields to show/require on create/edit | `ItemForm.tsx`, branching on `itemType.name`/`contentType` to pick `TextContentField` / `UrlField` / `FileUploadField` |
-| Syntax highlighting, `language` selector | `TextContentField.tsx`, only rendered for `snippet`/`command` |
-| Icon/color per type | Already centralized in `icon-map.ts` (`itemTypeIcons`) + `ItemType.color` from the DB — consumed as-is by `ItemCard`, no duplication needed |
-| Pro gating (file/image) | `ItemForm.tsx` / `FileUploadField.tsx` check `session.user.isPro` before allowing the file/image type to be selected at all; `src/actions/items.ts`'s `createItem` also re-checks server-side (never trust a client-side gate alone) and returns `{ success: false, error: "Pro required" }` if violated |
-| Card/list rendering differences | `ItemCard.tsx` (already exists, already type-agnostic via `itemType.icon`/`itemType.color`) — extending it later for e.g. an image thumbnail or a link favicon would be an additive branch inside this one component, not a new component per type |
-| Empty-state copy ("No snippets yet") | `ItemList.tsx`, driven by `itemType.name`, not hardcoded per type |
+| Concern                                     | Lives in                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Which fields to show/require on create/edit | `ItemForm.tsx`, branching on `itemType.name`/`contentType` to pick `TextContentField` / `UrlField` / `FileUploadField`                                                                                                                                                                                   |
+| Syntax highlighting, `language` selector    | `TextContentField.tsx`, only rendered for `snippet`/`command`                                                                                                                                                                                                                                            |
+| Icon/color per type                         | Already centralized in `icon-map.ts` (`itemTypeIcons`) + `ItemType.color` from the DB — consumed as-is by `ItemCard`, no duplication needed                                                                                                                                                              |
+| Pro gating (file/image)                     | `ItemForm.tsx` / `FileUploadField.tsx` check `session.user.isPro` before allowing the file/image type to be selected at all; `src/actions/items.ts`'s `createItem` also re-checks server-side (never trust a client-side gate alone) and returns `{ success: false, error: "Pro required" }` if violated |
+| Card/list rendering differences             | `ItemCard.tsx` (already exists, already type-agnostic via `itemType.icon`/`itemType.color`) — extending it later for e.g. an image thumbnail or a link favicon would be an additive branch inside this one component, not a new component per type                                                       |
+| Empty-state copy ("No snippets yet")        | `ItemList.tsx`, driven by `itemType.name`, not hardcoded per type                                                                                                                                                                                                                                        |
 
 ## Component responsibilities
 

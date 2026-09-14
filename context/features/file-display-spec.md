@@ -12,5 +12,3 @@ Update `/items/files` to display as a single-column list (like Google Drive/Drop
 - Click row opens ItemDrawer
 - Download button triggers direct download (stop propagation)
 - Responsive: stack info vertically on mobile
-
-

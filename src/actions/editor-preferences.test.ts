@@ -9,9 +9,13 @@ vi.mock(import("@/auth"), () => ({
   auth: mockAuth,
 }));
 
-vi.mock(import("@/lib/db/user"), () => ({
-  updateEditorPreferences: mockUpdateEditorPreferences,
-}) as never);
+vi.mock(
+  import("@/lib/db/user"),
+  () =>
+    ({
+      updateEditorPreferences: mockUpdateEditorPreferences,
+    }) as never,
+);
 
 import { updateEditorPreferences } from "./editor-preferences";
 

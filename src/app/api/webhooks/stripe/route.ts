@@ -12,7 +12,7 @@ import { Prisma } from "@/generated/prisma/client";
 // signs each with its own secret, so try each in turn to see which applies.
 function constructEvent(body: string, signature: string): Stripe.Event {
   const secrets = [process.env.STRIPE_WEBHOOK_SECRET, process.env.STRIPE_WEBHOOK_SECRET_TEST].filter(
-    (secret): secret is string => !!secret
+    (secret): secret is string => !!secret,
   );
 
   for (const secret of secrets) {
@@ -45,8 +45,7 @@ function toDate(unixSeconds: number | null | undefined): Date | null {
 }
 
 async function syncFromSubscription(subscription: Stripe.Subscription): Promise<void> {
-  const customerId =
-    typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
+  const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
 
   if (isTerminalSubscription(subscription.status)) {
     await upsertSubscriptionFromWebhook({

@@ -16,7 +16,7 @@ interface ToggleFavoriteResult {
  */
 export function useToggleFavorite(
   toggleFn: (id: string) => Promise<ToggleFavoriteResult>,
-  onSuccess?: (isFavorite: boolean) => void
+  onSuccess?: (isFavorite: boolean) => void,
 ) {
   const router = useRouter();
 

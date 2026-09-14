@@ -26,8 +26,8 @@ export function Hero() {
           </span>
         </h1>
         <p className="mb-8 text-lg text-muted-foreground">
-          Snippets, prompts, commands, and notes end up scattered across a dozen tools. DevStash
-          brings all of it into one fast, searchable, AI-enhanced hub.
+          Snippets, prompts, commands, and notes end up scattered across a dozen tools. DevStash brings all of it into
+          one fast, searchable, AI-enhanced hub.
         </p>
         <div className="flex flex-wrap justify-center gap-3.5">
           <Button
@@ -83,18 +83,13 @@ export function Hero() {
                     (i === 0 ? " bg-indigo-500/15 text-foreground" : "")
                   }
                 >
-                  <span
-                    className="size-[7px] shrink-0 rounded-full"
-                    style={{ backgroundColor: item.color }}
-                  />
+                  <span className="size-[7px] shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
                   {item.name}
                 </div>
               ))}
             </div>
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <p className="text-center text-[0.6rem] font-bold tracking-wider text-muted-foreground/70">
-                COLLECTIONS
-              </p>
+              <p className="text-center text-[0.6rem] font-bold tracking-wider text-muted-foreground/70">COLLECTIONS</p>
               <div className="grid grid-cols-2 gap-1.5">
                 {COLLECTION_CARD_COLORS.map((color, i) => (
                   <div

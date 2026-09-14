@@ -12,11 +12,7 @@ const CommandPaletteContext = createContext<CommandPaletteContextValue | null>(n
 export function CommandPaletteProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
 
-  return (
-    <CommandPaletteContext.Provider value={{ open, setOpen }}>
-      {children}
-    </CommandPaletteContext.Provider>
-  );
+  return <CommandPaletteContext.Provider value={{ open, setOpen }}>{children}</CommandPaletteContext.Provider>;
 }
 
 export function useCommandPalette() {

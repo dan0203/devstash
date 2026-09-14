@@ -135,8 +135,7 @@ export function ChaosField() {
       ref={fieldRef}
       className="relative m-3 flex-1 overflow-hidden rounded-lg"
       style={{
-        backgroundImage:
-          "radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.06), transparent 60%)",
+        backgroundImage: "radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.06), transparent 60%)",
       }}
     >
       {CHAOS_ICONS.map(({ key, label, Icon }, i) => (

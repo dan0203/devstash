@@ -29,13 +29,7 @@ interface MarkdownEditorProps {
 const tabTriggerClassName =
   "h-auto rounded-none border-none px-0 py-0 text-[10px] font-medium tracking-wide text-neutral-400 uppercase data-active:bg-transparent data-active:text-neutral-100 hover:text-neutral-200";
 
-export function MarkdownEditor({
-  value,
-  onChange,
-  readOnly = false,
-  className,
-  optimize,
-}: MarkdownEditorProps) {
+export function MarkdownEditor({ value, onChange, readOnly = false, className, optimize }: MarkdownEditorProps) {
   const [tab, setTab] = useState(readOnly ? "preview" : "write");
   const [copied, setCopied] = useState(false);
 
@@ -57,18 +51,11 @@ export function MarkdownEditor({
   };
 
   return (
-    <div
-      className={cn(
-        "overflow-hidden rounded-lg border border-input bg-[#1e1e1e]",
-        className
-      )}
-    >
+    <div className={cn("overflow-hidden rounded-lg border border-input bg-[#1e1e1e]", className)}>
       <Tabs value={tab} onValueChange={(value) => setTab(value as string)}>
         <div className="flex items-center justify-between border-b border-white/10 bg-[#2d2d2d] px-3 py-2">
           {readOnly ? (
-            <span className="text-[10px] tracking-wide text-neutral-400 uppercase">
-              Preview
-            </span>
+            <span className="text-[10px] tracking-wide text-neutral-400 uppercase">Preview</span>
           ) : (
             <TabsList variant="line" className="h-auto gap-3 bg-transparent p-0">
               <TabsTrigger value="write" className={tabTriggerClassName}>
@@ -129,9 +116,7 @@ export function MarkdownEditor({
       {optimize && optimizeState.optimized && (
         <div className="flex flex-col gap-2 border-t border-white/10 bg-[#242424] p-3">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] tracking-wide text-neutral-400 uppercase">
-              Optimized suggestion
-            </span>
+            <span className="text-[10px] tracking-wide text-neutral-400 uppercase">Optimized suggestion</span>
             <div className="flex items-center gap-2">
               <Button type="button" size="sm" className="h-auto px-2 py-1 text-xs" onClick={handleAcceptOptimized}>
                 Use this prompt

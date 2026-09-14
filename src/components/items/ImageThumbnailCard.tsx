@@ -11,11 +11,7 @@ export function ImageThumbnailCard({ item }: { item: ItemWithType }) {
   const drawerCardProps = useDrawerCardProps(item.id);
 
   return (
-    <Card
-      size="sm"
-      {...drawerCardProps}
-      className="cursor-pointer gap-0 p-0"
-    >
+    <Card size="sm" {...drawerCardProps} className="cursor-pointer gap-0 p-0">
       <div className="group relative aspect-video w-full overflow-hidden">
         {item.fileUrl && (
           <Image

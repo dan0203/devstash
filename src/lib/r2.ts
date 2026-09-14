@@ -16,18 +16,14 @@ export function r2KeyFromUrl(url: string): string {
   return url.replace(`${PUBLIC_URL}/`, "");
 }
 
-export async function uploadToR2(
-  key: string,
-  body: Buffer,
-  contentType: string
-): Promise<string> {
+export async function uploadToR2(key: string, body: Buffer, contentType: string): Promise<string> {
   await r2Client.send(
     new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: key,
       Body: body,
       ContentType: contentType,
-    })
+    }),
   );
 
   return `${PUBLIC_URL}/${key}`;

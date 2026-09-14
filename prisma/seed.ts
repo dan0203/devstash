@@ -27,7 +27,7 @@ async function seedAccount(
   email: string,
   name: string,
   passwordHash: string,
-  itemTypeIdByName: Record<string, string>
+  itemTypeIdByName: Record<string, string>,
 ) {
   const user = await prisma.user.upsert({
     where: { email },
@@ -82,9 +82,7 @@ async function main() {
     const guestPasswordHash = await bcrypt.hash(guestPassword, 12);
     await seedAccount(guestEmail, "Guest", guestPasswordHash, itemTypeIdByName);
   } else {
-    console.log(
-      "DEMO_ACCOUNT_EMAIL/DEMO_ACCOUNT_PASSWORD not set, skipping public guest demo account seed."
-    );
+    console.log("DEMO_ACCOUNT_EMAIL/DEMO_ACCOUNT_PASSWORD not set, skipping public guest demo account seed.");
   }
 }
 

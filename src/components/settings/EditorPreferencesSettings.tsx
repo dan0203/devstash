@@ -4,13 +4,7 @@ import { useEditorPreferences } from "@/components/editor/hooks/editor-preferenc
 import { CodeEditor } from "@/components/editor/CodeEditor";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   EDITOR_FONT_SIZES,
   EDITOR_TAB_SIZES,
@@ -36,9 +30,7 @@ export function EditorPreferencesSettings() {
         <Label htmlFor="editor-font-size">Font size</Label>
         <Select
           value={String(preferences.fontSize)}
-          onValueChange={(value) =>
-            setPreferences({ ...preferences, fontSize: Number(value) })
-          }
+          onValueChange={(value) => setPreferences({ ...preferences, fontSize: Number(value) })}
         >
           <SelectTrigger id="editor-font-size" className="w-24">
             <SelectValue>{(value: string) => `${value}px`}</SelectValue>
@@ -57,9 +49,7 @@ export function EditorPreferencesSettings() {
         <Label htmlFor="editor-tab-size">Tab size</Label>
         <Select
           value={String(preferences.tabSize)}
-          onValueChange={(value) =>
-            setPreferences({ ...preferences, tabSize: Number(value) })
-          }
+          onValueChange={(value) => setPreferences({ ...preferences, tabSize: Number(value) })}
         >
           <SelectTrigger id="editor-tab-size" className="w-32">
             <SelectValue>{(value: string) => `${value} spaces`}</SelectValue>
@@ -85,9 +75,7 @@ export function EditorPreferencesSettings() {
           }}
         >
           <SelectTrigger id="editor-theme" className="w-40">
-            <SelectValue>
-              {(value: string) => (isEditorTheme(value) ? THEME_LABELS[value] : value)}
-            </SelectValue>
+            <SelectValue>{(value: string) => (isEditorTheme(value) ? THEME_LABELS[value] : value)}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             {EDITOR_THEMES.map((theme) => (
@@ -102,9 +90,7 @@ export function EditorPreferencesSettings() {
       <div className="flex items-center justify-between rounded-lg border border-input px-4 py-3">
         <div className="flex flex-col gap-0.5">
           <Label htmlFor="editor-word-wrap">Word wrap</Label>
-          <span className="text-xs text-muted-foreground">
-            Wrap long lines instead of scrolling horizontally
-          </span>
+          <span className="text-xs text-muted-foreground">Wrap long lines instead of scrolling horizontally</span>
         </div>
         <Switch
           id="editor-word-wrap"
@@ -116,9 +102,7 @@ export function EditorPreferencesSettings() {
       <div className="flex items-center justify-between rounded-lg border border-input px-4 py-3">
         <div className="flex flex-col gap-0.5">
           <Label htmlFor="editor-minimap">Minimap</Label>
-          <span className="text-xs text-muted-foreground">
-            Show a miniature preview of the file on the right
-          </span>
+          <span className="text-xs text-muted-foreground">Show a miniature preview of the file on the right</span>
         </div>
         <Switch
           id="editor-minimap"

@@ -44,10 +44,7 @@ export interface RateLimitResult {
 }
 
 /** Fails open (allows the request) if Upstash isn't configured or unreachable. */
-export async function checkRateLimit(
-  limiter: Ratelimit | null,
-  key: string
-): Promise<RateLimitResult> {
+export async function checkRateLimit(limiter: Ratelimit | null, key: string): Promise<RateLimitResult> {
   if (!limiter) {
     return { success: true, remaining: Infinity, reset: 0 };
   }
@@ -76,15 +73,12 @@ export function rateLimitResponse(reset: number) {
   const retryAfterSeconds = Math.max(1, Math.ceil((reset - Date.now()) / 1000));
   return NextResponse.json(
     { success: false, error: rateLimitErrorMessage(reset) },
-    { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } }
+    { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } },
   );
 }
 
 /** Checks a rate limiter and returns a 429 NextResponse if exceeded, or null to proceed. */
-export async function enforceRateLimit(
-  limiter: Ratelimit | null,
-  key: string
-): Promise<NextResponse | null> {
+export async function enforceRateLimit(limiter: Ratelimit | null, key: string): Promise<NextResponse | null> {
   const result = await checkRateLimit(limiter, key);
   return result.success ? null : rateLimitResponse(result.reset);
 }

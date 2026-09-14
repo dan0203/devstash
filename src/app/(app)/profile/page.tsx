@@ -12,10 +12,7 @@ export default async function ProfilePage() {
     redirect("/sign-in?callbackUrl=/profile");
   }
 
-  const [user, stats] = await Promise.all([
-    getUserProfile(session.user.id),
-    getProfileStats(session.user.id),
-  ]);
+  const [user, stats] = await Promise.all([getUserProfile(session.user.id), getProfileStats(session.user.id)]);
 
   if (!user) {
     redirect("/sign-in?callbackUrl=/profile");
@@ -50,21 +47,14 @@ export default async function ProfilePage() {
           <CardHeader>
             <CardTitle className="text-lg">Usage</CardTitle>
             <CardDescription>
-              {stats.totalItems} item{stats.totalItems === 1 ? "" : "s"} across{" "}
-              {stats.totalCollections} collection{stats.totalCollections === 1 ? "" : "s"}
+              {stats.totalItems} item{stats.totalItems === 1 ? "" : "s"} across {stats.totalCollections} collection
+              {stats.totalCollections === 1 ? "" : "s"}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {stats.typeBreakdown.map((type) => (
-              <div
-                key={type.name}
-                className="flex flex-col gap-1 rounded-lg ring-1 ring-foreground/10 p-3"
-              >
-                <span
-                  className="size-2 rounded-full"
-                  style={{ backgroundColor: type.color }}
-                  aria-hidden
-                />
+              <div key={type.name} className="flex flex-col gap-1 rounded-lg ring-1 ring-foreground/10 p-3">
+                <span className="size-2 rounded-full" style={{ backgroundColor: type.color }} aria-hidden />
                 <span className="text-lg font-medium">{type.count}</span>
                 <span className="text-xs text-muted-foreground">{type.name}</span>
               </div>

@@ -54,9 +54,7 @@ export function ItemCard({ item }: { item: ItemWithType }) {
             className="size-6 text-muted-foreground hover:text-foreground"
             onClick={handleToggleFavorite}
           >
-            <Star
-              className={item.isFavorite ? "size-3.5 fill-yellow-400 text-yellow-400" : "size-3.5"}
-            />
+            <Star className={item.isFavorite ? "size-3.5 fill-yellow-400 text-yellow-400" : "size-3.5"} />
           </Button>
           {copyText && (
             <Button
@@ -85,9 +83,7 @@ export function ItemCard({ item }: { item: ItemWithType }) {
             </Badge>
           ))}
         </div>
-        <span className="shrink-0 text-xs text-muted-foreground">
-          {formatRelativeTime(item.updatedAt)}
-        </span>
+        <span className="shrink-0 text-xs text-muted-foreground">{formatRelativeTime(item.updatedAt)}</span>
       </div>
     </Card>
   );

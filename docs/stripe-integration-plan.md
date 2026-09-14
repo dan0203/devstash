@@ -73,16 +73,16 @@ None. `isPro`/`stripeCustomerId`/`stripeSubscriptionId` are unused dead columns 
 
 ### Free tier limits (from `context/project-overview.md` §6)
 
-| Limit | Free | Pro |
-| --- | --- | --- |
-| Items | 50 total | Unlimited |
-| Collections | 3 | Unlimited |
-| File/image uploads | ❌ | ✅ |
-| AI features | ❌ | ✅ |
-| Custom types | ❌ | ✅ (not yet built) |
-| Export | ❌ | ✅ (not yet built) |
+| Limit              | Free     | Pro                |
+| ------------------ | -------- | ------------------ |
+| Items              | 50 total | Unlimited          |
+| Collections        | 3        | Unlimited          |
+| File/image uploads | ❌       | ✅                 |
+| AI features        | ❌       | ✅                 |
+| Custom types       | ❌       | ✅ (not yet built) |
+| Export             | ❌       | ✅ (not yet built) |
 
-Per `project-overview.md`: *"Dev-mode note: Build the Pro/Free gating foundation now, but leave all features unlocked for all users during development."* This plan follows that — it adds the gating **checks** but they should ship soft/permissive (or behind a flag) until the team is ready to actually enforce limits, matching the project's stated dev-mode posture.
+Per `project-overview.md`: _"Dev-mode note: Build the Pro/Free gating foundation now, but leave all features unlocked for all users during development."_ This plan follows that — it adds the gating **checks** but they should ship soft/permissive (or behind a flag) until the team is ready to actually enforce limits, matching the project's stated dev-mode posture.
 
 ### Where counts are/could be checked
 
@@ -188,7 +188,7 @@ export async function getUserIdByStripeCustomerId(stripeCustomerId: string): Pro
 "use server";
 
 export async function createCheckoutSession(
-  plan: "monthly" | "yearly"
+  plan: "monthly" | "yearly",
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "Not signed in" };

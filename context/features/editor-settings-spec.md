@@ -18,4 +18,3 @@ Add editor preferences section to settings page with auto-save to database.
 - Auto-save on change (no save button)
 - Show success toast on save
 - Create EditorPreferencesContext for client components
-

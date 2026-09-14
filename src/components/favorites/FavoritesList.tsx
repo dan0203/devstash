@@ -6,13 +6,7 @@ import { type ItemWithType } from "@/lib/db/items";
 import { type CollectionWithStats } from "@/lib/db/collections";
 import { FavoriteItemRow } from "@/components/favorites/FavoriteItemRow";
 import { FavoriteCollectionRow } from "@/components/favorites/FavoriteCollectionRow";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type SortOption = "newest" | "oldest" | "az" | "za" | "type";
 
@@ -32,26 +26,16 @@ function sortItems(items: ItemWithType[], sort: SortOption): ItemWithType[] {
     case "za":
       return sorted.sort((a, b) => b.title.localeCompare(a.title));
     case "type":
-      return sorted.sort(
-        (a, b) =>
-          a.itemType.name.localeCompare(b.itemType.name) || a.title.localeCompare(b.title),
-      );
+      return sorted.sort((a, b) => a.itemType.name.localeCompare(b.itemType.name) || a.title.localeCompare(b.title));
     case "oldest":
-      return sorted.sort(
-        (a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
-      );
+      return sorted.sort((a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
     case "newest":
     default:
-      return sorted.sort(
-        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-      );
+      return sorted.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   }
 }
 
-function sortCollections(
-  collections: CollectionWithStats[],
-  sort: SortOption,
-): CollectionWithStats[] {
+function sortCollections(collections: CollectionWithStats[], sort: SortOption): CollectionWithStats[] {
   const sorted = [...collections];
   switch (sort) {
     case "za":

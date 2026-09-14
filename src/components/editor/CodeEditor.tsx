@@ -19,9 +19,7 @@ import { useExplainCode } from "@/components/ai/hooks/use-explain-code";
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-32 items-center justify-center text-xs text-neutral-400">
-      Loading editor...
-    </div>
+    <div className="flex h-32 items-center justify-center text-xs text-neutral-400">Loading editor...</div>
   ),
 });
 
@@ -49,14 +47,7 @@ interface CodeEditorProps {
   explain?: CodeEditorExplainOptions;
 }
 
-export function CodeEditor({
-  value,
-  onChange,
-  language,
-  readOnly = false,
-  className,
-  explain,
-}: CodeEditorProps) {
+export function CodeEditor({ value, onChange, language, readOnly = false, className, explain }: CodeEditorProps) {
   const { preferences } = useEditorPreferences();
   const [height, setHeight] = useState(MIN_HEIGHT);
   const [copied, setCopied] = useState(false);
@@ -98,22 +89,13 @@ export function CodeEditor({
   const showTabs = Boolean(explain && explainState.explanation);
 
   return (
-    <div
-      className={cn(
-        "overflow-hidden rounded-lg border border-input bg-[#1e1e1e]",
-        className
-      )}
-    >
+    <div className={cn("overflow-hidden rounded-lg border border-input bg-[#1e1e1e]", className)}>
       <Tabs value={tab} onValueChange={(value) => setTab(value as "code" | "explain")}>
         <div className="flex items-center justify-between border-b border-white/10 bg-[#2a2a2a] px-3 py-2">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5" aria-hidden="true">
               {WINDOW_DOT_COLORS.map((color) => (
-                <span
-                  key={color}
-                  className="size-2.5 rounded-full"
-                  style={{ backgroundColor: color }}
-                />
+                <span key={color} className="size-2.5 rounded-full" style={{ backgroundColor: color }} />
               ))}
             </div>
             {showTabs && (
@@ -129,9 +111,7 @@ export function CodeEditor({
           </div>
           <div className="flex items-center gap-2">
             {!showTabs && language && (
-              <span className="text-[10px] tracking-wide text-neutral-400 uppercase">
-                {language}
-              </span>
+              <span className="text-[10px] tracking-wide text-neutral-400 uppercase">{language}</span>
             )}
             {explain && !explainState.explanation && (
               <AiActionTrigger

@@ -12,37 +12,30 @@ export async function toggleBooleanColumn(
   table: "Item" | "Collection",
   field: string,
   id: string,
-  currentValue: boolean
+  currentValue: boolean,
 ): Promise<boolean> {
   const rows = await prisma.$queryRawUnsafe<Record<string, boolean>[]>(
     `UPDATE "${table}" SET "${field}" = $1 WHERE "id" = $2 RETURNING "${field}"`,
     !currentValue,
-    id
+    id,
   );
   return rows[0][field];
 }
 
-export function findOwnedItem<T extends Prisma.ItemSelect>(
-  userId: string,
-  itemId: string,
-  select: T
-) {
+export function findOwnedItem<T extends Prisma.ItemSelect>(userId: string, itemId: string, select: T) {
   return prisma.item.findFirst({ where: { id: itemId, userId }, select });
 }
 
 export function findOwnedCollection<T extends Prisma.CollectionSelect>(
   userId: string,
   collectionId: string,
-  select: T
+  select: T,
 ) {
   return prisma.collection.findFirst({ where: { id: collectionId, userId }, select });
 }
 
 /** Filters a submitted list of collection ids down to ones the user actually owns. */
-export async function findOwnedCollectionIds(
-  userId: string,
-  collectionIds: string[]
-): Promise<string[]> {
+export async function findOwnedCollectionIds(userId: string, collectionIds: string[]): Promise<string[]> {
   if (collectionIds.length === 0) return [];
   const owned = await prisma.collection.findMany({
     where: { id: { in: collectionIds }, userId },

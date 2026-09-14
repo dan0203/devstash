@@ -16,16 +16,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "DevStash",
-  description:
-    "A fast, searchable, AI-enhanced hub for your snippets, prompts, commands, and notes.",
+  description: "A fast, searchable, AI-enhanced hub for your snippets, prompts, commands, and notes.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${libreFranklin.variable} ${geistMono.variable} dark h-full antialiased`}
-    >
+    <html lang="en" className={`${libreFranklin.variable} ${geistMono.variable} dark h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <TooltipProvider>
           {children}

@@ -20,14 +20,13 @@ export default async function DashboardPage() {
   }
   const userId = session.user.id;
 
-  const [recentCollections, collectionStats, pinnedItems, recentItems, itemStats] =
-    await Promise.all([
-      getRecentCollections(userId, DASHBOARD_COLLECTIONS_LIMIT),
-      getCollectionStats(userId),
-      getPinnedItems(userId),
-      getRecentItems(userId, DASHBOARD_RECENT_ITEMS_LIMIT),
-      getItemStats(userId),
-    ]);
+  const [recentCollections, collectionStats, pinnedItems, recentItems, itemStats] = await Promise.all([
+    getRecentCollections(userId, DASHBOARD_COLLECTIONS_LIMIT),
+    getCollectionStats(userId),
+    getPinnedItems(userId),
+    getRecentItems(userId, DASHBOARD_RECENT_ITEMS_LIMIT),
+    getItemStats(userId),
+  ]);
 
   return (
     <main className="min-h-0 flex-1 overflow-y-auto p-6">
@@ -43,9 +42,7 @@ export default async function DashboardPage() {
         />
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold tracking-wide text-muted-foreground">
-            RECENT COLLECTIONS
-          </h2>
+          <h2 className="text-sm font-semibold tracking-wide text-muted-foreground">RECENT COLLECTIONS</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {recentCollections.map((collection) => (
               <CollectionCard key={collection.id} collection={collection} />
@@ -54,9 +51,7 @@ export default async function DashboardPage() {
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold tracking-wide text-muted-foreground">
-            PINNED ITEMS
-          </h2>
+          <h2 className="text-sm font-semibold tracking-wide text-muted-foreground">PINNED ITEMS</h2>
           {pinnedItems.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {pinnedItems.map((item) => (
@@ -69,9 +64,7 @@ export default async function DashboardPage() {
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold tracking-wide text-muted-foreground">
-            RECENT ITEMS
-          </h2>
+          <h2 className="text-sm font-semibold tracking-wide text-muted-foreground">RECENT ITEMS</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {recentItems.map((item) => (
               <ItemCard key={item.id} item={item} />

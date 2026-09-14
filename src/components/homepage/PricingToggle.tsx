@@ -6,11 +6,7 @@ import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import {
-  FREE_PLAN_FEATURES,
-  FREE_PLAN_UNAVAILABLE_FEATURES,
-  PRO_PLAN_FEATURES,
-} from "@/lib/homepage-data";
+import { FREE_PLAN_FEATURES, FREE_PLAN_UNAVAILABLE_FEATURES, PRO_PLAN_FEATURES } from "@/lib/homepage-data";
 import { cn } from "@/lib/utils";
 
 export function PricingToggle() {
@@ -20,11 +16,7 @@ export function PricingToggle() {
     <div>
       <div className="mb-12 flex items-center justify-center gap-3.5">
         <span className="text-sm text-muted-foreground">Monthly</span>
-        <Switch
-          checked={isYearly}
-          onCheckedChange={setIsYearly}
-          aria-label="Toggle yearly billing"
-        />
+        <Switch checked={isYearly} onCheckedChange={setIsYearly} aria-label="Toggle yearly billing" />
         <span className="text-sm text-muted-foreground">
           Yearly
           <Badge className="ml-1.5 bg-green-500 text-neutral-800" variant="secondary">
@@ -51,12 +43,7 @@ export function PricingToggle() {
               </PlanFeature>
             ))}
           </ul>
-          <Button
-            variant="outline"
-            className="mt-6 w-full"
-            nativeButton={false}
-            render={<Link href="/sign-in" />}
-          >
+          <Button variant="outline" className="mt-6 w-full" nativeButton={false} render={<Link href="/sign-in" />}>
             Get Started
           </Button>
         </div>
@@ -68,9 +55,7 @@ export function PricingToggle() {
           <h3 className="mb-3 text-lg font-semibold">Pro</h3>
           <div className="mb-1.5 flex items-baseline gap-1">
             <span className="text-4xl font-extrabold">{isYearly ? "$6" : "$8"}</span>
-            <span className="text-sm text-muted-foreground">
-              /month{isYearly ? " (billed $72/year)" : ""}
-            </span>
+            <span className="text-sm text-muted-foreground">/month{isYearly ? " (billed $72/year)" : ""}</span>
           </div>
           <p className="mb-6 text-sm text-muted-foreground">For serious developers</p>
           <ul className="flex flex-1 flex-col gap-2.5">
@@ -91,19 +76,10 @@ export function PricingToggle() {
   );
 }
 
-function PlanFeature({
-  children,
-  available = true,
-}: {
-  children: string;
-  available?: boolean;
-}) {
+function PlanFeature({ children, available = true }: { children: string; available?: boolean }) {
   return (
     <li
-      className={cn(
-        "flex items-start gap-2 text-sm",
-        available ? "text-muted-foreground" : "text-muted-foreground/50"
-      )}
+      className={cn("flex items-start gap-2 text-sm", available ? "text-muted-foreground" : "text-muted-foreground/50")}
     >
       {available ? (
         <Check className="mt-0.5 size-3.5 shrink-0 text-green-400" />

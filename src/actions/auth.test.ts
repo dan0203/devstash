@@ -24,9 +24,13 @@ vi.mock(import("@/auth"), () => ({
   signOut: mockSignOut,
 }));
 
-vi.mock(import("@/lib/prisma"), () => ({
-  prisma: { user: { delete: mockUserDelete } },
-}) as never);
+vi.mock(
+  import("@/lib/prisma"),
+  () =>
+    ({
+      prisma: { user: { delete: mockUserDelete } },
+    }) as never,
+);
 
 import { deleteAccount } from "./auth";
 

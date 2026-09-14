@@ -126,11 +126,7 @@ export function ItemDrawerEditForm({
       />
       <div className="flex flex-col gap-2">
         <Label className={SECTION_LABEL_CLASSNAME}>Collections</Label>
-        <CollectionSelect
-          collections={collections}
-          selectedIds={collectionIds}
-          onChange={setCollectionIds}
-        />
+        <CollectionSelect collections={collections} selectedIds={collectionIds} onChange={setCollectionIds} />
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">

@@ -32,16 +32,13 @@ export async function POST(request: Request) {
   if (!user?.password) {
     return NextResponse.json(
       { success: false, error: "This account signs in with GitHub and has no password to change" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   const isValid = await bcrypt.compare(currentPassword, user.password);
   if (!isValid) {
-    return NextResponse.json(
-      { success: false, error: "Current password is incorrect" },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, error: "Current password is incorrect" }, { status: 400 });
   }
 
   await updateUserPassword({ id: user.id }, newPassword);

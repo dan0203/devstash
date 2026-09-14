@@ -36,7 +36,7 @@ export function RegisterForm() {
 
   const [githubState, githubAction, isGithubPending] = useActionState(
     signInWithGithub.bind(null, "/dashboard"),
-    initialActionState
+    initialActionState,
   );
 
   async function handleSubmit(e: React.FormEvent) {
@@ -52,10 +52,7 @@ export function RegisterForm() {
     setIsSubmitting(true);
 
     try {
-      const body = await postJson<{ success: boolean; error?: string }>(
-        "/api/auth/register",
-        parsed.data
-      );
+      const body = await postJson<{ success: boolean; error?: string }>("/api/auth/register", parsed.data);
 
       if (!body.success) {
         setError(body.error ?? "Something went wrong");
@@ -138,9 +135,7 @@ export function RegisterForm() {
         </Button>
       </form>
       {githubState.code && (
-        <p className="text-sm text-destructive">
-          Something went wrong — check your connection and try again
-        </p>
+        <p className="text-sm text-destructive">Something went wrong — check your connection and try again</p>
       )}
     </div>
   );

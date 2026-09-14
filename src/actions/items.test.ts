@@ -26,18 +26,26 @@ vi.mock(import("@/auth"), () => ({
   auth: mockAuth,
 }));
 
-vi.mock(import("@/lib/db/items"), () => ({
-  createItem: mockCreateItem,
-  updateItem: mockUpdateItem,
-  deleteItem: mockDeleteItem,
-  toggleItemFavorite: mockToggleItemFavorite,
-  toggleItemPin: mockToggleItemPin,
-  getItemStats: mockGetItemStats,
-}) as never);
+vi.mock(
+  import("@/lib/db/items"),
+  () =>
+    ({
+      createItem: mockCreateItem,
+      updateItem: mockUpdateItem,
+      deleteItem: mockDeleteItem,
+      toggleItemFavorite: mockToggleItemFavorite,
+      toggleItemPin: mockToggleItemPin,
+      getItemStats: mockGetItemStats,
+    }) as never,
+);
 
-vi.mock(import("@/lib/db/item-types"), () => ({
-  getItemTypeByName: mockGetItemTypeByName,
-}) as never);
+vi.mock(
+  import("@/lib/db/item-types"),
+  () =>
+    ({
+      getItemTypeByName: mockGetItemTypeByName,
+    }) as never,
+);
 
 import { createItem, updateItem, deleteItem, toggleItemFavorite, toggleItemPin } from "./items";
 
@@ -137,7 +145,7 @@ describe("createItem", () => {
     expect(mockCreateItem).toHaveBeenCalledWith(
       "user-1",
       "type-link",
-      expect.objectContaining({ contentType: "url", content: null, url: "https://example.com" })
+      expect.objectContaining({ contentType: "url", content: null, url: "https://example.com" }),
     );
   });
 
@@ -173,7 +181,7 @@ describe("createItem", () => {
         fileUrl: "https://r2.example.com/user-1/photo.png",
         fileName: "photo.png",
         fileSize: 1024,
-      })
+      }),
     );
   });
 

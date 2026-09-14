@@ -18,10 +18,7 @@ export async function GET(request: Request) {
 
   const credentials = getDemoAccountCredentials();
   if (!credentials) {
-    return NextResponse.json(
-      { success: false, error: "Demo account is not configured" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: "Demo account is not configured" }, { status: 500 });
   }
 
   const demoUser = await prisma.user.findUnique({ where: { email: credentials.email } });

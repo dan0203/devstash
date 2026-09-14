@@ -63,12 +63,7 @@ export function CommandPalette() {
   }
 
   return (
-    <CommandDialog
-      open={open}
-      onOpenChange={setOpen}
-      title="Search"
-      description="Search items and collections"
-    >
+    <CommandDialog open={open} onOpenChange={setOpen} title="Search" description="Search items and collections">
       <Command filter={filterWithTypoTolerance}>
         <CommandInput placeholder="Search items and collections..." />
         <CommandList>
@@ -89,11 +84,7 @@ export function CommandPalette() {
                   {Icon && <Icon className="size-4" style={{ color: item.itemType.color }} />}
                   <div className="flex min-w-0 flex-col">
                     <span className="truncate">{item.title}</span>
-                    {item.preview && (
-                      <span className="truncate text-xs text-muted-foreground">
-                        {item.preview}
-                      </span>
-                    )}
+                    {item.preview && <span className="truncate text-xs text-muted-foreground">{item.preview}</span>}
                   </div>
                 </CommandItem>
               );
@@ -101,11 +92,7 @@ export function CommandPalette() {
           </CommandGroup>
           <CommandGroup heading="Collections">
             {collections.map((collection) => (
-              <CommandItem
-                key={collection.id}
-                value={collection.name}
-                onSelect={() => selectCollection(collection.id)}
-              >
+              <CommandItem key={collection.id} value={collection.name} onSelect={() => selectCollection(collection.id)}>
                 <Folder className="size-4" />
                 <span className="flex-1 truncate">{collection.name}</span>
                 <span className="text-xs text-muted-foreground">

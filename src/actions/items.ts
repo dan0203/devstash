@@ -16,15 +16,7 @@ import { FREE_TIER_LIMITS, checkPlanLimit, isOverItemLimit, isPlanLimitsEnforced
 import { requireSession } from "@/lib/auth-utils";
 import { parseOrError } from "@/lib/validation";
 
-const CREATABLE_ITEM_TYPES = [
-  "snippet",
-  "prompt",
-  "command",
-  "note",
-  "link",
-  "file",
-  "image",
-] as const;
+const CREATABLE_ITEM_TYPES = ["snippet", "prompt", "command", "note", "link", "file", "image"] as const;
 const FILE_ITEM_TYPES = new Set(["file", "image"]);
 
 function buildCreateItemSchema(isPro: boolean) {
@@ -55,12 +47,12 @@ function buildCreateItemSchema(isPro: boolean) {
         !FILE_ITEM_TYPES.has(data.itemType) ||
         !process.env.R2_PUBLIC_URL ||
         data.fileUrl.startsWith(process.env.R2_PUBLIC_URL),
-      { message: "Invalid file reference", path: ["fileUrl"] }
+      { message: "Invalid file reference", path: ["fileUrl"] },
     )
-    .refine(
-      (data) => !isPlanLimitsEnforced() || !FILE_ITEM_TYPES.has(data.itemType) || isPro,
-      { message: "File and image uploads require a Pro plan", path: ["itemType"] }
-    );
+    .refine((data) => !isPlanLimitsEnforced() || !FILE_ITEM_TYPES.has(data.itemType) || isPro, {
+      message: "File and image uploads require a Pro plan",
+      path: ["itemType"],
+    });
 }
 
 export type CreateItemInput = z.infer<ReturnType<typeof buildCreateItemSchema>>;
@@ -84,11 +76,7 @@ export async function createItem(input: CreateItemInput): Promise<CreateItemStat
 
   if (isPlanLimitsEnforced()) {
     const stats = await getItemStats(auth.userId);
-    const limitError = checkPlanLimit(
-      isOverItemLimit(auth.isPro, stats.total),
-      FREE_TIER_LIMITS.items,
-      "items"
-    );
+    const limitError = checkPlanLimit(isOverItemLimit(auth.isPro, stats.total), FREE_TIER_LIMITS.items, "items");
     if (limitError) {
       return { success: false, error: limitError };
     }

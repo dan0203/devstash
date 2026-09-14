@@ -29,32 +29,32 @@ The `openai` npm package v6+ has TWO different APIs. **gpt-5-nano does NOT work 
 ```typescript
 // CORRECT — Responses API (works with gpt-5-nano)
 const response = await client.responses.create({
-  model: 'gpt-5-nano',
-  instructions: 'You are a developer tool assistant...',
-  input: 'Suggest 3-5 tags for this snippet...',
+  model: "gpt-5-nano",
+  instructions: "You are a developer tool assistant...",
+  input: "Suggest 3-5 tags for this snippet...",
   text: {
-    format: { type: 'json_object' },
+    format: { type: "json_object" },
   },
 });
 const text = response.output_text; // <-- this is where the content is
 
 // WRONG — Chat Completions API (returns empty content with gpt-5-nano)
 const completion = await client.chat.completions.create({
-  model: 'gpt-5-nano',
-  messages: [{ role: 'user', content: '...' }],
+  model: "gpt-5-nano",
+  messages: [{ role: "user", content: "..." }],
 });
 // completion.choices[0].message.content will be "" (empty string)
 ```
 
 ### Key differences from Chat Completions
 
-| Chat Completions | Responses API |
-|---|---|
-| `client.chat.completions.create()` | `client.responses.create()` |
-| `messages: [{ role, content }]` | `instructions` (system) + `input` (user) |
+| Chat Completions                           | Responses API                               |
+| ------------------------------------------ | ------------------------------------------- |
+| `client.chat.completions.create()`         | `client.responses.create()`                 |
+| `messages: [{ role, content }]`            | `instructions` (system) + `input` (user)    |
 | `response_format: { type: 'json_object' }` | `text: { format: { type: 'json_object' } }` |
-| `completion.choices[0].message.content` | `response.output_text` |
-| `max_tokens` / `max_completion_tokens` | not needed (or use `max_output_tokens`) |
+| `completion.choices[0].message.content`    | `response.output_text`                      |
+| `max_tokens` / `max_completion_tokens`     | not needed (or use `max_output_tokens`)     |
 
 ### Other gotchas
 

@@ -24,15 +24,9 @@ export function CollectionCardMenu({ collection, onToggleFavorite }: CollectionC
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
-    <div
-      className="shrink-0"
-      onClick={(e) => e.stopPropagation()}
-      onKeyDown={(e) => e.stopPropagation()}
-    >
+    <div className="shrink-0" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
       <DropdownMenu>
-        <DropdownMenuTrigger
-          render={<Button variant="ghost" size="icon-sm" aria-label="Collection actions" />}
-        >
+        <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Collection actions" />}>
           <MoreVertical />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

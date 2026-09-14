@@ -38,4 +38,4 @@ You are a UI/UX reviewer. Use Playwright to view pages and evaluate:
 
 ## Notes
 
-Make the summary concise with numbered issues to fix. 
+Make the summary concise with numbered issues to fix.

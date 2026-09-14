@@ -9,12 +9,7 @@ interface StatsRowProps {
   favoriteCollections: number;
 }
 
-export function StatsRow({
-  totalItems,
-  totalCollections,
-  favoriteItems,
-  favoriteCollections,
-}: StatsRowProps) {
+export function StatsRow({ totalItems, totalCollections, favoriteItems, favoriteCollections }: StatsRowProps) {
   const stats = [
     { label: "Items", value: totalItems, icon: Layers },
     { label: "Collections", value: totalCollections, icon: FolderKanban },

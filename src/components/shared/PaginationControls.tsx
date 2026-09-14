@@ -62,7 +62,7 @@ export function PaginationControls({ basePath, currentPage, totalPages }: Pagina
                 {page}
               </PaginationLink>
             </PaginationItem>
-          )
+          ),
         )}
 
         <PaginationItem>

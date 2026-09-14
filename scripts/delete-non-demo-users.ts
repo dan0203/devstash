@@ -47,9 +47,7 @@ async function main() {
 
     // VerificationToken isn't linked by a userId FK (identifier is the raw
     // email), so it doesn't cascade and has to be cleaned up separately.
-    const deletedEmails = usersToDelete
-      .map((user) => user.email)
-      .filter((email): email is string => email !== null);
+    const deletedEmails = usersToDelete.map((user) => user.email).filter((email): email is string => email !== null);
     await prisma.verificationToken.deleteMany({
       where: { identifier: { in: deletedEmails } },
     });

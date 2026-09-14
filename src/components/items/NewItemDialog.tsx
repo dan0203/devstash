@@ -74,14 +74,7 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
         if (!next) newItemForm.reset();
       }}
     >
-      <DialogTrigger
-        render={
-          <Button
-            aria-label="New item"
-            className="cursor-pointer"
-          />
-        }
-      >
+      <DialogTrigger render={<Button aria-label="New item" className="cursor-pointer" />}>
         <Plus />
         <span className="hidden md:inline">New item</span>
       </DialogTrigger>
@@ -198,9 +191,7 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
             <Button
               type="submit"
               disabled={
-                submitting ||
-                !form.title.trim() ||
-                (activeType && FILE_TYPES.has(activeType.value) && !form.file)
+                submitting || !form.title.trim() || (activeType && FILE_TYPES.has(activeType.value) && !form.file)
               }
             >
               {submitting ? "Creating..." : "Create item"}

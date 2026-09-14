@@ -21,18 +21,12 @@ interface UseItemDrawerActionsArgs {
  * Bundles the item drawer's mutation handlers (copy/edit/cancel/save/
  * favorite/pin/delete), separate from the drawer's own view/edit-mode state.
  */
-export function useItemDrawerActions({
-  item,
-  setItem,
-  editForm,
-  closeDrawer,
-  setIsEditing,
-}: UseItemDrawerActionsArgs) {
+export function useItemDrawerActions({ item, setItem, editForm, closeDrawer, setIsEditing }: UseItemDrawerActionsArgs) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const toggleFavorite = useToggleFavorite(toggleItemFavorite, (isFavorite) =>
-    setItem((current) => (current ? { ...current, isFavorite } : current))
+    setItem((current) => (current ? { ...current, isFavorite } : current)),
   );
 
   const handleCopy = () => {

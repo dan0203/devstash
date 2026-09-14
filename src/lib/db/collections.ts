@@ -61,15 +61,10 @@ const getCollectionsWithStats = cache(async (userId: string): Promise<Collection
     };
   });
 
-  return withStats.sort(
-    (a, b) => (b.lastUpdated?.getTime() ?? 0) - (a.lastUpdated?.getTime() ?? 0)
-  );
+  return withStats.sort((a, b) => (b.lastUpdated?.getTime() ?? 0) - (a.lastUpdated?.getTime() ?? 0));
 });
 
-export async function getRecentCollections(
-  userId: string,
-  limit = 6
-): Promise<CollectionWithStats[]> {
+export async function getRecentCollections(userId: string, limit = 6): Promise<CollectionWithStats[]> {
   const withStats = await getCollectionsWithStats(userId);
   return withStats.slice(0, limit);
 }
@@ -84,11 +79,7 @@ export interface PaginatedCollections {
   totalCount: number;
 }
 
-export async function getCollectionsPage(
-  userId: string,
-  page: number,
-  perPage: number
-): Promise<PaginatedCollections> {
+export async function getCollectionsPage(userId: string, page: number, perPage: number): Promise<PaginatedCollections> {
   const withStats = await getCollectionsWithStats(userId);
   const start = (page - 1) * perPage;
   return {
@@ -102,10 +93,7 @@ export async function getFavoriteCollections(userId: string): Promise<Collection
   return withStats.filter((collection) => collection.isFavorite);
 }
 
-export async function getSidebarRecentCollections(
-  userId: string,
-  limit = 5
-): Promise<CollectionWithStats[]> {
+export async function getSidebarRecentCollections(userId: string, limit = 5): Promise<CollectionWithStats[]> {
   const withStats = await getCollectionsWithStats(userId);
   return withStats.filter((collection) => !collection.isFavorite).slice(0, limit);
 }
@@ -148,7 +136,7 @@ export async function getCollectionDetail(
   userId: string,
   collectionId: string,
   page: number,
-  perPage: number
+  perPage: number,
 ): Promise<CollectionDetail | null> {
   const collection = await prisma.collection.findFirst({
     where: { id: collectionId, userId },
@@ -217,10 +205,7 @@ export interface Collection {
   description: string | null;
 }
 
-export async function createCollection(
-  userId: string,
-  data: CreateCollectionData
-): Promise<Collection> {
+export async function createCollection(userId: string, data: CreateCollectionData): Promise<Collection> {
   const collection = await prisma.collection.create({
     data: {
       userId,
@@ -244,7 +229,7 @@ export interface UpdateCollectionData {
 export async function updateCollection(
   userId: string,
   collectionId: string,
-  data: UpdateCollectionData
+  data: UpdateCollectionData,
 ): Promise<Collection | null> {
   const existing = await findOwnedCollection(userId, collectionId, { id: true });
   if (!existing) return null;
@@ -264,10 +249,7 @@ export async function updateCollection(
   };
 }
 
-export async function toggleCollectionFavorite(
-  userId: string,
-  collectionId: string
-): Promise<boolean | null> {
+export async function toggleCollectionFavorite(userId: string, collectionId: string): Promise<boolean | null> {
   const existing = await findOwnedCollection(userId, collectionId, { isFavorite: true });
   if (!existing) return null;
 

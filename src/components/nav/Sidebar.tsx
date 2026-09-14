@@ -24,13 +24,13 @@ export function Sidebar({ user, itemTypes, favoriteCollections, recentCollection
     <aside
       className={cn(
         "hidden min-h-0 shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-200 md:flex md:flex-col",
-        collapsed ? "md:w-16" : "md:w-64"
+        collapsed ? "md:w-16" : "md:w-64",
       )}
     >
       <div
         className={cn(
           "flex items-center gap-2 border-b border-sidebar-border px-4 py-4",
-          collapsed ? "justify-center px-2" : "justify-between"
+          collapsed ? "justify-center px-2" : "justify-between",
         )}
       >
         {!collapsed && <span className="font-semibold">Navigation</span>}

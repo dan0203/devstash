@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
-import {
-  createVerificationToken,
-  isEmailVerificationEnabled,
-  sendVerificationEmail,
-} from "@/lib/verification-email";
+import { createVerificationToken, isEmailVerificationEnabled, sendVerificationEmail } from "@/lib/verification-email";
 import { enforceRateLimit, getClientIp, rateLimiters } from "@/lib/rate-limit";
 import { parseJsonBody } from "@/lib/api-request";
 

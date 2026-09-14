@@ -6,7 +6,7 @@ import { parseOrError } from "@/lib/validation";
 /** Parses and validates an API route's JSON body, or a 400 NextResponse. */
 export async function parseJsonBody<T>(
   request: Request,
-  schema: ZodType<T>
+  schema: ZodType<T>,
 ): Promise<{ data: T } | { response: NextResponse }> {
   const body = await request.json();
   const result = parseOrError(schema, body);

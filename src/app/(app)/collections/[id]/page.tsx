@@ -29,9 +29,7 @@ export default async function CollectionDetailPage(props: PageProps<"/collection
 
   const imageItems = collection.items.filter((item) => item.itemType.name === "image");
   const fileItems = collection.items.filter((item) => item.itemType.name === "file");
-  const otherItems = collection.items.filter(
-    (item) => item.itemType.name !== "image" && item.itemType.name !== "file"
-  );
+  const otherItems = collection.items.filter((item) => item.itemType.name !== "image" && item.itemType.name !== "file");
 
   return (
     <main className="min-h-0 flex-1 overflow-y-auto p-6">
@@ -41,9 +39,7 @@ export default async function CollectionDetailPage(props: PageProps<"/collection
             <h1 className="text-lg font-semibold">{collection.name}</h1>
             <CollectionDetailActions collection={collection} />
           </div>
-          {collection.description && (
-            <p className="text-sm text-muted-foreground">{collection.description}</p>
-          )}
+          {collection.description && <p className="text-sm text-muted-foreground">{collection.description}</p>}
           {collection.types.length > 0 && (
             <div className="flex flex-wrap items-center gap-3">
               {collection.types.map(({ icon, color, count }) => {
@@ -71,9 +67,7 @@ export default async function CollectionDetailPage(props: PageProps<"/collection
 
             {imageItems.length > 0 && (
               <section className="flex flex-col gap-3">
-                <h2 className="text-sm font-semibold tracking-wide text-muted-foreground">
-                  IMAGES
-                </h2>
+                <h2 className="text-sm font-semibold tracking-wide text-muted-foreground">IMAGES</h2>
                 <div className="grid grid-cols-3 gap-4">
                   {imageItems.map((item) => (
                     <ImageThumbnailCard key={item.id} item={item} />
@@ -84,9 +78,7 @@ export default async function CollectionDetailPage(props: PageProps<"/collection
 
             {fileItems.length > 0 && (
               <section className="flex flex-col gap-3">
-                <h2 className="text-sm font-semibold tracking-wide text-muted-foreground">
-                  FILES
-                </h2>
+                <h2 className="text-sm font-semibold tracking-wide text-muted-foreground">FILES</h2>
                 <div className="flex flex-col gap-2">
                   {fileItems.map((item) => (
                     <FileListRow key={item.id} item={item} />
@@ -99,11 +91,7 @@ export default async function CollectionDetailPage(props: PageProps<"/collection
           <p className="text-sm text-muted-foreground">No items in this collection yet.</p>
         )}
 
-        <PaginationControls
-          basePath={`/collections/${id}`}
-          currentPage={page}
-          totalPages={totalPages}
-        />
+        <PaginationControls basePath={`/collections/${id}`} currentPage={page} totalPages={totalPages} />
       </div>
     </main>
   );

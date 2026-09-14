@@ -94,18 +94,10 @@ export function FileUpload({ itemType, value, onChange, className }: FileUploadP
           <div className="flex items-center gap-2 rounded-md border bg-muted/40 p-3 text-sm">
             <FileIcon className="size-4 shrink-0 text-muted-foreground" />
             <span className="truncate">{value.fileName}</span>
-            <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-              {formatFileSize(value.fileSize)}
-            </span>
+            <span className="ml-auto shrink-0 text-xs text-muted-foreground">{formatFileSize(value.fileSize)}</span>
           </div>
         )}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="self-start"
-          onClick={() => onChange(null)}
-        >
+        <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => onChange(null)}>
           <X className="size-3.5" />
           Remove
         </Button>
@@ -132,7 +124,7 @@ export function FileUpload({ itemType, value, onChange, className }: FileUploadP
         }}
         className={cn(
           "flex flex-col items-center gap-2 rounded-md border-2 border-dashed p-6 text-center text-sm text-muted-foreground transition-colors cursor-pointer",
-          dragOver ? "border-primary bg-primary/5" : "border-border hover:bg-accent"
+          dragOver ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
         )}
       >
         <Upload className="size-5" />

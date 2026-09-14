@@ -24,9 +24,7 @@ export function SidebarUserFooter({ collapsed = false, user }: SidebarUserFooter
       <div className={cn("flex items-center gap-2.5", collapsed && "justify-center")}>
         <Link href="/profile" title="Profile" className="relative shrink-0">
           <UserAvatar name={user.name ?? user.email ?? "User"} image={user.image} />
-          {collapsed && user.isPro && (
-            <ProBadge iconOnly className="absolute -right-1 -bottom-1 size-4" />
-          )}
+          {collapsed && user.isPro && <ProBadge iconOnly className="absolute -right-1 -bottom-1 size-4" />}
         </Link>
         {!collapsed && (
           <DropdownMenu>

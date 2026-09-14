@@ -157,11 +157,7 @@ export function cn(...inputs: ClassValue[]) {
  * be called from both the standalone seed script (its own client/adapter)
  * and the app runtime (src/lib/db/demo-account.ts).
  */
-export async function applyDemoSeedData(
-  db: PrismaClient,
-  userId: string,
-  itemTypeIdByName: Record<string, string>
-) {
+export async function applyDemoSeedData(db: PrismaClient, userId: string, itemTypeIdByName: Record<string, string>) {
   for (const collectionSeed of DEMO_SEED_COLLECTIONS) {
     const collection = await db.collection.create({
       data: { name: collectionSeed.name, description: collectionSeed.description, userId },

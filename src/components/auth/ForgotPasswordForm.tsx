@@ -30,10 +30,7 @@ export function ForgotPasswordForm() {
 
     setIsSubmitting(true);
     try {
-      const body = await postJson<{ success: boolean; error?: string }>(
-        "/api/auth/forgot-password",
-        parsed.data
-      );
+      const body = await postJson<{ success: boolean; error?: string }>("/api/auth/forgot-password", parsed.data);
 
       if (!body.success) {
         setError(body.error ?? "Something went wrong");

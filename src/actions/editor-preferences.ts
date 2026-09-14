@@ -9,12 +9,8 @@ import { requireSession } from "@/lib/auth-utils";
 import { parseOrError } from "@/lib/validation";
 
 const updateEditorPreferencesSchema = z.object({
-  fontSize: z
-    .number()
-    .refine((size) => (EDITOR_FONT_SIZES as readonly number[]).includes(size), "Invalid font size"),
-  tabSize: z
-    .number()
-    .refine((size) => (EDITOR_TAB_SIZES as readonly number[]).includes(size), "Invalid tab size"),
+  fontSize: z.number().refine((size) => (EDITOR_FONT_SIZES as readonly number[]).includes(size), "Invalid font size"),
+  tabSize: z.number().refine((size) => (EDITOR_TAB_SIZES as readonly number[]).includes(size), "Invalid tab size"),
   wordWrap: z.boolean(),
   minimap: z.boolean(),
   theme: z.enum(EDITOR_THEMES),
@@ -26,9 +22,7 @@ export interface UpdateEditorPreferencesState {
   error?: string;
 }
 
-export async function updateEditorPreferences(
-  input: EditorPreferences
-): Promise<UpdateEditorPreferencesState> {
+export async function updateEditorPreferences(input: EditorPreferences): Promise<UpdateEditorPreferencesState> {
   const auth = await requireSession();
   if (!auth.ok) {
     return { success: false, error: auth.error };

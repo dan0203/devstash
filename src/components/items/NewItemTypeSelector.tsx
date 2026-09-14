@@ -1,13 +1,7 @@
 import { type ItemTypeWithCount } from "@/lib/db/items";
 import { itemTypeIcons } from "@/lib/icon-map";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface NewItemTypeSelectorProps {
   itemTypes: ItemTypeWithCount[];

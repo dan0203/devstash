@@ -14,11 +14,15 @@ vi.mock(import("@/auth"), () => ({
   auth: mockAuth,
 }));
 
-vi.mock(import("@/lib/mistral"), () => ({
-  mistral: { chat: { complete: mockChatComplete } },
-  AI_MODEL: "mistral-large-latest",
-  isAiEnabled: mockIsAiEnabled,
-}) as never);
+vi.mock(
+  import("@/lib/mistral"),
+  () =>
+    ({
+      mistral: { chat: { complete: mockChatComplete } },
+      AI_MODEL: "mistral-large-latest",
+      isAiEnabled: mockIsAiEnabled,
+    }) as never,
+);
 
 import { explainCode, generateAutoTags, generateDescription, optimizePrompt } from "./ai";
 
@@ -107,9 +111,7 @@ describe("generateAutoTags", () => {
 
   it("parses a {tags: [...]} response, normalizing to lowercase", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
-    mockChatComplete.mockResolvedValue(
-      chatResponse(JSON.stringify({ tags: ["Docker", "Cleanup", "docker"] }))
-    );
+    mockChatComplete.mockResolvedValue(chatResponse(JSON.stringify({ tags: ["Docker", "Cleanup", "docker"] })));
 
     const result = await generateAutoTags(validInput);
 
@@ -221,7 +223,7 @@ describe("generateDescription", () => {
   it("parses a {description: ...} response", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
     mockChatComplete.mockResolvedValue(
-      chatResponse(JSON.stringify({ description: "Fully wipes unused Docker resources." }))
+      chatResponse(JSON.stringify({ description: "Fully wipes unused Docker resources." })),
     );
 
     const result = await generateDescription(validDescriptionInput);
@@ -235,7 +237,7 @@ describe("generateDescription", () => {
   it("works for a link item with no content, using the URL instead", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
     mockChatComplete.mockResolvedValue(
-      chatResponse(JSON.stringify({ description: "A link to the Lucide icon library." }))
+      chatResponse(JSON.stringify({ description: "A link to the Lucide icon library." })),
     );
 
     const result = await generateDescription({
@@ -334,7 +336,7 @@ describe("explainCode", () => {
   it("parses a {explanation: ...} response", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
     mockChatComplete.mockResolvedValue(
-      chatResponse(JSON.stringify({ explanation: "This removes all unused Docker resources." }))
+      chatResponse(JSON.stringify({ explanation: "This removes all unused Docker resources." })),
     );
 
     const result = await explainCode(validExplainInput);
@@ -433,7 +435,7 @@ describe("optimizePrompt", () => {
   it("parses a {optimizedPrompt: ...} response", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", isPro: true } });
     mockChatComplete.mockResolvedValue(
-      chatResponse(JSON.stringify({ optimizedPrompt: "Write a function that reverses a string." }))
+      chatResponse(JSON.stringify({ optimizedPrompt: "Write a function that reverses a string." })),
     );
 
     const result = await optimizePrompt(validOptimizeInput);

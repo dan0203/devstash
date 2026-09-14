@@ -30,26 +30,34 @@ vi.mock(import("@/auth"), () => ({
   auth: mockAuth,
 }));
 
-vi.mock(import("@/lib/db/billing"), () => ({
-  getStripeCustomerContext: mockGetStripeCustomerContext,
-  setStripeCustomerId: mockSetStripeCustomerId,
-}) as never);
+vi.mock(
+  import("@/lib/db/billing"),
+  () =>
+    ({
+      getStripeCustomerContext: mockGetStripeCustomerContext,
+      setStripeCustomerId: mockSetStripeCustomerId,
+    }) as never,
+);
 
-vi.mock(import("@/lib/stripe"), () => ({
-  stripe: {
-    customers: { create: mockCustomersCreate },
-    checkout: { sessions: { create: mockCheckoutSessionsCreate } },
-    billingPortal: { sessions: { create: mockBillingPortalSessionsCreate } },
-  },
-  stripeTest: {
-    customers: { create: mockTestCustomersCreate },
-    checkout: { sessions: { create: mockTestCheckoutSessionsCreate } },
-    billingPortal: { sessions: { create: mockTestBillingPortalSessionsCreate } },
-  },
-  STRIPE_PRICE_IDS: { monthly: "price_monthly", yearly: "price_yearly" },
-  STRIPE_TEST_PRICE_IDS: { monthly: "price_monthly_test", yearly: "price_yearly_test" },
-  isStripeTestModeConfigured: mockIsStripeTestModeConfigured,
-}) as never);
+vi.mock(
+  import("@/lib/stripe"),
+  () =>
+    ({
+      stripe: {
+        customers: { create: mockCustomersCreate },
+        checkout: { sessions: { create: mockCheckoutSessionsCreate } },
+        billingPortal: { sessions: { create: mockBillingPortalSessionsCreate } },
+      },
+      stripeTest: {
+        customers: { create: mockTestCustomersCreate },
+        checkout: { sessions: { create: mockTestCheckoutSessionsCreate } },
+        billingPortal: { sessions: { create: mockTestBillingPortalSessionsCreate } },
+      },
+      STRIPE_PRICE_IDS: { monthly: "price_monthly", yearly: "price_yearly" },
+      STRIPE_TEST_PRICE_IDS: { monthly: "price_monthly_test", yearly: "price_yearly_test" },
+      isStripeTestModeConfigured: mockIsStripeTestModeConfigured,
+    }) as never,
+);
 
 import { createCheckoutSession, createPortalSession } from "./billing";
 
@@ -81,7 +89,7 @@ describe("createCheckoutSession", () => {
 
     expect(mockTestCustomersCreate).toHaveBeenCalled();
     expect(mockTestCheckoutSessionsCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ customer: "cus_test_new", line_items: [{ price: "price_monthly_test", quantity: 1 }] })
+      expect.objectContaining({ customer: "cus_test_new", line_items: [{ price: "price_monthly_test", quantity: 1 }] }),
     );
     expect(mockCustomersCreate).not.toHaveBeenCalled();
     expect(mockCheckoutSessionsCreate).not.toHaveBeenCalled();
@@ -130,7 +138,7 @@ describe("createCheckoutSession", () => {
     const result = await createCheckoutSession("monthly");
 
     expect(mockCustomersCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ email: "demo@devstash.io", name: "Demo User" })
+      expect.objectContaining({ email: "demo@devstash.io", name: "Demo User" }),
     );
     expect(mockSetStripeCustomerId).toHaveBeenCalledWith("user-1", "cus_new");
     expect(mockCheckoutSessionsCreate).toHaveBeenCalledWith(
@@ -138,7 +146,7 @@ describe("createCheckoutSession", () => {
         customer: "cus_new",
         mode: "subscription",
         line_items: [{ price: "price_monthly", quantity: 1 }],
-      })
+      }),
     );
     expect(result).toEqual({ success: true, url: "https://checkout.stripe.com/session" });
   });
@@ -155,9 +163,7 @@ describe("createCheckoutSession", () => {
     const result = await createCheckoutSession("yearly");
 
     expect(mockCustomersCreate).not.toHaveBeenCalled();
-    expect(mockCheckoutSessionsCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ customer: "cus_existing" })
-    );
+    expect(mockCheckoutSessionsCreate).toHaveBeenCalledWith(expect.objectContaining({ customer: "cus_existing" }));
     expect(result).toEqual({ success: true, url: "https://checkout.stripe.com/session" });
   });
 });
@@ -187,7 +193,7 @@ describe("createPortalSession", () => {
     const result = await createPortalSession();
 
     expect(mockTestBillingPortalSessionsCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ customer: "cus_test_existing" })
+      expect.objectContaining({ customer: "cus_test_existing" }),
     );
     expect(mockBillingPortalSessionsCreate).not.toHaveBeenCalled();
     expect(result).toEqual({ success: true, url: "https://billing.stripe.com/test-session" });
@@ -227,9 +233,7 @@ describe("createPortalSession", () => {
 
     const result = await createPortalSession();
 
-    expect(mockBillingPortalSessionsCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ customer: "cus_existing" })
-    );
+    expect(mockBillingPortalSessionsCreate).toHaveBeenCalledWith(expect.objectContaining({ customer: "cus_existing" }));
     expect(result).toEqual({ success: true, url: "https://billing.stripe.com/session" });
   });
 });

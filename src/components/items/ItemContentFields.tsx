@@ -1,20 +1,9 @@
-import {
-  CODE_LANGUAGES,
-  CONTENT_TYPES,
-  LANGUAGE_TYPES,
-  URL_TYPES,
-} from "@/lib/content-types";
+import { CODE_LANGUAGES, CONTENT_TYPES, LANGUAGE_TYPES, URL_TYPES } from "@/lib/content-types";
 import { CodeEditor } from "@/components/editor/CodeEditor";
 import { MarkdownEditor } from "@/components/editor/MarkdownEditor";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ItemContentFieldsProps {
   itemTypeName: string;
@@ -63,9 +52,7 @@ export function ItemContentFields({
           <Select value={language} onValueChange={(value) => onLanguageChange(value ?? "")}>
             <SelectTrigger id={`${idPrefix}-language`} className="w-full">
               <SelectValue placeholder="Select a language">
-                {(value: string) =>
-                  CODE_LANGUAGES.find((lang) => lang.value === value)?.label ?? value
-                }
+                {(value: string) => CODE_LANGUAGES.find((lang) => lang.value === value)?.label ?? value}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>

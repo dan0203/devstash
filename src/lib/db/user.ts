@@ -36,7 +36,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 
 export async function updateUserPassword(
   where: { id: string } | { email: string },
-  newPassword: string
+  newPassword: string,
 ): Promise<void> {
   const passwordHash = await bcrypt.hash(newPassword, 12);
   await prisma.user.update({
@@ -51,21 +51,17 @@ function parseEditorPreferences(raw: unknown): EditorPreferences {
   const stored = raw as Partial<Record<keyof EditorPreferences, unknown>>;
   return {
     fontSize:
-      typeof stored.fontSize === "number" &&
-      (EDITOR_FONT_SIZES as readonly number[]).includes(stored.fontSize)
+      typeof stored.fontSize === "number" && (EDITOR_FONT_SIZES as readonly number[]).includes(stored.fontSize)
         ? stored.fontSize
         : DEFAULT_EDITOR_PREFERENCES.fontSize,
     tabSize:
-      typeof stored.tabSize === "number" &&
-      (EDITOR_TAB_SIZES as readonly number[]).includes(stored.tabSize)
+      typeof stored.tabSize === "number" && (EDITOR_TAB_SIZES as readonly number[]).includes(stored.tabSize)
         ? stored.tabSize
         : DEFAULT_EDITOR_PREFERENCES.tabSize,
     wordWrap: typeof stored.wordWrap === "boolean" ? stored.wordWrap : DEFAULT_EDITOR_PREFERENCES.wordWrap,
     minimap: typeof stored.minimap === "boolean" ? stored.minimap : DEFAULT_EDITOR_PREFERENCES.minimap,
     theme:
-      typeof stored.theme === "string" && isEditorTheme(stored.theme)
-        ? stored.theme
-        : DEFAULT_EDITOR_PREFERENCES.theme,
+      typeof stored.theme === "string" && isEditorTheme(stored.theme) ? stored.theme : DEFAULT_EDITOR_PREFERENCES.theme,
   };
 }
 
@@ -80,7 +76,7 @@ export async function getEditorPreferences(userId: string): Promise<EditorPrefer
 
 export async function updateEditorPreferences(
   userId: string,
-  preferences: EditorPreferences
+  preferences: EditorPreferences,
 ): Promise<EditorPreferences> {
   const updated = await prisma.user.update({
     where: { id: userId },

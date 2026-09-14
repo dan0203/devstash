@@ -57,8 +57,8 @@ export function DeleteCollectionDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete collection?</AlertDialogTitle>
           <AlertDialogDescription>
-            This deletes &quot;{collectionName}&quot;. Items in this collection are not deleted — they
-            will just no longer be part of this collection.
+            This deletes &quot;{collectionName}&quot;. Items in this collection are not deleted — they will just no
+            longer be part of this collection.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

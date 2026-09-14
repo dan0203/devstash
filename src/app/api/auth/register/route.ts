@@ -3,11 +3,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
-import {
-  createVerificationToken,
-  isEmailVerificationEnabled,
-  sendVerificationEmail,
-} from "@/lib/verification-email";
+import { createVerificationToken, isEmailVerificationEnabled, sendVerificationEmail } from "@/lib/verification-email";
 import { enforceRateLimit, getClientIp, rateLimiters } from "@/lib/rate-limit";
 import { parseJsonBody } from "@/lib/api-request";
 import { passwordsMatchRefinement } from "@/lib/validation";
@@ -24,10 +20,7 @@ const registerSchema = z
 
 export async function POST(request: Request) {
   if (!isRegistrationEnabled()) {
-    return NextResponse.json(
-      { success: false, error: "Registration is currently closed." },
-      { status: 403 }
-    );
+    return NextResponse.json({ success: false, error: "Registration is currently closed." }, { status: 403 });
   }
 
   const parsed = await parseJsonBody(request, registerSchema);
@@ -69,7 +62,7 @@ export async function POST(request: Request) {
           success: false,
           error: "We couldn't send your verification email. Please try again.",
         },
-        { status: 502 }
+        { status: 502 },
       );
     }
   }

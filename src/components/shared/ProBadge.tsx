@@ -12,7 +12,7 @@ export function ProBadge({ className, iconOnly = false }: ProBadgeProps) {
       className={cn(
         "inline-flex items-center justify-center rounded-full bg-blue-500 font-semibold text-white shadow-sm",
         iconOnly ? "size-4 text-[9px]" : "px-1.5 py-0.5 text-[10px] tracking-wide uppercase",
-        className
+        className,
       )}
     >
       {iconOnly ? "P" : "Pro"}

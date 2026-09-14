@@ -12,7 +12,7 @@ export interface SignInActionState {
 
 export async function signInWithCredentials(
   _prevState: SignInActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<SignInActionState> {
   const email = formData.get("email");
   const password = formData.get("password");
@@ -42,7 +42,7 @@ export async function signInWithCredentials(
 export async function signInWithGithub(
   callbackUrl: string,
   _prevState: SignInActionState,
-  _formData: FormData
+  _formData: FormData,
 ): Promise<SignInActionState> {
   /* eslint-enable @typescript-eslint/no-unused-vars */
   try {

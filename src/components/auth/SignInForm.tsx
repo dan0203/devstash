@@ -23,11 +23,11 @@ export function SignInForm() {
 
   const [credentialsState, credentialsAction, isCredentialsPending] = useActionState(
     signInWithCredentials,
-    initialActionState
+    initialActionState,
   );
   const [githubState, githubAction, isGithubPending] = useActionState(
     signInWithGithub.bind(null, callbackUrl),
-    initialActionState
+    initialActionState,
   );
 
   useEffect(() => {
@@ -53,10 +53,7 @@ export function SignInForm() {
   async function handleResendVerification() {
     setIsResending(true);
     try {
-      const body = await postJson<{ success: boolean; error?: string }>(
-        "/api/auth/resend-verification",
-        { email }
-      );
+      const body = await postJson<{ success: boolean; error?: string }>("/api/auth/resend-verification", { email });
 
       if (!body.success) {
         toast.error(body.error ?? "Something went wrong");
@@ -94,13 +91,7 @@ export function SignInForm() {
               Forgot password?
             </Link>
           </div>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-          />
+          <Input id="password" name="password" type="password" autoComplete="current-password" required />
         </div>
 
         {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
@@ -133,9 +124,7 @@ export function SignInForm() {
         </Button>
       </form>
       {githubState.code && (
-        <p className="text-sm text-destructive">
-          Something went wrong — check your connection and try again
-        </p>
+        <p className="text-sm text-destructive">Something went wrong — check your connection and try again</p>
       )}
     </div>
   );

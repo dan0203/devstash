@@ -23,7 +23,7 @@ const MISTRAL_RATE_LIMIT_ERROR = "Too many AI requests right now. Wait a few sec
  */
 function jsonSchemaResponseFormat(
   name: string,
-  schema: Record<string, unknown>
+  schema: Record<string, unknown>,
 ): { type: "json_schema"; jsonSchema: { name: string; schemaDefinition: Record<string, unknown>; strict: true } } {
   return {
     type: "json_schema",
@@ -39,10 +39,7 @@ function requireProAi(isPro: boolean): string | null {
 }
 
 /** Checks a per-user AI rate limit; returns an error message, or null if allowed to proceed. */
-async function checkAiRateLimit(
-  limiter: Parameters<typeof checkRateLimit>[0],
-  userId: string
-): Promise<string | null> {
+async function checkAiRateLimit(limiter: Parameters<typeof checkRateLimit>[0], userId: string): Promise<string | null> {
   const rl = await checkRateLimit(limiter, userId);
   return rl.success ? null : rateLimitErrorMessage(rl.reset);
 }
@@ -56,9 +53,7 @@ function safeJsonParse(text: string): unknown {
 }
 
 /** Mistral's assistant message content is `string | ContentChunk[] | null`; JSON mode always returns a plain string. */
-function messageTextContent(
-  content: string | Array<{ type: string; text?: string }> | null | undefined
-): string {
+function messageTextContent(content: string | Array<{ type: string; text?: string }> | null | undefined): string {
   if (typeof content === "string") return content;
   return "";
 }
@@ -68,9 +63,7 @@ function logParseFailure(actionName: string, rawText: string): void {
   console.warn(`${actionName}: couldn't parse Mistral response as expected JSON`, rawText);
 }
 
-type AiActionResult<TResult> =
-  | { success: true; data: TResult }
-  | { success: false; error: string };
+type AiActionResult<TResult> = { success: true; data: TResult } | { success: false; error: string };
 
 /**
  * Shared scaffold for every AI action: session check, Pro gate, Zod validation,
@@ -163,7 +156,11 @@ const GENERIC_DESCRIPTION_ERROR = "Couldn't generate a description. Try again.";
 function parseTagsFromResponse(outputText: string): string[] | null {
   const raw = safeJsonParse(outputText);
 
-  const list = Array.isArray(raw) ? raw : Array.isArray((raw as { tags?: unknown })?.tags) ? (raw as { tags: unknown[] }).tags : null;
+  const list = Array.isArray(raw)
+    ? raw
+    : Array.isArray((raw as { tags?: unknown })?.tags)
+      ? (raw as { tags: unknown[] }).tags
+      : null;
   if (!list) return null;
 
   const normalized = Array.from(
@@ -171,8 +168,8 @@ function parseTagsFromResponse(outputText: string): string[] | null {
       list
         .filter((tag): tag is string => typeof tag === "string")
         .map((tag) => tag.trim().toLowerCase())
-        .filter(Boolean)
-    )
+        .filter(Boolean),
+    ),
   ).slice(0, MAX_SUGGESTED_TAGS);
 
   return normalized;
@@ -194,7 +191,7 @@ export async function generateAutoTags(input: GenerateAutoTagsInput): Promise<Ge
           {
             role: "system",
             content:
-              "You are a tagging assistant for a developer knowledge base. Given an item's title and content, suggest 3-5 short, lowercase, freeform tags that describe it. Respond with strict JSON only, in the shape {\"tags\": [\"tag1\", \"tag2\"]}, and nothing else.",
+              'You are a tagging assistant for a developer knowledge base. Given an item\'s title and content, suggest 3-5 short, lowercase, freeform tags that describe it. Respond with strict JSON only, in the shape {"tags": ["tag1", "tag2"]}, and nothing else.',
           },
           {
             role: "user",
@@ -384,9 +381,7 @@ export async function optimizePrompt(input: OptimizePromptInput): Promise<Optimi
   return { success: true, optimizedContent: result.data };
 }
 
-export async function generateDescription(
-  input: GenerateDescriptionInput
-): Promise<GenerateDescriptionState> {
+export async function generateDescription(input: GenerateDescriptionInput): Promise<GenerateDescriptionState> {
   const result = await runAiAction({
     actionName: "generateDescription",
     input,
@@ -411,7 +406,7 @@ export async function generateDescription(
           {
             role: "system",
             content:
-              "You are a summarizing assistant for a developer knowledge base. Given an item's type, title, and available content, write a concise 1-2 sentence description summarizing what it is or does. Use only the information provided. Respond with strict JSON only, in the shape {\"description\": \"...\"}, and nothing else.",
+              'You are a summarizing assistant for a developer knowledge base. Given an item\'s type, title, and available content, write a concise 1-2 sentence description summarizing what it is or does. Use only the information provided. Respond with strict JSON only, in the shape {"description": "..."}, and nothing else.',
           },
           {
             role: "user",

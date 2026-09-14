@@ -27,10 +27,7 @@ export async function POST(request: Request) {
 
   const email = await consumePasswordResetToken(token);
   if (!email) {
-    return NextResponse.json(
-      { success: false, error: "That reset link is invalid or expired" },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, error: "That reset link is invalid or expired" }, { status: 400 });
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
@@ -40,7 +37,7 @@ export async function POST(request: Request) {
         success: false,
         error: "This account signs in with GitHub and doesn't have a password to reset",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 

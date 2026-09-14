@@ -51,22 +51,18 @@ export function DeleteAccountDialog() {
         if (!open) reset();
       }}
     >
-      <AlertDialogTrigger render={<Button variant="destructive" />}>
-        Delete account
-      </AlertDialogTrigger>
+      <AlertDialogTrigger render={<Button variant="destructive" />}>Delete account</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete account?</AlertDialogTitle>
           <AlertDialogDescription>
-            This permanently deletes your account and all of your items and collections. This
-            cannot be undone.
+            This permanently deletes your account and all of your items and collections. This cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="delete-confirmation">
-            Type <span className="font-semibold text-foreground">{CONFIRMATION_PHRASE}</span> to
-            confirm
+            Type <span className="font-semibold text-foreground">{CONFIRMATION_PHRASE}</span> to confirm
           </Label>
           <Input
             id="delete-confirmation"

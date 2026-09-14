@@ -22,20 +22,19 @@ vi.mock(import("@/auth"), () => ({
   auth: mockAuth,
 }));
 
-vi.mock(import("@/lib/db/collections"), () => ({
-  createCollection: mockCreateCollection,
-  updateCollection: mockUpdateCollection,
-  deleteCollection: mockDeleteCollection,
-  toggleCollectionFavorite: mockToggleCollectionFavorite,
-  getCollectionStats: mockGetCollectionStats,
-}) as never);
+vi.mock(
+  import("@/lib/db/collections"),
+  () =>
+    ({
+      createCollection: mockCreateCollection,
+      updateCollection: mockUpdateCollection,
+      deleteCollection: mockDeleteCollection,
+      toggleCollectionFavorite: mockToggleCollectionFavorite,
+      getCollectionStats: mockGetCollectionStats,
+    }) as never,
+);
 
-import {
-  createCollection,
-  updateCollection,
-  deleteCollection,
-  toggleCollectionFavorite,
-} from "./collections";
+import { createCollection, updateCollection, deleteCollection, toggleCollectionFavorite } from "./collections";
 
 const validCreateInput = {
   name: "React Patterns",

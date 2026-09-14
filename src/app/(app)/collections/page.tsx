@@ -15,11 +15,7 @@ export default async function CollectionsPage(props: PageProps<"/collections">) 
   const { page: pageParam } = await props.searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
 
-  const { collections, totalCount } = await getCollectionsPage(
-    session.user.id,
-    page,
-    COLLECTIONS_PER_PAGE
-  );
+  const { collections, totalCount } = await getCollectionsPage(session.user.id, page, COLLECTIONS_PER_PAGE);
   const totalPages = Math.max(1, Math.ceil(totalCount / COLLECTIONS_PER_PAGE));
 
   return (

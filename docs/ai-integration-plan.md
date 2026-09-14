@@ -32,7 +32,7 @@ import OpenAI from "openai";
 export const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "sk-placeholder",
   timeout: 20_000, // default is 10 minutes — far too long for a request/response action
-  maxRetries: 2,   // SDK default; retries connection errors + 408/409/429/5xx with backoff
+  maxRetries: 2, // SDK default; retries connection errors + 408/409/429/5xx with backoff
 });
 
 export const AI_MODEL = "gpt-5-nano";
@@ -97,7 +97,10 @@ export async function suggestTags(input: z.infer<typeof suggestTagsSchema>): Pro
     const completion = await openai.chat.completions.create({
       model: AI_MODEL,
       messages: [
-        { role: "system", content: "Suggest up to 5 short, lowercase, kebab-case tags for this item. Return only the tags." },
+        {
+          role: "system",
+          content: "Suggest up to 5 short, lowercase, kebab-case tags for this item. Return only the tags.",
+        },
         { role: "user", content: `Title: ${parsed.data.title}\n\nContent:\n${parsed.data.content}` },
       ],
       response_format: {
@@ -138,7 +141,7 @@ Recommendation: **non-streaming for all four MVP features.**
 - Server Actions returning a single `{ success, data, error }` value match this
   codebase's existing convention exactly (`useActionState` is already used for
   multi-step, non-streaming flows in `SignInForm.tsx`).
-- Code explanation and prompt optimization *could* benefit from streaming (longer,
+- Code explanation and prompt optimization _could_ benefit from streaming (longer,
   free-text output where perceived latency matters), but streaming a Server Action's
   result to a client component needs either a Vercel AI SDK-style `readStreamableValue`
   wrapper or a Route Handler + `ReadableStream` — a real architectural addition, not a
@@ -156,13 +159,13 @@ existing Server Action rule) and map failure modes to user-facing messages, mirr
 `billing.ts`'s pattern of catching Stripe errors and returning a generic message rather
 than leaking SDK internals:
 
-| Failure | Handling |
-|---|---|
-| `openai.APIConnectionError` | "Couldn't reach the AI service. Try again." |
-| `openai.RateLimitError` (OpenAI's own 429, not ours) | Same generic retry message — don't leak that it's OpenAI's limit vs. ours |
-| `response.status === "incomplete"` (truncated by `max_output_tokens`) | Treat as a soft failure — return what was generated if usable (e.g. partial tag list), else the generic error |
-| Refusal (`message.refusal` / structured-output refusal object) | Generic "Couldn't generate a suggestion for this content." — never surface the raw refusal text, it can quote back user content |
-| JSON parse failure on a `json_schema` response | Should not happen with `strict: true`, but catch and treat as the generic error anyway — never trust it blindly |
+| Failure                                                               | Handling                                                                                                                        |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `openai.APIConnectionError`                                           | "Couldn't reach the AI service. Try again."                                                                                     |
+| `openai.RateLimitError` (OpenAI's own 429, not ours)                  | Same generic retry message — don't leak that it's OpenAI's limit vs. ours                                                       |
+| `response.status === "incomplete"` (truncated by `max_output_tokens`) | Treat as a soft failure — return what was generated if usable (e.g. partial tag list), else the generic error                   |
+| Refusal (`message.refusal` / structured-output refusal object)        | Generic "Couldn't generate a suggestion for this content." — never surface the raw refusal text, it can quote back user content |
+| JSON parse failure on a `json_schema` response                        | Should not happen with `strict: true`, but catch and treat as the generic error anyway — never trust it blindly                 |
 
 The SDK's own default retry (`max_retries: 2`, exponential backoff on connection
 errors/408/409/429/5xx) covers transient failures automatically; don't hand-roll a
@@ -266,18 +269,18 @@ Follow the async-mutation UX already established across the codebase (`NewItemDi
   forms) disables the trigger button and swaps its label/icon for a spinner — no global
   loading overlay.
 - **Accept/reject suggestions**, not silent auto-apply:
-  - *Auto-tag*: show suggested tags as removable chips/badges alongside (not replacing)
+  - _Auto-tag_: show suggested tags as removable chips/badges alongside (not replacing)
     the existing tag input — user clicks to add individually, or "Add all." Never
     silently overwrite the tag field.
-  - *Summary*: populate the (already-existing) Description field as a proposed value
+  - _Summary_: populate the (already-existing) Description field as a proposed value
     the user must explicitly save — reuse the Item Drawer's existing edit-mode Save/
     Cancel affordance rather than inventing a new confirm step, since summaries are
     natural fits for the Description field already in edit mode.
-  - *Explain code*: read-only output in a dedicated panel/section (e.g. a collapsible
+  - _Explain code_: read-only output in a dedicated panel/section (e.g. a collapsible
     block below the `CodeEditor`, following `MarkdownEditor`'s existing
     header-bar-plus-content visual convention) — nothing to accept/reject, it's
     informational only.
-  - *Optimize prompt*: show the optimized version side-by-side or as a diff-like
+  - _Optimize prompt_: show the optimized version side-by-side or as a diff-like
     before/after, with explicit "Use this version" / "Keep original" actions — never
     overwrite the prompt content field automatically.
 - **Errors** surface via sonner toast (the established pattern for every mutation in

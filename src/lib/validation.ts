@@ -15,7 +15,7 @@ export function parseOrError<T>(schema: ZodType<T>, input: unknown): { data: T }
  */
 export function passwordsMatchRefinement<T extends string, U extends string>(
   passwordField: T,
-  confirmField: U
+  confirmField: U,
 ): [(data: Record<T | U, string>) => boolean, { message: string; path: [U] }] {
   return [
     (data) => data[passwordField] === data[confirmField],

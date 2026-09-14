@@ -17,9 +17,7 @@ interface SidebarTypesListProps {
 export function SidebarTypesList({ collapsed = false, itemTypes, isPro, pathname }: SidebarTypesListProps) {
   return (
     <>
-      {!collapsed && (
-        <p className="px-2 pb-2 text-xs font-semibold tracking-wider text-muted-foreground">TYPES</p>
-      )}
+      {!collapsed && <p className="px-2 pb-2 text-xs font-semibold tracking-wider text-muted-foreground">TYPES</p>}
       <div className="space-y-0.5">
         {itemTypes.map((type) => {
           const Icon = itemTypeIcons[type.icon];
@@ -33,7 +31,7 @@ export function SidebarTypesList({ collapsed = false, itemTypes, isPro, pathname
               className={cn(
                 "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-foreground/90 hover:bg-sidebar-accent",
                 collapsed && "justify-center",
-                active && "bg-sidebar-accent font-medium text-foreground"
+                active && "bg-sidebar-accent font-medium text-foreground",
               )}
               title={collapsed ? type.name : undefined}
             >
@@ -42,10 +40,7 @@ export function SidebarTypesList({ collapsed = false, itemTypes, isPro, pathname
                 <>
                   <span className="flex-1 truncate">{type.name}</span>
                   {!isPro && proTypeSlugs.has(type.slug) && (
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] tracking-wide text-muted-foreground uppercase"
-                    >
+                    <Badge variant="outline" className="text-[10px] tracking-wide text-muted-foreground uppercase">
                       Pro
                     </Badge>
                   )}

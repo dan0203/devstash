@@ -23,7 +23,7 @@ export function ScrollFadeIn({ children, className }: ScrollFadeInProps) {
           observer.unobserve(entry.target);
         }
       },
-      { threshold: 0.15 }
+      { threshold: 0.15 },
     );
     observer.observe(el);
 
@@ -36,7 +36,7 @@ export function ScrollFadeIn({ children, className }: ScrollFadeInProps) {
       className={cn(
         "transition-all duration-[600ms] ease-out",
         visible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0",
-        className
+        className,
       )}
     >
       {children}

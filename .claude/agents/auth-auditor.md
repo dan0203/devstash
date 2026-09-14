@@ -56,8 +56,11 @@ Structure the file as:
 ## Findings
 
 ### 🔴 Critical
+
 ### 🟠 High
+
 ### 🟡 Medium
+
 ### 🔵 Low
 
 (Omit any severity section with no findings. For each finding: file/line reference, description of the concrete risk/exploit scenario, and a specific suggested fix.)

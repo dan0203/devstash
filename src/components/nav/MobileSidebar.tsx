@@ -15,12 +15,7 @@ interface MobileSidebarProps {
   recentCollections: CollectionWithStats[];
 }
 
-export function MobileSidebar({
-  user,
-  itemTypes,
-  favoriteCollections,
-  recentCollections,
-}: MobileSidebarProps) {
+export function MobileSidebar({ user, itemTypes, favoriteCollections, recentCollections }: MobileSidebarProps) {
   const { mobileOpen, setMobileOpen } = useSidebar();
 
   return (

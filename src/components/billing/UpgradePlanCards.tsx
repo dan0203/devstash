@@ -34,11 +34,7 @@ export function UpgradePlanCards() {
     <div>
       <div className="mb-10 flex items-center justify-center gap-3.5">
         <span className="text-sm text-muted-foreground">Monthly</span>
-        <Switch
-          checked={isYearly}
-          onCheckedChange={setIsYearly}
-          aria-label="Toggle yearly billing"
-        />
+        <Switch checked={isYearly} onCheckedChange={setIsYearly} aria-label="Toggle yearly billing" />
         <span className="text-sm text-muted-foreground">
           Yearly
           <Badge className="ml-1.5 bg-green-500 text-neutral-800" variant="secondary">
@@ -72,9 +68,7 @@ export function UpgradePlanCards() {
           <h3 className="mb-3 text-lg font-semibold">Pro</h3>
           <div className="mb-1.5 flex items-baseline gap-1">
             <span className="text-4xl font-extrabold">{isYearly ? "$6" : "$8"}</span>
-            <span className="text-sm text-muted-foreground">
-              /month{isYearly ? " (billed $72/year)" : ""}
-            </span>
+            <span className="text-sm text-muted-foreground">/month{isYearly ? " (billed $72/year)" : ""}</span>
           </div>
           <p className="mb-6 text-sm text-muted-foreground">For serious developers</p>
           <ul className="flex flex-1 flex-col gap-2.5">

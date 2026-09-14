@@ -28,7 +28,7 @@ export function Navbar() {
     <nav
       className={cn(
         "fixed inset-x-0 top-0 z-50 border-b border-transparent backdrop-blur-md transition-colors duration-300",
-        scrolled ? "border-border bg-background/90" : "bg-background/35"
+        scrolled ? "border-border bg-background/90" : "bg-background/35",
       )}
     >
       <div className="mx-auto flex max-w-[1160px] items-center justify-between gap-6 px-6 py-4">

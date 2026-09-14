@@ -17,12 +17,7 @@ interface BillingSettingsProps {
   collectionCount: number;
 }
 
-export function BillingSettings({
-  billingInfo,
-  planLabel,
-  itemCount,
-  collectionCount,
-}: BillingSettingsProps) {
+export function BillingSettings({ billingInfo, planLabel, itemCount, collectionCount }: BillingSettingsProps) {
   const [pendingPlan, setPendingPlan] = useState<"monthly" | "yearly" | "portal" | null>(null);
 
   async function handleUpgrade(plan: "monthly" | "yearly") {
@@ -65,9 +60,7 @@ export function BillingSettings({
           <Badge
             variant={billingInfo.isPro ? "default" : "secondary"}
             className={
-              billingInfo.isPro
-                ? "border-transparent bg-yellow-400 text-yellow-950 hover:bg-yellow-400"
-                : undefined
+              billingInfo.isPro ? "border-transparent bg-yellow-400 text-yellow-950 hover:bg-yellow-400" : undefined
             }
           >
             {planLabel}

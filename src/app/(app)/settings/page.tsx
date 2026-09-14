@@ -83,9 +83,7 @@ export default async function SettingsPage() {
               <div className="flex items-center justify-between rounded-lg border border-input px-4 py-3">
                 <div className="flex flex-col gap-0.5">
                   <Label>Change password</Label>
-                  <span className="text-xs text-muted-foreground">
-                    Update the password used to sign in
-                  </span>
+                  <span className="text-xs text-muted-foreground">Update the password used to sign in</span>
                 </div>
                 <ChangePasswordDialog />
               </div>

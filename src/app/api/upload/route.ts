@@ -19,10 +19,7 @@ export async function POST(request: Request) {
   if (rateLimited) return rateLimited;
 
   if (isPlanLimitsEnforced() && !session.isPro) {
-    return NextResponse.json(
-      { success: false, error: "File and image uploads require a Pro plan" },
-      { status: 403 }
-    );
+    return NextResponse.json({ success: false, error: "File and image uploads require a Pro plan" }, { status: 403 });
   }
 
   const formData = await request.formData();
@@ -42,13 +39,13 @@ export async function POST(request: Request) {
   if (!constraints.extensions.includes(extension as never)) {
     return NextResponse.json(
       { success: false, error: `Unsupported file extension: ${extension || "unknown"}` },
-      { status: 400 }
+      { status: 400 },
     );
   }
   if (!constraints.mimeTypes.includes(file.type as never)) {
     return NextResponse.json(
       { success: false, error: `Unsupported file type: ${file.type || "unknown"}` },
-      { status: 400 }
+      { status: 400 },
     );
   }
   if (file.size > constraints.maxSize) {
@@ -57,7 +54,7 @@ export async function POST(request: Request) {
         success: false,
         error: `File exceeds the ${constraints.maxSize / (1024 * 1024)}MB limit`,
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 

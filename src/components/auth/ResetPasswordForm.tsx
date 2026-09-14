@@ -46,10 +46,10 @@ export function ResetPasswordForm() {
     setIsSubmitting(true);
 
     try {
-      const body = await postJson<{ success: boolean; error?: string }>(
-        "/api/auth/reset-password",
-        { token, ...parsed.data }
-      );
+      const body = await postJson<{ success: boolean; error?: string }>("/api/auth/reset-password", {
+        token,
+        ...parsed.data,
+      });
 
       if (!body.success) {
         setError(body.error ?? "Something went wrong");

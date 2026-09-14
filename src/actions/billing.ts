@@ -1,18 +1,11 @@
 "use server";
 
-import {
-  stripe,
-  stripeTest,
-  STRIPE_PRICE_IDS,
-  STRIPE_TEST_PRICE_IDS,
-  isStripeTestModeConfigured,
-} from "@/lib/stripe";
+import { stripe, stripeTest, STRIPE_PRICE_IDS, STRIPE_TEST_PRICE_IDS, isStripeTestModeConfigured } from "@/lib/stripe";
 import { getStripeCustomerContext, setStripeCustomerId } from "@/lib/db/billing";
 import { requireSession } from "@/lib/auth-utils";
 import { isDemoAccountEmail } from "@/lib/demo-account";
 
-const DEMO_ACCOUNT_BILLING_UNAVAILABLE_ERROR =
-  "Demo checkout isn't configured right now. Please try again later.";
+const DEMO_ACCOUNT_BILLING_UNAVAILABLE_ERROR = "Demo checkout isn't configured right now. Please try again later.";
 
 export interface CheckoutSessionState {
   success: boolean;

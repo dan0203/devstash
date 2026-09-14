@@ -11,9 +11,7 @@ export function AISection() {
           <Badge className="mb-3.5 border border-blue-500/35 bg-blue-500/15 text-blue-300" variant="outline">
             Pro Feature
           </Badge>
-          <h2 className="mb-2.5 text-3xl font-extrabold tracking-tight sm:text-4xl">
-            Let AI do the busywork
-          </h2>
+          <h2 className="mb-2.5 text-3xl font-extrabold tracking-tight sm:text-4xl">Let AI do the busywork</h2>
           <p className="mb-7 text-muted-foreground">Spend less time organizing and more time building.</p>
           <ul className="flex flex-col items-center gap-3.5 lg:items-start">
             {AI_CHECKLIST.map((item) => (

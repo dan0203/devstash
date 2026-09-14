@@ -26,7 +26,7 @@ export function CollectionCard({ collection }: { collection: CollectionWithStats
       {...navigateProps}
       className={cn(
         "cursor-pointer gap-1.5 border-l-2 p-4 transition-colors hover:bg-accent/50",
-        collection.isFavorite && "border-l-4"
+        collection.isFavorite && "border-l-4",
       )}
       style={{ borderLeftColor: collection.color }}
     >
@@ -48,17 +48,11 @@ export function CollectionCard({ collection }: { collection: CollectionWithStats
           }}
           onKeyDown={(e) => e.stopPropagation()}
         >
-          <Star
-            className={
-              collection.isFavorite ? "size-3.5 fill-yellow-400 text-yellow-400" : "size-3.5"
-            }
-          />
+          <Star className={collection.isFavorite ? "size-3.5 fill-yellow-400 text-yellow-400" : "size-3.5"} />
         </Button>
         <CollectionCardMenu collection={collection} onToggleFavorite={handleToggleFavorite} />
       </div>
-      <p className="line-clamp-1 min-h-4 text-xs text-muted-foreground">
-        {collection.description}
-      </p>
+      <p className="line-clamp-1 min-h-4 text-xs text-muted-foreground">{collection.description}</p>
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground">
           {collection.itemCount} {collection.itemCount === 1 ? "item" : "items"}
@@ -67,9 +61,7 @@ export function CollectionCard({ collection }: { collection: CollectionWithStats
           <div className="flex items-center gap-1">
             {collection.types.map(({ icon, color }) => {
               const Icon = itemTypeIcons[icon];
-              return Icon ? (
-                <Icon key={icon} className="size-3.5" style={{ color }} />
-              ) : null;
+              return Icon ? <Icon key={icon} className="size-3.5" style={{ color }} /> : null;
             })}
           </div>
         )}

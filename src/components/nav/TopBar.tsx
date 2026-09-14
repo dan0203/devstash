@@ -12,15 +12,7 @@ import { ProBadge } from "@/components/shared/ProBadge";
 import { type ItemTypeWithCount } from "@/lib/db/items";
 import { type CollectionOption } from "@/lib/db/collections";
 
-const creatableTypeSlugs = new Set([
-  "snippets",
-  "prompts",
-  "commands",
-  "notes",
-  "links",
-  "files",
-  "images",
-]);
+const creatableTypeSlugs = new Set(["snippets", "prompts", "commands", "notes", "links", "files", "images"]);
 
 interface TopBarProps {
   itemTypes: ItemTypeWithCount[];

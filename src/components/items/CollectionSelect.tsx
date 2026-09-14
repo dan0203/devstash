@@ -19,19 +19,13 @@ interface CollectionSelectProps {
 
 export function CollectionSelect({ collections, selectedIds, onChange }: CollectionSelectProps) {
   function toggle(id: string) {
-    onChange(
-      selectedIds.includes(id)
-        ? selectedIds.filter((selectedId) => selectedId !== id)
-        : [...selectedIds, id]
-    );
+    onChange(selectedIds.includes(id) ? selectedIds.filter((selectedId) => selectedId !== id) : [...selectedIds, id]);
   }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        render={
-          <Button type="button" variant="outline" className="w-full justify-between font-normal" />
-        }
+        render={<Button type="button" variant="outline" className="w-full justify-between font-normal" />}
       >
         <span className="flex items-center gap-1.5 text-muted-foreground">
           <Folder className="size-4" />

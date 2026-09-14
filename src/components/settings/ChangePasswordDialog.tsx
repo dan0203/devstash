@@ -59,10 +59,7 @@ export function ChangePasswordDialog() {
     setIsSubmitting(true);
 
     try {
-      const body = await postJson<{ success: boolean; error?: string }>(
-        "/api/auth/change-password",
-        parsed.data
-      );
+      const body = await postJson<{ success: boolean; error?: string }>("/api/auth/change-password", parsed.data);
 
       if (!body.success) {
         setError(body.error ?? "Something went wrong");

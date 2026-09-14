@@ -35,12 +35,7 @@ export default async function ItemTypePage(props: PageProps<"/items/[type]">) {
   const { page: pageParam } = await props.searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
 
-  const { items, totalCount } = await getItemsByType(
-    session.user.id,
-    itemType.id,
-    page,
-    ITEMS_PER_PAGE
-  );
+  const { items, totalCount } = await getItemsByType(session.user.id, itemType.id, page, ITEMS_PER_PAGE);
   const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
   const isImageGallery = itemType.name === "image";
   const isFileList = itemType.name === "file";
@@ -58,26 +53,18 @@ export default async function ItemTypePage(props: PageProps<"/items/[type]">) {
               ))}
             </div>
           ) : (
-            <div
-              className={
-                isImageGallery
-                  ? "grid grid-cols-3 gap-4"
-                  : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-              }
-            >
+            <div className={isImageGallery ? "grid grid-cols-3 gap-4" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"}>
               {items.map((item) =>
                 isImageGallery ? (
                   <ImageThumbnailCard key={item.id} item={item} />
                 ) : (
                   <ItemCard key={item.id} item={item} />
-                )
+                ),
               )}
             </div>
           )
         ) : (
-          <p className="text-sm text-muted-foreground">
-            No {typeName.toLowerCase()} yet.
-          </p>
+          <p className="text-sm text-muted-foreground">No {typeName.toLowerCase()} yet.</p>
         )}
 
         <PaginationControls basePath={`/items/${type}`} currentPage={page} totalPages={totalPages} />

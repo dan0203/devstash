@@ -186,11 +186,7 @@ export interface UpdateItemData {
   collectionIds: string[];
 }
 
-export async function updateItem(
-  userId: string,
-  itemId: string,
-  data: UpdateItemData
-): Promise<ItemDetail | null> {
+export async function updateItem(userId: string, itemId: string, data: UpdateItemData): Promise<ItemDetail | null> {
   const existing = await findOwnedItem(userId, itemId, { id: true });
   if (!existing) return null;
 
@@ -236,11 +232,7 @@ export interface CreateItemData {
   collectionIds: string[];
 }
 
-export async function createItem(
-  userId: string,
-  itemTypeId: string,
-  data: CreateItemData
-): Promise<ItemDetail> {
+export async function createItem(userId: string, itemTypeId: string, data: CreateItemData): Promise<ItemDetail> {
   const collectionIds = await findOwnedCollectionIds(userId, data.collectionIds);
 
   const item = await prisma.item.create({
@@ -312,7 +304,7 @@ export async function getItemsByType(
   userId: string,
   itemTypeId: string,
   page: number,
-  perPage: number
+  perPage: number,
 ): Promise<PaginatedItems> {
   const where = { userId, itemTypeId };
 

@@ -56,9 +56,7 @@ export function FileListRow({ item }: { item: ItemWithType }) {
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{item.title}</p>
-          {item.fileName && (
-            <p className="truncate text-xs text-muted-foreground">{item.fileName}</p>
-          )}
+          {item.fileName && <p className="truncate text-xs text-muted-foreground">{item.fileName}</p>}
         </div>
       </div>
 
