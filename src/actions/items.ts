@@ -14,7 +14,7 @@ import {
 import { getItemTypeByName } from "@/lib/db/item-types";
 import { FREE_TIER_LIMITS, checkPlanLimit, isOverItemLimit, isPlanLimitsEnforced } from "@/lib/plan-limits";
 import { requireSession } from "@/lib/auth-utils";
-import { parseOrError } from "@/lib/validation";
+import { parseOrError, isValidUrl } from "@/lib/validation";
 
 const CREATABLE_ITEM_TYPES = ["snippet", "prompt", "command", "note", "link", "file", "image"] as const;
 const FILE_ITEM_TYPES = new Set(["file", "image"]);
@@ -27,14 +27,14 @@ function buildCreateItemSchema(isPro: boolean) {
       description: z.string().trim(),
       content: z.string(),
       language: z.string().trim(),
-      url: z.string().trim(),
+      url: z.string().trim().transform((value) => (value ? (isValidUrl(value) ?? value) : value)),
       fileUrl: z.string().trim(),
       fileName: z.string().trim(),
       fileSize: z.number().nullable(),
       tags: z.array(z.string().trim().min(1)),
       collectionIds: z.array(z.string()),
     })
-    .refine((data) => data.itemType !== "link" || z.string().url().safeParse(data.url).success, {
+    .refine((data) => data.itemType !== "link" || isValidUrl(data.url), {
       message: "Please enter a valid URL",
       path: ["url"],
     })
@@ -111,12 +111,15 @@ const updateItemSchema = z
     title: z.string().trim().min(1, "Title is required"),
     description: z.string().nullable(),
     content: z.string().nullable(),
-    url: z.string().nullable(),
+    url: z
+      .string()
+      .nullable()
+      .transform((value) => (value ? (isValidUrl(value) ?? value) : value)),
     language: z.string().nullable(),
     tags: z.array(z.string().trim().min(1)),
     collectionIds: z.array(z.string()),
   })
-  .refine((data) => !data.url || z.string().url().safeParse(data.url).success, {
+  .refine((data) => !data.url || isValidUrl(data.url), {
     message: "Please enter a valid URL",
     path: ["url"],
   });

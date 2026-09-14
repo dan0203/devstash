@@ -10,6 +10,35 @@ export function parseOrError<T>(schema: ZodType<T>, input: unknown): { data: T }
 }
 
 /**
+ * Validates a URL, treating a value with no scheme (e.g. "google.fr") as if it were prefixed
+ * with "https://" first. Returns the normalized http(s) URL when valid, or null otherwise.
+ * Rejects single-label hosts like "google" (no TLD) and bare IPv4 loopback-style hosts, requiring
+ * either a dot-separated hostname or a bracketed IPv6 literal.
+ */
+export function isValidUrl(url: string): string | null {
+  const normalized = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+
+  let parsed: URL;
+  try {
+    parsed = new URL(normalized);
+  } catch {
+    return null;
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    return null;
+  }
+  const hostname = parsed.hostname;
+  if (!hostname) {
+    return null;
+  }
+  const isIpv6 = hostname.startsWith("[") && hostname.endsWith("]");
+  if (!isIpv6 && !hostname.includes(".") && hostname !== "localhost") {
+    return null;
+  }
+  return normalized;
+}
+
+/**
  * Builds the predicate + options pair for a Zod `.refine()` call that checks
  * two password fields match, e.g. `.refine(...passwordsMatchRefinement("password", "confirmPassword"))`.
  */

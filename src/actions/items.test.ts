@@ -96,6 +96,29 @@ describe("createItem", () => {
     expect(mockCreateItem).not.toHaveBeenCalled();
   });
 
+  it("returns a validation error when a link URL has no TLD", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+
+    const result = await createItem({ ...validCreateInput, itemType: "link", url: "google" });
+
+    expect(result).toEqual({ success: false, error: "Please enter a valid URL" });
+    expect(mockCreateItem).not.toHaveBeenCalled();
+  });
+
+  it("accepts a schemeless link URL and normalizes it with https://", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    mockGetItemTypeByName.mockResolvedValue({ id: "type-link", name: "link" });
+    mockCreateItem.mockResolvedValue({ id: "item-1" });
+
+    await createItem({ ...validCreateInput, itemType: "link", url: "google.fr" });
+
+    expect(mockCreateItem).toHaveBeenCalledWith(
+      "user-1",
+      "type-link",
+      expect.objectContaining({ url: "https://google.fr" }),
+    );
+  });
+
   it("returns Invalid item type when the item type can't be resolved", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1" } });
     mockGetItemTypeByName.mockResolvedValue(null);
@@ -277,7 +300,7 @@ describe("updateItem", () => {
   it("returns a validation error for an invalid URL", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1" } });
 
-    const result = await updateItem("item-1", { ...validInput, url: "not-a-url" });
+    const result = await updateItem("item-1", { ...validInput, url: "http://" });
 
     expect(result).toEqual({ success: false, error: "Please enter a valid URL" });
     expect(mockUpdateItem).not.toHaveBeenCalled();
