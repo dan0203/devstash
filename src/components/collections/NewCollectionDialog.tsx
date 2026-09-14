@@ -55,7 +55,7 @@ export function NewCollectionDialog() {
         return;
       }
 
-      toast.success("Collection created");
+      toast.success(`Collection "${form.name.trim()}" created`);
       setOpen(false);
       reset();
       router.refresh();

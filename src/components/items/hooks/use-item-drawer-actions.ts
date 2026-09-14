@@ -57,7 +57,7 @@ export function useItemDrawerActions({ item, setItem, editForm, closeDrawer, set
     if (result.success && result.data) {
       setItem(result.data);
       setIsEditing(false);
-      toast.success("Item updated");
+      toast.success(`Item "${result.data.title}" updated`);
       router.refresh();
     } else {
       toast.error(result.error ?? "Failed to update item");
@@ -85,12 +85,13 @@ export function useItemDrawerActions({ item, setItem, editForm, closeDrawer, set
   const handleDelete = async () => {
     if (!item) return;
 
+    const title = item.title;
     setDeleting(true);
     const result = await deleteItem(item.id);
     setDeleting(false);
 
     if (result.success) {
-      toast.success("Item deleted");
+      toast.success(`Item "${title}" deleted`);
       closeDrawer();
       router.refresh();
     } else {

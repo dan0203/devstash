@@ -57,9 +57,10 @@ export function NewItemDialog({ itemTypes, collections, isPro }: NewItemDialogPr
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const title = form.title.trim();
     const success = await newItemForm.submit();
     if (success) {
-      toast.success("Item created");
+      toast.success(`Item "${title}" created`);
       setOpen(false);
       newItemForm.reset();
       router.refresh();

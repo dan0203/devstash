@@ -41,7 +41,7 @@ export function DeleteCollectionDialog({
         return;
       }
 
-      toast.success("Collection deleted");
+      toast.success(`Collection "${collectionName}" deleted`);
       onOpenChange(false);
       onDeleted();
     } catch {

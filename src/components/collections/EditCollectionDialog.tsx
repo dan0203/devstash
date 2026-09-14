@@ -56,7 +56,7 @@ export function EditCollectionDialog({ collection, open, onOpenChange }: EditCol
         return;
       }
 
-      toast.success("Collection updated");
+      toast.success(`Collection "${form.name.trim()}" updated`);
       onOpenChange(false);
       router.refresh();
     } catch {
